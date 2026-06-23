@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cubico — Magazin de Obiecte Printate 3D</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='20' width='14' height='5' rx='2' fill='%23FF7A1F'/%3E%3Crect x='4' y='12' width='22' height='5' rx='2' fill='%232553F2'/%3E%3Crect x='4' y='4' width='28' height='5' rx='2' fill='%230F1B2D'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-900:#0F1B2D;
+    --navy-800:#16243B;
+    --blue-600:#2553F2;
+    --blue-700:#1B3FC2;
+    --orange-500:#FF7A1F;
+    --orange-600:#E8650A;
+    --bg:#F4F6F9;
+    --white:#FFFFFF;
+    --text-900:#161B22;
+    --text-600:#5B6472;
+    --border:#E3E7ED;
+    --green:#1C9C6B;
+    --star:#FFB020;
+    --red:#E0263E;
+    --radius:14px;
+    --shadow-sm:0 1px 3px rgba(15,27,45,0.08);
+    --shadow-md:0 10px 24px rgba(15,27,45,0.10);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    color:var(--text-900);
+    background:var(--bg);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Poppins',system-ui,sans-serif;margin:0;letter-spacing:-0.01em;}
+  p{margin:0;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+  ul{margin:0;padding:0;list-style:none;}
+  img,svg{display:block;}
+  .container{max-width:1240px;margin:0 auto;padding:0 24px;}
+
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible{
+    outline:3px solid var(--blue-600);
+    outline-offset:2px;
+    border-radius:6px;
+  }
+
+  .skip-link{
+    position:absolute;left:-999px;top:0;background:var(--blue-600);color:#fff;padding:10px 16px;
+    border-radius:0 0 8px 0;z-index:300;font-size:14px;font-weight:600;
+  }
+  .skip-link:focus{left:0;}
+
+  /* ===== Top utility strip ===== */
+  .topstrip{background:var(--navy-900);color:#C7CFDD;font-size:12.5px;}
+  .topstrip .container{display:flex;justify-content:space-between;align-items:center;height:34px;}
+  .topstrip-links{display:flex;gap:18px;}
+  .topstrip-links a:hover{color:var(--white);}
+
+  /* ===== Main header ===== */
+  .header{background:var(--navy-900);padding:16px 0;}
+  .header .container{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+
+  .logo{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .logo-mark rect{fill:var(--orange-500);}
+  .logo-word{color:var(--white);font-size:22px;font-weight:700;}
+  .logo-word span{color:var(--orange-500);}
+
+  .searchbar{flex:1 1 380px;display:flex;height:44px;border-radius:8px;overflow:hidden;background:var(--white);min-width:240px;}
+  .searchbar select{
+    border:none;background:#EDEFF3;padding:0 10px;font-size:13px;color:var(--text-600);
+    border-right:1px solid var(--border);max-width:150px;
+  }
+  .searchbar input{flex:1;border:none;padding:0 14px;font-size:14.5px;color:var(--text-900);min-width:0;}
+  .searchbar input::placeholder{color:#9AA3B2;}
+  .searchbar button{
+    width:50px;background:var(--orange-500);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    transition:background .15s ease;
+  }
+  .searchbar button:hover{background:var(--orange-600);}
+
+  .header-actions{display:flex;align-items:center;gap:22px;flex-shrink:0;margin-left:auto;}
+  .header-action{display:flex;align-items:center;gap:7px;color:#E7EBF2;font-size:13px;line-height:1.25;}
+  .header-action small{display:block;color:#9AA8BD;font-size:11px;}
+  .header-action svg{flex-shrink:0;}
+  .cart-action{position:relative;}
+  .cart-count{
+    position:absolute;top:-7px;left:14px;background:var(--orange-500);color:var(--white);
+    font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;
+    display:flex;align-items:center;justify-content:center;padding:0 4px;
+  }
+  .header-action:hover{color:var(--white);}
+
+  /* ===== Category nav ===== */
+  .catnav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:40;}
+  .catnav .container{display:flex;gap:8px;padding:10px 24px;overflow-x:auto;scrollbar-width:thin;}
+  .catnav .container::-webkit-scrollbar{height:5px;}
+  .catnav .container::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  .pill{
+    display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;
+    font-size:13.5px;font-weight:500;color:var(--text-600);white-space:nowrap;flex-shrink:0;
+    transition:background .15s ease, color .15s ease;
+  }
+  .pill:hover{background:#EEF1F6;}
+  .pill.active{background:var(--blue-600);color:var(--white);}
+
+  /* ===== Hero ===== */
+  .hero{background:linear-gradient(135deg,var(--navy-900),var(--navy-800));position:relative;overflow:hidden;}
+  .hero .container{display:flex;align-items:center;gap:50px;padding:64px 24px;flex-wrap:wrap;}
+  .hero-text{flex:1 1 380px;min-width:280px;}
+  .hero-eyebrow{display:inline-flex;align-items:center;gap:6px;color:var(--orange-500);font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px;}
+  .hero-text h1{color:var(--white);font-size:42px;line-height:1.12;margin-bottom:16px;}
+  .hero-text p{color:#B9C2D2;font-size:16px;line-height:1.6;max-width:460px;margin-bottom:26px;}
+  .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:9px;
+    font-size:14.5px;font-weight:600;transition:transform .12s ease, background .15s ease, box-shadow .15s ease;
+  }
+  .btn-primary{background:var(--orange-500);color:var(--white);}
+  .btn-primary:hover{background:var(--orange-600);transform:translateY(-1px);}
+  .btn-ghost{background:rgba(255,255,255,0.08);color:var(--white);border:1px solid rgba(255,255,255,0.25);}
+  .btn-ghost:hover{background:rgba(255,255,255,0.15);}
+
+  .hero-card{
+    flex:0 0 300px;background:var(--white);border-radius:18px;padding:22px;box-shadow:var(--shadow-md);
+    transform:rotate(2deg);
+  }
+  .hero-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .hero-card-top span{font-size:12.5px;color:var(--text-600);font-weight:600;}
+  .hero-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;animation:pulse 1.6s infinite;}
+  .hero-object{font-size:46px;text-align:center;background:linear-gradient(135deg,#E9EEFB,#DCE6FB);border-radius:12px;padding:22px 0;margin-bottom:16px;}
+  .hero-progress-label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-600);margin-bottom:8px;}
+  .hero-progress-label b{color:var(--text-900);}
+  .layerbar{display:flex;flex-direction:column-reverse;gap:3px;height:34px;}
+  .layerbar i{display:block;height:4px;border-radius:2px;background:#E3E7ED;}
+  .layerbar i.filled{background:linear-gradient(90deg,var(--blue-600),var(--orange-500));}
+
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  .layer-divider{height:34px;display:flex;align-items:center;justify-content:center;gap:4px;background:var(--bg);}
+  .layer-divider i{display:block;height:4px;border-radius:2px;background:var(--border);}
+
+  /* ===== Section headings ===== */
+  .section{padding:46px 0;}
+  .section-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:22px;flex-wrap:wrap;gap:10px;}
+  .section-head h2{font-size:24px;}
+  .section-head .sub{color:var(--text-600);font-size:13.5px;margin-top:4px;}
+  .head-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .view-all{font-size:13.5px;font-weight:600;color:var(--blue-600);}
+  .view-all:hover{text-decoration:underline;}
+  .sort-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-600);}
+  .sort-row select{border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;color:var(--text-900);background:var(--white);}
+
+  /* ===== Deals ===== */
+  .deals{background:var(--white);}
+  .deal-banner{
+    display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#FFF1E8,#FFE2D1);
+    border-radius:12px;padding:14px 18px;margin-bottom:20px;flex-wrap:wrap;
+  }
+  .deal-banner h2{font-size:18px;color:var(--red);display:flex;align-items:center;gap:8px;}
+  .countdown{display:flex;gap:6px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .countdown span{background:var(--navy-900);color:var(--white);padding:5px 8px;border-radius:6px;font-size:13px;min-width:30px;text-align:center;}
+  .deals-track{display:flex;gap:16px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory;}
+  .deals-track::-webkit-scrollbar{height:6px;}
+  .deals-track::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  .deals-track .card{flex:0 0 235px;scroll-snap-align:start;}
+
+  /* ===== Category tiles ===== */
+  .cat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;}
+  .cat-tile{
+    background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px 14px;
+    text-align:center;transition:box-shadow .15s ease, transform .15s ease;
+  }
+  .cat-tile:hover{box-shadow:var(--shadow-sm);transform:translateY(-2px);}
+  .cat-tile .emo{font-size:30px;margin-bottom:10px;}
+  .cat-tile .name{font-size:13.5px;font-weight:600;}
+  .cat-tile .count{font-size:12px;color:var(--text-600);margin-top:2px;}
+
+  /* ===== Product grid & cards ===== */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:20px;}
+  .card{
+    background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+    display:flex;flex-direction:column;overflow:hidden;transition:box-shadow .15s ease, transform .15s ease;
+    cursor:pointer;
+  }
+  .card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px);}
+  .card-thumb{position:relative;height:150px;display:flex;align-items:center;justify-content:center;}
+  .thumb-emoji{font-size:54px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.12));}
+  .layer-watermark{position:absolute;bottom:10px;left:14px;right:14px;opacity:.5;}
+  .layer-watermark rect{fill:rgba(255,255,255,0.85);}
+  .badge{
+    position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;color:var(--white);
+    letter-spacing:.02em;
+  }
+  .badge.deal{background:var(--red);}
+  .badge.tag{background:var(--blue-600);}
+  .badge.eco{background:var(--green);}
+  .wish-btn{
+    position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.9);
+    display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--red);transition:transform .12s ease;
+  }
+  .wish-btn:hover{transform:scale(1.1);}
+  .card-body{padding:14px;display:flex;flex-direction:column;gap:6px;flex:1;}
+  .card-cat{font-size:11.5px;color:var(--text-600);text-transform:uppercase;letter-spacing:.03em;}
+  .card-title{font-size:14.5px;font-weight:600;font-family:'Inter';line-height:1.3;min-height:37px;}
+  .card-title-link{color:inherit;text-decoration:none;}
+  .card-title-link:hover{text-decoration:underline;}
+  .card-rating{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-600);}
+  .star{font-size:13px;line-height:1;}
+  .star.full{color:var(--star);}
+  .star.empty{color:#D8DCE3;}
+  .star.half{background:linear-gradient(90deg,var(--star) 50%,#D8DCE3 50%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .rating-count{color:#9AA3B2;}
+  .card-price-row{display:flex;align-items:baseline;gap:8px;margin-top:2px;}
+  .price-now{font-size:17px;font-weight:700;}
+  .price-old{font-size:12.5px;color:#9AA3B2;text-decoration:line-through;}
+  .in-cart-note{font-size:11.5px;color:var(--green);font-weight:600;}
+  .btn-add{
+    margin-top:auto;background:var(--navy-900);color:var(--white);border-radius:8px;padding:10px 0;
+    font-size:13.5px;font-weight:600;text-align:center;transition:background .15s ease;
+  }
+  .btn-add:hover{background:var(--blue-600);}
+
+  .empty-state{display:none;text-align:center;padding:50px 20px;color:var(--text-600);}
+  .empty-state .layerbar{justify-content:center;flex-direction:row;height:auto;margin:0 auto 16px;width:90px;}
+  .empty-state .layerbar i{width:18px;height:18px;border-radius:5px;}
+  .empty-state h3{font-size:16px;margin-bottom:6px;color:var(--text-900);}
+
+  /* ===== Mid banner ===== */
+  .midbanner{background:linear-gradient(120deg,var(--blue-700),var(--blue-600));border-radius:18px;padding:40px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;color:var(--white);}
+  .midbanner h2{font-size:24px;margin-bottom:8px;}
+  .midbanner p{color:#DCE5FC;max-width:440px;font-size:14.5px;line-height:1.55;}
+  .midbanner .btn-primary{background:var(--white);color:var(--blue-700);}
+  .midbanner .btn-primary:hover{background:#EEF1FF;}
+
+  /* ===== Trust strip ===== */
+  .trust{background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .trust .container{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:28px 24px;}
+  .trust-item{display:flex;align-items:center;gap:12px;}
+  .trust-item .emo{font-size:24px;}
+  .trust-item h4{font-size:13.5px;}
+  .trust-item p{font-size:12px;color:var(--text-600);margin-top:2px;}
+
+  /* ===== Newsletter ===== */
+  .newsletter{background:var(--navy-800);}
+  .newsletter .container{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:36px 24px;flex-wrap:wrap;}
+  .newsletter h3{color:var(--white);font-size:18px;}
+  .newsletter p{color:#AEB8CA;font-size:13px;margin-top:4px;}
+  .newsletter form{display:flex;gap:10px;flex-wrap:wrap;}
+  .newsletter input{
+    border:none;border-radius:8px;padding:12px 14px;font-size:14px;min-width:240px;background:var(--white);
+  }
+  .newsletter button{background:var(--orange-500);color:var(--white);font-weight:600;font-size:14px;padding:12px 20px;border-radius:8px;transition:background .15s ease;}
+  .newsletter button:hover{background:var(--orange-600);}
+
+  /* ===== Footer ===== */
+  .footer{background:var(--navy-900);color:#9AA8BD;padding:46px 0 0;}
+  .footer-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;padding-bottom:34px;border-bottom:1px solid rgba(255,255,255,0.08);}
+  .footer-grid summary{display:flex;justify-content:space-between;align-items:center;color:var(--white);font-size:13.5px;margin-bottom:14px;font-family:'Poppins';font-weight:600;}
+  .footer-grid summary::-webkit-details-marker{display:none;}
+  .footer-grid summary .chev{width:10px;height:10px;flex-shrink:0;transition:transform .2s ease;}
+  .footer-grid details[open] summary .chev{transform:rotate(180deg);}
+  .footer-grid li{margin-bottom:9px;font-size:13px;}
+  .footer-grid a:hover{color:var(--white);}
+  .footer-bottom{display:flex;justify-content:space-between;align-items:center;padding:18px 0;font-size:12.5px;flex-wrap:wrap;gap:8px;}
+  @media (min-width:761px){
+    .footer-grid summary{cursor:default;pointer-events:none;}
+    .footer-grid summary .chev{display:none;}
+  }
+
+  /* ===== Cart drawer ===== */
+  .backdrop{position:fixed;inset:0;background:rgba(15,27,45,0.45);opacity:0;visibility:hidden;transition:opacity .2s ease;z-index:90;}
+  .backdrop.open{opacity:1;visibility:visible;}
+  .drawer{
+    position:fixed;top:0;right:0;height:100%;width:380px;max-width:92vw;background:var(--white);
+    transform:translateX(100%);transition:transform .25s ease;z-index:100;display:flex;flex-direction:column;
+  }
+  .drawer.open{transform:translateX(0);}
+  .drawer-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--border);}
+  .drawer-head h3{font-size:17px;}
+  .drawer-close{font-size:20px;color:var(--text-600);width:32px;height:32px;border-radius:50%;}
+  .drawer-close:hover{background:#EEF1F6;}
+  .drawer-body{flex:1;overflow-y:auto;padding:14px 20px;}
+  .ship-progress{background:var(--bg);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--text-600);}
+  .ship-progress .bar{height:6px;background:var(--border);border-radius:3px;margin-top:6px;overflow:hidden;}
+  .ship-progress .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue-600),var(--orange-500));border-radius:3px;transition:width .3s ease;}
+  .ship-progress.done{color:var(--green);font-weight:600;}
+  .cart-line{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+  .cart-thumb{width:52px;height:52px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+  .cart-info{flex:1;min-width:0;}
+  .cart-name{font-size:13.5px;font-weight:600;line-height:1.3;}
+  .cart-unit-price{font-size:12.5px;color:var(--text-600);margin-top:3px;}
+  .cart-variant{font-size:11.5px;color:var(--text-600);margin-top:2px;}
+  .qty-stepper{display:flex;align-items:center;gap:10px;margin-top:8px;}
+  .qty-btn{width:24px;height:24px;border:1px solid var(--border);border-radius:6px;font-size:14px;display:flex;align-items:center;justify-content:center;}
+  .qty-btn:hover{background:#EEF1F6;}
+  .remove-btn{color:#9AA3B2;font-size:14px;padding:4px;}
+  .remove-btn:hover{color:var(--red);}
+  .drawer-empty{text-align:center;padding:60px 10px;color:var(--text-600);}
+  .drawer-empty .emo{font-size:40px;margin-bottom:12px;}
+  .drawer-foot{padding:18px 20px;border-top:1px solid var(--border);}
+  .subtotal-row{display:flex;justify-content:space-between;font-size:15px;font-weight:700;margin-bottom:14px;}
+  .btn-checkout{display:block;width:100%;background:var(--orange-500);color:var(--white);padding:13px 0;border-radius:9px;font-weight:600;font-size:14.5px;text-align:center;}
+  .btn-checkout:hover{background:var(--orange-600);}
+
+  /* ===== Toast ===== */
+  .toast-stack{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:10px;z-index:200;}
+  .toast{
+    background:var(--navy-900);color:var(--white);padding:12px 16px;border-radius:9px;font-size:13.5px;
+    box-shadow:var(--shadow-md);opacity:0;transform:translateY(8px);transition:opacity .2s ease, transform .2s ease;
+    max-width:280px;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+
+  /* ===== Mobile cart bar & back to top ===== */
+  .mobile-cartbar{
+    position:fixed;left:0;right:0;bottom:0;background:var(--navy-900);color:#fff;display:none;align-items:center;
+    justify-content:space-between;padding:12px 16px;z-index:80;box-shadow:0 -6px 16px rgba(0,0,0,0.18);
+  }
+  .mobile-cartbar.visible{display:flex;}
+  .mobile-cartbar span{font-size:13px;}
+  .mobile-cartbar button{background:var(--orange-500);color:#fff;font-weight:600;font-size:13px;padding:9px 16px;border-radius:8px;}
+  @media (min-width:761px){.mobile-cartbar{display:none !important;}}
+
+  .back-to-top{
+    position:fixed;right:18px;bottom:24px;width:42px;height:42px;border-radius:50%;background:var(--navy-900);color:#fff;
+    font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);opacity:0;visibility:hidden;
+    transform:translateY(10px);transition:opacity .2s ease, transform .2s ease;z-index:70;
+  }
+  .back-to-top.show{opacity:1;visibility:visible;transform:translateY(0);}
+
+  /* ===== Product page ===== */
+  #product-view{padding:32px 0 0;}
+  .pv-back{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--blue-600);margin-bottom:14px;}
+  .pv-back:hover{text-decoration:underline;}
+  .breadcrumb{font-size:12.5px;color:var(--text-600);margin-bottom:24px;}
+  .breadcrumb a{color:var(--blue-600);}
+  .breadcrumb a:hover{text-decoration:underline;}
+
+  .pv-grid{display:grid;grid-template-columns:1fr 1fr;gap:44px;margin-bottom:48px;}
+  .pv-media{position:sticky;top:80px;align-self:start;}
+  .stl-viewer{position:relative;width:100%;aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#E4E8EF,#CFD5E0);border:1px solid var(--border);}
+  #stl-canvas-wrap{position:absolute;inset:0;cursor:grab;touch-action:none;}
+  #stl-canvas-wrap:active{cursor:grabbing;}
+  #stl-canvas-wrap canvas{display:block;width:100%;height:100%;}
+  .stl-fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:84px;}
+  .stl-caption{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-600);margin:10px 2px 20px;}
+  .color-picker .picker-label{font-size:13.5px;font-weight:600;margin-bottom:10px;}
+  .color-picker .picker-label span{font-weight:400;color:var(--text-600);}
+  .swatches{display:flex;gap:10px;flex-wrap:wrap;}
+  .swatch{width:32px;height:32px;border-radius:50%;border:2px solid var(--white);box-shadow:0 0 0 1px var(--border);transition:transform .12s ease, box-shadow .15s ease;}
+  .swatch:hover{transform:scale(1.08);}
+  .swatch.active{box-shadow:0 0 0 2px var(--blue-600);}
+
+  .pv-info{padding-top:4px;}
+  .pv-cat{font-size:12px;color:var(--text-600);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+  #pv-title{font-size:26px;line-height:1.25;margin-bottom:10px;}
+  .pv-rating{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-600);margin-bottom:18px;}
+  .pv-price-row{display:flex;align-items:baseline;gap:12px;margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--border);}
+  .pv-size{margin-bottom:20px;}
+  .pv-size .picker-label{font-size:13.5px;font-weight:600;margin-bottom:10px;}
+  .size-options{display:flex;gap:8px;flex-wrap:wrap;}
+  .size-pill{padding:9px 16px;border:1.5px solid var(--border);border-radius:20px;font-size:13px;font-weight:600;color:var(--text-900);background:var(--white);}
+  .size-pill small{font-weight:500;color:var(--text-600);}
+  .size-pill.active{border-color:var(--blue-600);background:#EEF2FF;color:var(--blue-600);}
+  .pv-qty-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+  #pv-qty-stepper{display:flex;align-items:center;gap:14px;border:1.5px solid var(--border);border-radius:9px;padding:6px 14px;flex-shrink:0;}
+  #pv-qty-stepper button{font-size:17px;width:20px;}
+  .pv-add{flex:1;justify-content:center;padding:14px 22px;min-width:160px;}
+  .pv-wish{width:46px;height:46px;font-size:19px;border:1.5px solid var(--border);background:var(--white);position:static;flex-shrink:0;}
+  #pv-incart-note{font-size:12.5px;color:var(--green);font-weight:600;margin:0 0 16px;min-height:16px;}
+  .pv-specs-mini{display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text-600);background:var(--bg);border-radius:12px;padding:14px 16px;}
+  .pv-specs-mini b{color:var(--text-900);}
+
+  .pv-tabs{margin-bottom:50px;}
+  .tab-buttons{display:flex;gap:6px;border-bottom:1px solid var(--border);margin-bottom:22px;overflow-x:auto;}
+  .tab-btn{padding:11px 18px;font-size:14px;font-weight:600;color:var(--text-600);border-bottom:2px solid transparent;white-space:nowrap;}
+  .tab-btn.active{color:var(--blue-600);border-color:var(--blue-600);}
+  .tab-panel p{font-size:14.5px;line-height:1.7;color:var(--text-900);max-width:680px;}
+  .specs-table{display:flex;flex-direction:column;max-width:560px;}
+  .specs-row{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid var(--border);font-size:13.5px;}
+  .specs-row dt{color:var(--text-600);margin:0;}
+  .specs-row dd{margin:0;font-weight:600;text-align:right;}
+  .review-card{padding:16px 0;border-bottom:1px solid var(--border);max-width:680px;}
+  .review-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .review-avatar{width:34px;height:34px;border-radius:50%;background:var(--blue-600);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;}
+  .review-name{font-size:13.5px;font-weight:600;}
+  .review-stars{margin-top:2px;}
+  .review-date{margin-left:auto;font-size:12px;color:var(--text-600);white-space:nowrap;}
+  .review-comment{font-size:13.5px;color:var(--text-900);line-height:1.6;}
+
+  .pv-related h2{font-size:20px;margin-bottom:18px;}
+
+  /* ===== Responsive ===== */
+  @media (max-width:980px){
+    .cat-grid{grid-template-columns:repeat(3,1fr);}
+    .footer-grid{grid-template-columns:repeat(2,1fr);}
+    .trust .container{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:860px){
+    .pv-grid{grid-template-columns:1fr;gap:28px;}
+    .pv-media{position:static;}
+  }
+  @media (max-width:760px){
+    .header .container{gap:12px;}
+    .header .container{flex-wrap:wrap;}
+    .logo{order:1;}
+    .header-actions{order:2;gap:14px;margin-left:0;}
+    .searchbar{order:3;flex:1 0 100%;margin-top:10px;}
+    .header-action span.label{display:none;}
+    .hero .container{padding:42px 24px;}
+    .hero-text h1{font-size:30px;}
+    .hero-card{transform:none;}
+    .midbanner{padding:28px;}
+    .qty-btn{width:32px;height:32px;}
+    .wish-btn{width:34px;height:34px;}
+    .pill{padding:9px 16px;}
+    .back-to-top{bottom:84px;}
+    .footer-grid summary{cursor:pointer;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08);}
+    .footer-grid details ul{padding-top:10px;}
+  }
+  @media (max-width:560px){
+    .cat-grid{grid-template-columns:repeat(2,1fr);}
+    .footer-grid{grid-template-columns:1fr 1fr;}
+    .newsletter .container, .newsletter form{flex-direction:column;align-items:stretch;}
+    .newsletter input{min-width:0;}
+  }
+  @media (max-width:480px){
+    .container{padding:0 16px;}
+    .trust .container{grid-template-columns:1fr;}
+    .deal-banner{flex-direction:column;align-items:flex-start;}
+    .hero-text h1{font-size:26px;}
+    .section{padding:34px 0;}
+    .footer-grid{grid-template-columns:1fr;}
+    .section-head{align-items:flex-start;}
+    #pv-title{font-size:21px;}
+    .pv-add{width:100%;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<a href="#continut" class="skip-link">Sari la conținutul principal</a>
+
+<!-- ===== Top strip ===== -->
+<div class="topstrip">
+  <div class="container">
+    <span>🚚 Livrare gratuită la comenzi peste 250 lei</span>
+    <div class="topstrip-links">
+      <a href="#">Ajutor</a>
+      <a href="#">Urmărește comanda</a>
+      <a href="#">RO · Lei</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Header ===== -->
+<header class="header">
+  <div class="container">
+    <a href="#" class="logo" id="logo-link" aria-label="Cubico - pagina principală">
+      <svg class="logo-mark" width="30" height="22" viewBox="0 0 30 22" aria-hidden="true">
+        <rect x="0" y="16" width="14" height="4" rx="2"/>
+        <rect x="0" y="9" width="22" height="4" rx="2" opacity="0.75"/>
+        <rect x="0" y="2" width="30" height="4" rx="2" opacity="0.5"/>
+      </svg>
+      <span class="logo-word">Cub<span>ico</span></span>
+    </a>
+
+    <form class="searchbar" id="search-form">
+      <select id="search-cat" aria-label="Categorie de căutare">
+        <option value="all">Toate categoriile</option>
+        <option>Casă & Decor</option>
+        <option>Birou</option>
+        <option>Jucării & Figurine</option>
+        <option>Accesorii Tech</option>
+        <option>Grădină</option>
+        <option>Cadouri</option>
+      </select>
+      <input id="search-input" type="text" placeholder="Caută vaze, figurine, suporturi 3D printate…" aria-label="Caută produse">
+      <button type="submit" aria-label="Caută">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+    </form>
+
+    <div class="header-actions">
+      <a href="#" class="header-action">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E7EBF2" stroke-width="1.8"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="label"><small>Autentificare</small>Cont</span>
+      </a>
+      <button class="header-action cart-action" id="cart-open" aria-haspopup="dialog" aria-label="Deschide coșul">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#E7EBF2" stroke-width="1.8"><path d="M3 3h2l2.6 13.2a2 2 0 0 0 2 1.8h8a2 2 0 0 0 2-1.8L21 7H6"/><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/></svg>
+        <span class="cart-count" id="cart-count">0</span>
+        <span class="label"><small>Coșul</small>tău</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== Category nav ===== -->
+<nav class="catnav" aria-label="Categorii">
+  <div class="container" id="pill-row"></div>
+</nav>
+
+<main id="continut">
+
+<!-- ===== Hero ===== -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-text">
+      <span class="hero-eyebrow">● Printat proaspăt, la fiecare comandă</span>
+      <h1>Frumos printate.<br>Personalizabile la infinit.</h1>
+      <p>Decorațiuni unice pentru casă, accesorii de birou și jucării — printate strat cu strat, la comandă, în culoarea și mărimea pe care le vrei cu adevărat.</p>
+      <div class="hero-ctas">
+        <a href="#bestsellers" class="btn btn-primary">Vezi cele mai vândute</a>
+        <a href="#custom" class="btn btn-ghost">Printează designul meu</a>
+      </div>
+    </div>
+    <div class="hero-card" aria-hidden="true">
+      <div class="hero-card-top">
+        <span><span class="hero-dot"></span>Se printează acum</span>
+        <span>#A1042</span>
+      </div>
+      <div class="hero-object">🏺</div>
+      <div class="hero-progress-label"><span>Vază Fațetată Geometrică</span><b>78%</b></div>
+      <div class="layerbar">
+        <i class="filled"></i><i class="filled"></i><i class="filled"></i><i class="filled"></i><i class="filled"></i>
+        <i class="filled"></i><i class="filled"></i><i></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="layer-divider" aria-hidden="true"><i style="width:24px"></i><i style="width:40px"></i><i style="width:60px"></i><i style="width:40px"></i><i style="width:24px"></i></div>
+
+<!-- ===== Deals ===== -->
+<section class="section deals">
+  <div class="container">
+    <div class="deal-banner">
+      <h2>🔥 Oferte pe Straturi</h2>
+      <span style="font-size:13px;color:#8A4A1C;">Se termină în</span>
+      <div class="countdown" id="countdown"><span>06</span><span>00</span><span>00</span></div>
+    </div>
+    <div class="deals-track" id="deals-track"></div>
+  </div>
+</section>
+
+<!-- ===== Shop by category ===== -->
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h2>Cumpără după categorie</h2>
+    </div>
+    <div class="cat-grid" id="cat-tiles"></div>
+  </div>
+</section>
+
+<!-- ===== Bestsellers ===== -->
+<section class="section" id="bestsellers" style="background:var(--white);">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Cele mai vândute</h2><p class="sub">Cele mai apreciate și recomandate produse</p></div>
+      <div class="head-right">
+        <div class="sort-row">
+          <label for="sort-select">Sortează:</label>
+          <select id="sort-select">
+            <option value="popularity">Popularitate</option>
+            <option value="price-asc">Preț: crescător</option>
+            <option value="price-desc">Preț: descrescător</option>
+            <option value="rating">Cele mai bine notate</option>
+          </select>
+        </div>
+        <a href="#" class="view-all">Vezi tot →</a>
+      </div>
+    </div>
+    <div class="grid" id="bestsellers-grid"></div>
+    <div class="empty-state" id="bestsellers-empty">
+      <div class="layerbar"><i class="filled"></i><i class="filled"></i><i></i></div>
+      <h3>Nu am găsit produse</h3>
+      <p>Încearcă un alt termen de căutare sau altă categorie.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Mid banner ===== -->
+<section class="section" id="custom">
+  <div class="container">
+    <div class="midbanner">
+      <div>
+        <h2>Ai un design? Îl printăm noi.</h2>
+        <p>Încarcă propriul fișier STL și îl printăm în materialul, culoarea și mărimea aleasă de tine — pregătit de livrare în 48 de ore.</p>
+      </div>
+      <button class="btn btn-primary" id="upload-stl">Încarcă fișierul STL</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== New arrivals ===== -->
+<section class="section" style="background:var(--white);">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Noutăți</h2><p class="sub">Proaspăt scoase de pe platforma de printare</p></div>
+      <a href="#" class="view-all">Vezi tot →</a>
+    </div>
+    <div class="grid" id="newarrivals-grid"></div>
+    <div class="empty-state" id="newarrivals-empty">
+      <div class="layerbar"><i class="filled"></i><i class="filled"></i><i></i></div>
+      <h3>Nu am găsit produse</h3>
+      <p>Încearcă un alt termen de căutare sau altă categorie.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Trust strip ===== -->
+<section class="trust">
+  <div class="container">
+    <div class="trust-item"><span class="emo">🚚</span><div><h4>Livrare gratuită</h4><p>La comenzi peste 250 lei</p></div></div>
+    <div class="trust-item"><span class="emo">🔒</span><div><h4>Plată securizată</h4><p>Plăți criptate</p></div></div>
+    <div class="trust-item"><span class="emo">⏱️</span><div><h4>Printat în 48h</h4><p>La comandă, de fiecare dată</p></div></div>
+    <div class="trust-item"><span class="emo">↩️</span><div><h4>Retur în 30 zile</h4><p>Dacă nu e pe gustul tău, îl returnezi</p></div></div>
+  </div>
+</section>
+
+<!-- ===== Newsletter ===== -->
+<section class="newsletter">
+  <div class="container">
+    <div>
+      <h3>Primești 10% reducere la prima comandă</h3>
+      <p>Designuri noi și restocări, de două ori pe lună. Fără spam.</p>
+    </div>
+    <form id="newsletter-form">
+      <input type="email" required placeholder="tu@email.com" aria-label="Adresă de email">
+      <button type="submit">Abonează-te</button>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== Product page ===== -->
+<main id="product-view" hidden>
+  <div class="container">
+    <button class="pv-back" id="pv-back">← Înapoi la magazin</button>
+    <nav class="breadcrumb" id="pv-breadcrumb" aria-label="Cale de navigare"></nav>
+
+    <div class="pv-grid">
+      <div class="pv-media">
+        <div class="stl-viewer">
+          <div id="stl-canvas-wrap"></div>
+          <div class="stl-fallback" id="stl-fallback">🏺</div>
+        </div>
+        <p class="stl-caption">🔄 Trage cu mouse-ul sau degetul pentru a roti previzualizarea 3D</p>
+        <div class="color-picker">
+          <p class="picker-label">Culoare filament: <span id="color-name">Alb</span></p>
+          <div class="swatches" id="swatches"></div>
+        </div>
+      </div>
+
+      <div class="pv-info">
+        <p class="pv-cat" id="pv-cat"></p>
+        <h1 id="pv-title"></h1>
+        <div class="pv-rating" id="pv-rating"></div>
+
+        <div class="pv-price-row" id="pv-price-row"></div>
+
+        <div class="pv-size">
+          <p class="picker-label">Mărime print:</p>
+          <div class="size-options" id="size-options"></div>
+        </div>
+
+        <div class="pv-qty-row">
+          <div id="pv-qty-stepper">
+            <button data-action="dec" aria-label="Scade cantitatea">−</button>
+            <span id="pv-qty">1</span>
+            <button data-action="inc" aria-label="Crește cantitatea">+</button>
+          </div>
+          <button class="btn btn-primary pv-add" id="pv-add">Adaugă în coș</button>
+          <button class="wish-btn pv-wish" id="pv-wish" aria-label="Salvează la favorite">♡</button>
+        </div>
+        <p id="pv-incart-note"></p>
+
+        <ul class="pv-specs-mini">
+          <li>🚚 Livrare estimată: <b>2-4 zile lucrătoare</b></li>
+          <li>🖨️ Printat special pentru tine, la comandă</li>
+          <li>↩️ Retur gratuit în 30 zile</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pv-tabs">
+      <div class="tab-buttons" id="tab-buttons">
+        <button class="tab-btn active" data-tab="desc">Descriere</button>
+        <button class="tab-btn" data-tab="specs">Specificații</button>
+        <button class="tab-btn" data-tab="reviews">Recenzii</button>
+      </div>
+      <div class="tab-panel" id="tab-desc"></div>
+      <div class="tab-panel" id="tab-specs" hidden></div>
+      <div class="tab-panel" id="tab-reviews" hidden></div>
+    </div>
+
+    <div class="pv-related">
+      <h2>S-ar putea să-ți placă și</h2>
+      <div class="grid" id="related-grid"></div>
+    </div>
+  </div>
+</main>
+
+<!-- ===== Footer ===== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <details open>
+        <summary>Despre Cubico <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
+        <ul>
+          <li><a href="#">Povestea noastră</a></li>
+          <li><a href="#">Materiale & calitate</a></li>
+          <li><a href="#">Sustenabilitate</a></li>
+          <li><a href="#">Cariere</a></li>
+        </ul>
+      </details>
+      <details open>
+        <summary>Relații clienți <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
+        <ul>
+          <li><a href="#">Centru de ajutor</a></li>
+          <li><a href="#">Informații livrare</a></li>
+          <li><a href="#">Retur & rambursare</a></li>
+          <li><a href="#">Contactează-ne</a></li>
+        </ul>
+      </details>
+      <details open>
+        <summary>Magazin <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
+        <ul>
+          <li><a href="#">Toate categoriile</a></li>
+          <li><a href="#bestsellers">Cele mai vândute</a></li>
+          <li><a href="#">Noutăți</a></li>
+          <li><a href="#custom">Printări personalizate</a></li>
+        </ul>
+      </details>
+      <details open>
+        <summary>Conectează-te <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
+        <ul>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">TikTok</a></li>
+          <li><a href="#">Pinterest</a></li>
+          <li><a href="#">Facebook</a></li>
+        </ul>
+      </details>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Cubico. Toate drepturile rezervate.</span>
+      <span>Visa · Mastercard · Plata ramburs</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== Cart drawer ===== -->
+<div class="backdrop" id="backdrop"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-label="Coș de cumpărături">
+  <div class="drawer-head">
+    <h3>Coșul tău</h3>
+    <button class="drawer-close" id="drawer-close" aria-label="Închide coșul">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-foot" id="drawer-foot"></div>
+</aside>
+
+<!-- ===== Mobile sticky cart bar ===== -->
+<div class="mobile-cartbar" id="mobile-cartbar">
+  <span id="mobile-cartbar-text">0 produse · 0,00 lei</span>
+  <button id="mobile-cartbar-btn">Vezi coșul</button>
+</div>
+
+<button class="back-to-top" id="back-to-top" aria-label="Înapoi sus">↑</button>
+
+<div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ================= DATA ================= */
+const products = [
+  {id:'p1', name:'Vază Fațetată Geometrică', category:'Casă & Decor', price:89.99, oldPrice:119.99, rating:4.7, reviews:238, badge:'Cel mai vândut', emoji:'🏺', grad:'linear-gradient(135deg,#CDEFE6,#A9E3D2)',
+   shape:'vase', material:'PLA mat', dims:[18,18,24], weight:180, printTime:7, infill:15, finish:'Vopsit manual, finisaj mat',
+   description:'Această vază cu fațete geometrice transformă orice colț al casei într-un mic obiect de design. Printată strat cu strat în PLA mat, are o structură ușoară dar rezistentă, perfectă pentru flori uscate sau aranjamente decorative.'},
+  {id:'p2', name:'Set Ghivece de Perete Fagure (3 buc)', category:'Grădină', price:64.99, oldPrice:79.99, rating:4.6, reviews:112, badge:null, emoji:'🪴', grad:'linear-gradient(135deg,#DFF2D8,#BFE6B3)',
+   shape:'planter', material:'PLA rezistent UV', dims:[10,10,9], weight:95, printTime:3, infill:20, finish:'Natural, fără vopsire',
+   description:'Setul de trei ghivece de perete în formă de fagure aduce un plus de verdeață fără să ocupe loc pe pervaz. Sistemul de prindere este inclus, iar materialul rezistă bine la umiditate și expunere la soare.'},
+  {id:'p3', name:'Figurină Dragon Articulată', category:'Jucării & Figurine', price:54.99, oldPrice:null, rating:4.9, reviews:401, badge:'Cel mai vândut', emoji:'🐉', grad:'linear-gradient(135deg,#E7DBF8,#D2BCF0)',
+   shape:'figure', material:'PLA+ articulat', dims:[22,8,10], weight:140, printTime:9, infill:10, finish:'Asamblat manual, fără lipire',
+   description:'Figurina de dragon are articulații funcționale, imprimate direct fără a fi nevoie de asamblare sau lipire. Poate fi mișcată și poziționată liber — un obiect de colecție care impresionează la fiecare detaliu.'},
+  {id:'p4', name:'Suport Telefon Minimalist', category:'Birou', price:24.99, oldPrice:34.99, rating:4.5, reviews:560, badge:null, emoji:'📱', grad:'linear-gradient(135deg,#D9E6FB,#B9D0F6)',
+   shape:'stand', material:'PETG transparent', dims:[9,7,10], weight:60, printTime:2, infill:25, finish:'Lustruit la bază',
+   description:'Suportul minimalist pentru telefon ține dispozitivul în unghiul perfect pentru apeluri video sau urmărit filme. Designul transparent din PETG se integrează discret pe orice birou.'},
+  {id:'p5', name:'Organizator Modular de Cabluri', category:'Birou', price:19.99, oldPrice:null, rating:4.3, reviews:98, badge:null, emoji:'🔌', grad:'linear-gradient(135deg,#E4E8EF,#CDD4E0)',
+   shape:'organizer', material:'TPU flexibil', dims:[12,4,3], weight:35, printTime:1.5, infill:30, finish:'Flexibil, anti-zgârieturi',
+   description:'Organizatorul modular de cabluri pune capăt încurcăturilor de pe birou. Realizat din TPU flexibil, se montează ușor pe orice suprafață și acceptă cabluri de diverse grosimi.'},
+  {id:'p6', name:'Lampă de Birou Topografică', category:'Casă & Decor', price:139.99, oldPrice:169.99, rating:4.8, reviews:76, badge:'Nou', emoji:'💡', grad:'linear-gradient(135deg,#FCEFD0,#F8DDA1)',
+   shape:'lamp', material:'PLA + LED inclus', dims:[16,16,30], weight:320, printTime:14, infill:20, finish:'Difuzor sablat',
+   description:'Lampa de birou cu suprafață topografică proiectează jocuri de lumină și umbră ca un relief de munte. Vine cu LED inclus și un difuzor sablat care oferă o lumină caldă, plăcută ochilor.'},
+  {id:'p7', name:'Set de Șah Voronoi', category:'Jucării & Figurine', price:249.99, oldPrice:null, rating:4.9, reviews:143, badge:'Premium', emoji:'♟️', grad:'linear-gradient(135deg,#D8DEEC,#B6C0DC)',
+   shape:'chess', material:'Rășină foto-curabilă', dims:[40,40,4], weight:650, printTime:22, infill:100, finish:'Lustruit, lac protector',
+   description:'Setul de șah Voronoi reinterpretează jocul clasic printr-o estetică organică, generată algoritmic. Printat în rășină foto-curabilă pentru detalii fine, fiecare piesă are o personalitate unică.'},
+  {id:'p8', name:'Suport de Încărcare pentru Căști Wireless', category:'Accesorii Tech', price:34.99, oldPrice:44.99, rating:4.4, reviews:210, badge:null, emoji:'🎧', grad:'linear-gradient(135deg,#FBE0DA,#F5BFB3)',
+   shape:'stand', material:'PLA mat', dims:[8,8,11], weight:70, printTime:3, infill:20, finish:'Cauciucat la bază',
+   description:'Suportul de încărcare pentru căști wireless ține dispozitivul stabil în timpul încărcării și eliberează spațiu pe birou. Baza cauciucată previne zgârierea suprafețelor.'},
+  {id:'p9', name:'Set Breloc Personalizabil (5 buc)', category:'Cadouri', price:14.99, oldPrice:null, rating:4.2, reviews:890, badge:'Cel mai vândut', emoji:'🔑', grad:'linear-gradient(135deg,#FCF1C7,#F8E296)',
+   shape:'keychain', material:'PLA multicolor', dims:[5,3,0.6], weight:8, printTime:0.5, infill:100, finish:'Margini șlefuite',
+   description:'Setul de cinci brelocuri personalizabile poate fi gravat cu inițiale sau un mesaj scurt la cerere. Perfect pentru cadouri rapide sau pentru a-ți marca cheile, bagajele sau rucsacul.'},
+  {id:'p10', name:'Robot Jucărie Articulat', category:'Jucării & Figurine', price:44.99, oldPrice:59.99, rating:4.7, reviews:322, badge:null, emoji:'🤖', grad:'linear-gradient(135deg,#D2F1F5,#A9E3EC)',
+   shape:'figure', material:'PLA+ articulat', dims:[14,9,18], weight:160, printTime:8, infill:15, finish:'Asamblat, fără lipire',
+   description:'Robotul jucărie are articulații mobile imprimate direct în piesă, fără șuruburi sau adezivi. Brațele, picioarele și capul se pot poziționa liber pentru joacă sau pentru fotografii.'},
+  {id:'p11', name:'Suport Fațetat pentru Bijuterii', category:'Casă & Decor', price:29.99, oldPrice:null, rating:4.6, reviews:156, badge:null, emoji:'💍', grad:'linear-gradient(135deg,#FBDFEA,#F5BAD5)',
+   shape:'ring', material:'PETG perlat', dims:[7,7,12], weight:55, printTime:2.5, infill:20, finish:'Lustruit manual',
+   description:'Suportul fațetat pentru bijuterii combină funcționalitatea cu un aspect sculptural. Inelele, cerceii și brățările își găsesc locul perfect pe formele sale geometrice.'},
+  {id:'p12', name:'Trio Organizatoare de Birou Stivuibile', category:'Birou', price:49.99, oldPrice:null, rating:4.5, reviews:204, badge:'Nou', emoji:'🗄️', grad:'linear-gradient(135deg,#CFEFE8,#A6E1D4)',
+   shape:'organizer', material:'PLA mat', dims:[24,10,8], weight:210, printTime:6, infill:20, finish:'Natural',
+   description:'Trio-ul de organizatoare de birou stivuibile separă pixurile, agrafele și notițele într-un sistem compact. Se pot rearanja în funcție de spațiul disponibil pe birou.'},
+  {id:'p13', name:'Diorama Castel Miniatural', category:'Jucării & Figurine', price:89.99, oldPrice:109.99, rating:4.8, reviews:67, badge:null, emoji:'🏰', grad:'linear-gradient(135deg,#E9E5DD,#D3CBBC)',
+   shape:'castle', material:'PLA detaliat', dims:[20,20,16], weight:280, printTime:16, infill:12, finish:'Vopsit parțial manual',
+   description:'Diorama castelului miniatural recreează o fortăreață medievală cu turnuri, ziduri și porți detaliate. Un obiect de decor care funcționează la fel de bine pe un raft sau ca platformă pentru figurine.'},
+  {id:'p14', name:'Ghiveci Cactus cu Auto-Udare', category:'Grădină', price:22.99, oldPrice:null, rating:4.4, reviews:289, badge:'Eco', emoji:'🌵', grad:'linear-gradient(135deg,#DCF0D3,#B9E3A8)',
+   shape:'planter', material:'PLA rezistent la umiditate', dims:[9,9,11], weight:75, printTime:3, infill:20, finish:'Strat hidrofob',
+   description:'Ghiveciul de cactus cu auto-udare păstrează planta hidratată mai mult timp printr-un rezervor integrat în bază. Stratul hidrofob protejează materialul de umiditatea constantă.'},
+  {id:'p15', name:'Suport Geometric pentru Ochelari de Soare', category:'Cadouri', price:19.99, oldPrice:null, rating:4.1, reviews:54, badge:null, emoji:'🕶️', grad:'linear-gradient(135deg,#FBE6D2,#F5CBA0)',
+   shape:'stand', material:'PLA mat', dims:[16,6,9], weight:65, printTime:2.5, infill:20, finish:'Natural',
+   description:'Suportul geometric pentru ochelari de soare ține lentilele protejate de zgârieturi atunci când nu le porți. Forma sculpturală funcționează și ca obiect decorativ pe noptieră sau birou.'},
+  {id:'p16', name:'Suport Portabil pentru Boxă & Amplificator', category:'Accesorii Tech', price:27.99, oldPrice:32.99, rating:4.6, reviews:178, badge:null, emoji:'🔊', grad:'linear-gradient(135deg,#DEDFF8,#BFC2F0)',
+   shape:'stand', material:'PLA+ ranforsat', dims:[10,10,13], weight:110, printTime:4, infill:25, finish:'Cauciucat la bază',
+   description:'Suportul portabil pentru boxă amplifică sunetul printr-o cavitate acustică integrată, fără cabluri sau baterii. Baza cauciucată previne vibrațiile și deplasarea pe masă.'}
+];
+const bestsellersPool = products.slice(0,8);
+const newArrivalsPool = products.slice(8,16);
+const dealIds = ['p1','p4','p6','p10','p16'];
+const categories = [
+  {name:'all', label:'Toate', emo:'🛒'},
+  {name:'Casă & Decor', label:'Casă & Decor', emo:'🏠'},
+  {name:'Birou', label:'Birou', emo:'🖥️'},
+  {name:'Jucării & Figurine', label:'Jucării & Figurine', emo:'🧸'},
+  {name:'Accesorii Tech', label:'Accesorii Tech', emo:'🎧'},
+  {name:'Grădină', label:'Grădină', emo:'🌿'},
+  {name:'Cadouri', label:'Cadouri', emo:'🎁'}
+];
+const COLORS = [
+  {name:'Alb', hex:'#F2F1ED'},
+  {name:'Negru', hex:'#1C1C1E'},
+  {name:'Roșu', hex:'#D62839'},
+  {name:'Albastru', hex:'#2553F2'},
+  {name:'Verde', hex:'#2E8B57'},
+  {name:'Galben', hex:'#F4C430'},
+  {name:'Portocaliu', hex:'#FF7A1F'},
+  {name:'Gri', hex:'#8A8F99'}
+];
+const SIZES = [
+  {key:'mic', label:'Mic', priceMult:0.8, dimMult:0.75},
+  {key:'mediu', label:'Mediu', priceMult:1, dimMult:1},
+  {key:'mare', label:'Mare', priceMult:1.3, dimMult:1.3}
+];
+
+/* ================= STATE ================= */
+let currentCategory = 'all';
+let searchTerm = '';
+let sortKey = 'popularity';
+const cart = {};      // id -> {qty, unitPrice, color, colorName, size}
+const wishlist = new Set();
+let viewingProductId = null;
+let selectedColorIdx = 0;
+let selectedSize = 'mediu';
+let pvQty = 1;
+
+/* ================= HELPERS ================= */
+const fmt = n => n.toFixed(2).replace('.', ',') + ' lei';
+const findProduct = id => products.find(p => p.id === id);
+
+function starsHtml(rating){
+  const full = Math.floor(rating);
+  const half = (rating - full) >= 0.5;
+  let html = '';
+  for(let i=0;i<5;i++){
+    if(i<full) html += '<span class="star full">★</span>';
+    else if(i===full && half) html += '<span class="star half">★</span>';
+    else html += '<span class="star empty">★</span>';
+  }
+  return html;
+}
+
+function badgeHtml(p){
+  if(p.oldPrice){
+    const pct = Math.round((1 - p.price/p.oldPrice)*100);
+    return `<span class="badge deal">-${pct}%</span>`;
+  }
+  if(p.badge === 'Eco') return `<span class="badge eco">${p.badge}</span>`;
+  if(p.badge) return `<span class="badge tag">${p.badge}</span>`;
+  return '';
+}
+
+function cardHtml(p){
+  const inCartQty = cart[p.id] ? cart[p.id].qty : 0;
+  return `
+  <article class="card" data-id="${p.id}">
+    <div class="card-thumb" style="background:${p.grad}">
+      ${badgeHtml(p)}
+      <button class="wish-btn" data-id="${p.id}" aria-label="Salvează ${p.name} la favorite" aria-pressed="${wishlist.has(p.id)}">${wishlist.has(p.id) ? '♥' : '♡'}</button>
+      <span class="thumb-emoji" aria-hidden="true">${p.emoji}</span>
+      <svg class="layer-watermark" viewBox="0 0 120 14" aria-hidden="true">
+        <rect y="0" width="40" height="3" rx="1.5"/><rect y="5.5" width="70" height="3" rx="1.5"/><rect y="11" width="110" height="3" rx="1.5"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <p class="card-cat">${p.category}</p>
+      <h3 class="card-title"><a href="#" class="card-title-link" data-id="${p.id}">${p.name}</a></h3>
+      <div class="card-rating">${starsHtml(p.rating)}<span class="rating-count">${p.rating.toFixed(1)} (${p.reviews})</span></div>
+      <div class="card-price-row">
+        <span class="price-now">${fmt(p.price)}</span>
+        ${p.oldPrice ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}
+      </div>
+      ${inCartQty > 0 ? `<p class="in-cart-note">✓ În coș ×${inCartQty}</p>` : ''}
+      <button class="btn-add" data-id="${p.id}">Adaugă în coș</button>
+    </div>
+  </article>`;
+}
+
+/* ================= RENDER: PILLS, TILES, GRIDS ================= */
+function renderPills(){
+  const row = document.getElementById('pill-row');
+  row.innerHTML = categories.map(c =>
+    `<button class="pill ${c.name===currentCategory?'active':''}" data-cat="${c.name}">
+       <span aria-hidden="true">${c.emo}</span> ${c.label}
+     </button>`).join('');
+}
+
+function renderCatTiles(){
+  const counts = {};
+  products.forEach(p => counts[p.category] = (counts[p.category]||0)+1);
+  const tiles = categories.filter(c => c.name !== 'all');
+  document.getElementById('cat-tiles').innerHTML = tiles.map(c => `
+    <button class="cat-tile" data-cat="${c.name}">
+      <div class="emo" aria-hidden="true">${c.emo}</div>
+      <div class="name">${c.label}</div>
+      <div class="count">${counts[c.name]||0} produse</div>
+    </button>`).join('');
+}
+
+function renderDeals(){
+  document.getElementById('deals-track').innerHTML =
+    dealIds.map(id => cardHtml(findProduct(id))).join('');
+}
+
+function matches(p){
+  const term = searchTerm.trim().toLowerCase();
+  const catOk = currentCategory === 'all' || p.category === currentCategory;
+  const termOk = !term || p.name.toLowerCase().includes(term) || p.category.toLowerCase().includes(term);
+  return catOk && termOk;
+}
+
+function sortList(list){
+  const arr = [...list];
+  if(sortKey === 'price-asc') arr.sort((a,b) => a.price - b.price);
+  else if(sortKey === 'price-desc') arr.sort((a,b) => b.price - a.price);
+  else if(sortKey === 'rating') arr.sort((a,b) => b.rating - a.rating);
+  return arr;
+}
+
+function applyFilters(){
+  const best = sortList(bestsellersPool.filter(matches));
+  const newer = sortList(newArrivalsPool.filter(matches));
+  document.getElementById('bestsellers-grid').innerHTML = best.map(cardHtml).join('');
+  document.getElementById('newarrivals-grid').innerHTML = newer.map(cardHtml).join('');
+  document.getElementById('bestsellers-empty').style.display = best.length ? 'none' : 'block';
+  document.getElementById('newarrivals-empty').style.display = newer.length ? 'none' : 'block';
+}
+
+/* ================= CART ================= */
+function afterCartChange(){
+  updateCartCount();
+  renderCart();
+  updateMobileCartBar();
+  applyFilters();
+  renderDeals();
+  if(viewingProductId){
+    renderRelated(findProduct(viewingProductId));
+    updatePvInCartNote(findProduct(viewingProductId));
+  }
+}
+function addToCart(id, opts={}){
+  const p = findProduct(id);
+  if(!p) return;
+  const existing = cart[id];
+  const qtyToAdd = opts.qty || 1;
+  if(existing){
+    existing.qty += qtyToAdd;
+    if(opts.unitPrice !== undefined) existing.unitPrice = opts.unitPrice;
+    if(opts.color){ existing.color = opts.color; existing.colorName = opts.colorName; }
+    if(opts.size) existing.size = opts.size;
+  } else {
+    cart[id] = {
+      qty: qtyToAdd,
+      unitPrice: opts.unitPrice !== undefined ? opts.unitPrice : p.price,
+      color: opts.color || null,
+      colorName: opts.colorName || null,
+      size: opts.size || null
+    };
+  }
+  afterCartChange();
+  const variantNote = opts.colorName ? ` (${opts.colorName}${opts.size ? ', ' + opts.size : ''})` : '';
+  showToast(`${p.name}${variantNote} a fost adăugat în coș`);
+}
+function changeQty(id, delta){
+  if(!cart[id]) return;
+  cart[id].qty += delta;
+  if(cart[id].qty <= 0) delete cart[id];
+  afterCartChange();
+}
+function removeFromCart(id){
+  delete cart[id];
+  afterCartChange();
+}
+function updateCartCount(){
+  const total = Object.values(cart).reduce((a,c) => a + c.qty, 0);
+  document.getElementById('cart-count').textContent = total;
+}
+function updateMobileCartBar(){
+  const bar = document.getElementById('mobile-cartbar');
+  const ids = Object.keys(cart);
+  const totalQty = ids.reduce((s,id) => s + cart[id].qty, 0);
+  if(totalQty === 0){ bar.classList.remove('visible'); return; }
+  let subtotal = 0;
+  ids.forEach(id => subtotal += cart[id].unitPrice * cart[id].qty);
+  document.getElementById('mobile-cartbar-text').textContent =
+    `${totalQty} ${totalQty === 1 ? 'produs' : 'produse'} · ${fmt(subtotal)}`;
+  bar.classList.add('visible');
+}
+function renderCart(){
+  const body = document.getElementById('drawer-body');
+  const foot = document.getElementById('drawer-foot');
+  const ids = Object.keys(cart);
+  if(ids.length === 0){
+    body.innerHTML = `<div class="drawer-empty"><div class="emo">🧺</div><p>Coșul tău este gol.<br>Adaugă un produs ca să începi.</p></div>`;
+    foot.innerHTML = '';
+    return;
+  }
+  const subtotal = ids.reduce((sum,id) => sum + cart[id].unitPrice * cart[id].qty, 0);
+  const threshold = 250;
+  let shipHtml;
+  if(subtotal < threshold){
+    const remaining = threshold - subtotal;
+    const pct = Math.min(100, (subtotal/threshold)*100);
+    shipHtml = `<div class="ship-progress"><span>Mai ai nevoie de <b>${fmt(remaining)}</b> pentru livrare gratuită</span><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  } else {
+    shipHtml = `<div class="ship-progress done">🎉 Ai livrare gratuită la această comandă!</div>`;
+  }
+  const linesHtml = ids.map(id => {
+    const p = findProduct(id);
+    const entry = cart[id];
+    const variantBits = [];
+    if(entry.colorName) variantBits.push(`Culoare: ${entry.colorName}`);
+    if(entry.size) variantBits.push(`Mărime: ${entry.size}`);
+    return `
+    <div class="cart-line" data-id="${id}">
+      <div class="cart-thumb" style="background:${p.grad}" aria-hidden="true">${p.emoji}</div>
+      <div class="cart-info">
+        <p class="cart-name">${p.name}</p>
+        <p class="cart-unit-price">${fmt(entry.unitPrice)}</p>
+        ${variantBits.length ? `<p class="cart-variant">${variantBits.join(' · ')}</p>` : ''}
+        <div class="qty-stepper">
+          <button class="qty-btn" data-action="dec" data-id="${id}" aria-label="Scade cantitatea">−</button>
+          <span>${entry.qty}</span>
+          <button class="qty-btn" data-action="inc" data-id="${id}" aria-label="Crește cantitatea">+</button>
+        </div>
+      </div>
+      <button class="remove-btn" data-id="${id}" aria-label="Elimină ${p.name}">✕</button>
+    </div>`;
+  }).join('');
+  body.innerHTML = shipHtml + linesHtml;
+  foot.innerHTML = `
+    <div class="subtotal-row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
+    <button class="btn-checkout" id="checkout-btn">Finalizează comanda</button>`;
+}
+
+/* ================= WISHLIST ================= */
+function toggleWishlist(id, btn){
+  if(wishlist.has(id)){ wishlist.delete(id); btn.textContent = '♡'; btn.setAttribute('aria-pressed','false'); }
+  else { wishlist.add(id); btn.textContent = '♥'; btn.setAttribute('aria-pressed','true'); }
+}
+
+/* ================= TOAST ================= */
+function showToast(msg){
+  const stack = document.getElementById('toast-stack');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  stack.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 250);
+  }, 2600);
+}
+
+/* ================= DRAWER ================= */
+function openDrawer(){
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('backdrop').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('open');
+}
+
+/* ================= COUNTDOWN ================= */
+function startCountdown(){
+  const deadline = Date.now() + 6*60*60*1000;
+  const el = document.getElementById('countdown');
+  function tick(){
+    const diff = Math.max(0, deadline - Date.now());
+    const h = String(Math.floor(diff/3600000)).padStart(2,'0');
+    const m = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
+    const s = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
+    el.innerHTML = `<span>${h}</span><span>${m}</span><span>${s}</span>`;
+    if(diff > 0) requestAnimationFrame(() => setTimeout(tick, 1000));
+  }
+  tick();
+}
+
+/* ================= BACK TO TOP ================= */
+function setupBackToTop(){
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    if(window.scrollY > 600) btn.classList.add('show');
+    else btn.classList.remove('show');
+  });
+  btn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+}
+
+/* ================= FOOTER ACCORDION ================= */
+function setupFooterAccordion(){
+  if(window.innerWidth <= 760){
+    document.querySelectorAll('.footer-grid details').forEach(d => d.removeAttribute('open'));
+  }
+}
+
+/* ================= 3D PREVIEW (THREE.JS) ================= */
+let scene, camera, renderer, currentGroup = null, currentMaterial = null;
+let isDragging = false, dragStartX = 0, dragStartY = 0, rafId = null, threeReady = false;
+
+function initThree(container){
+  if(threeReady) return true;
+  if(typeof THREE === 'undefined') return false;
+  try{
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    camera.position.set(0, 0.25, 5.5);
+    renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    container.appendChild(renderer.domElement);
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x445566, 1.15);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+    dir.position.set(3,4,5);
+    scene.add(hemi, dir);
+    resizeThree(container);
+    attachDragHandlers(container);
+    window.addEventListener('resize', () => resizeThree(container));
+    threeReady = true;
+    return true;
+  }catch(err){
+    return false;
+  }
+}
+
+function resizeThree(container){
+  if(!renderer || !container.clientWidth) return;
+  const w = container.clientWidth, h = container.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+
+function attachDragHandlers(container){
+  container.addEventListener('pointerdown', e => {
+    isDragging = true; dragStartX = e.clientX; dragStartY = e.clientY;
+    container.setPointerCapture(e.pointerId);
+  });
+  container.addEventListener('pointermove', e => {
+    if(!isDragging || !currentGroup) return;
+    const dx = e.clientX - dragStartX, dy = e.clientY - dragStartY;
+    dragStartX = e.clientX; dragStartY = e.clientY;
+    currentGroup.rotation.y += dx * 0.012;
+    currentGroup.rotation.x = Math.max(-0.6, Math.min(0.6, currentGroup.rotation.x + dy * 0.012));
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev => container.addEventListener(ev, () => { isDragging = false; }));
+}
+
+function buildShape(type, material){
+  const g = new THREE.Group();
+  if(type === 'vase'){
+    const pts = [
+      new THREE.Vector2(0,0), new THREE.Vector2(0.9,0), new THREE.Vector2(1.1,0.4),
+      new THREE.Vector2(0.7,1.0), new THREE.Vector2(0.5,1.6), new THREE.Vector2(0.85,2.0),
+      new THREE.Vector2(0,2.05)
+    ];
+    g.add(new THREE.Mesh(new THREE.LatheGeometry(pts, 8), material));
+  } else if(type === 'planter'){
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.85,1.05,1.5,8,1), material));
+  } else if(type === 'lamp'){
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.8,0.22,8), material);
+    base.position.y = -1.1;
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.08,1.0,6), material);
+    pole.position.y = -0.5;
+    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.95,1.5,8,1,true), material);
+    shade.position.y = 0.6;
+    g.add(base, pole, shade);
+  } else if(type === 'stand'){
+    const base = new THREE.Mesh(new THREE.BoxGeometry(1.6,0.2,1.1), material);
+    base.position.y = -0.7;
+    const back = new THREE.Mesh(new THREE.BoxGeometry(1.4,1.3,0.18), material);
+    back.position.set(0,-0.05,-0.4);
+    back.rotation.x = -0.35;
+    g.add(base, back);
+  } else if(type === 'organizer'){
+    [-0.7, 0, 0.7].forEach((x, i) => {
+      const h = 0.6 + i * 0.25;
+      const box = new THREE.Mesh(new THREE.BoxGeometry(0.55,h,0.7), material);
+      box.position.set(x, -1 + h/2, 0);
+      g.add(box);
+    });
+  } else if(type === 'ring'){
+    g.add(new THREE.Mesh(new THREE.TorusGeometry(0.9,0.28,6,10), material));
+  } else if(type === 'figure'){
+    const body = new THREE.Mesh(new THREE.IcosahedronGeometry(0.9,0), material);
+    const head = new THREE.Mesh(new THREE.IcosahedronGeometry(0.45,0), material);
+    head.position.set(0,0.95,0.55);
+    g.add(body, head);
+  } else if(type === 'chess'){
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.75,0.85,0.3,8), material);
+    base.position.y = -1.0;
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.4,1.1,8), material);
+    stem.position.y = -0.25;
+    const top = new THREE.Mesh(new THREE.ConeGeometry(0.55,1.0,8), material);
+    top.position.y = 0.85;
+    g.add(base, stem, top);
+  } else if(type === 'keychain'){
+    const geo = new THREE.OctahedronGeometry(0.85,0);
+    geo.scale(1,1,0.28);
+    g.add(new THREE.Mesh(geo, material));
+  } else if(type === 'castle'){
+    const baseWall = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.6,1.1), material);
+    baseWall.position.y = -1.1;
+    g.add(baseWall);
+    const towerX = [-0.85, 0, 0.85];
+    const towerH = [1.3, 1.7, 1.3];
+    towerX.forEach((x,i) => {
+      const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,towerH[i],6), material);
+      tower.position.set(x, -0.8 + towerH[i]/2, 0);
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(0.42,0.55,6), material);
+      roof.position.set(x, -0.8 + towerH[i] + 0.27, 0);
+      g.add(tower, roof);
+    });
+  } else {
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2), material));
+  }
+  return g;
+}
+
+function openProductViewer(p, colorHex){
+  const container = document.getElementById('stl-canvas-wrap');
+  const fallback = document.getElementById('stl-fallback');
+  const ok = initThree(container);
+  if(!ok){
+    container.style.display = 'none';
+    fallback.style.display = 'flex';
+    fallback.textContent = p.emoji;
+    return;
+  }
+  container.style.display = 'block';
+  fallback.style.display = 'none';
+  if(currentGroup){
+    scene.remove(currentGroup);
+    currentGroup.traverse(o => { if(o.geometry) o.geometry.dispose(); });
+  }
+  if(currentMaterial) currentMaterial.dispose();
+  currentMaterial = new THREE.MeshStandardMaterial({color:colorHex, flatShading:true, roughness:0.55, metalness:0.04});
+  currentGroup = buildShape(p.shape, currentMaterial);
+  const mult = SIZES.find(s => s.key === selectedSize).dimMult;
+  currentGroup.scale.setScalar(mult);
+  scene.add(currentGroup);
+  resizeThree(container);
+  if(!rafId) animateThree();
+}
+
+function animateThree(){
+  rafId = requestAnimationFrame(animateThree);
+  if(currentGroup && !isDragging) currentGroup.rotation.y += 0.006;
+  if(renderer && scene && camera) renderer.render(scene, camera);
+}
+
+function stopThreeLoop(){
+  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+}
+
+/* ================= PRODUCT PAGE ================= */
+function openProduct(id){
+  const p = findProduct(id);
+  if(!p) return;
+  viewingProductId = id;
+  document.getElementById('continut').hidden = true;
+  document.getElementById('product-view').hidden = false;
+  window.scrollTo({top:0, behavior:'instant'});
+  populateProductView(p);
+}
+
+function closeProduct(){
+  document.getElementById('product-view').hidden = true;
+  document.getElementById('continut').hidden = false;
+  viewingProductId = null;
+  stopThreeLoop();
+  window.scrollTo({top:0, behavior:'instant'});
+}
+
+function populateProductView(p){
+  selectedColorIdx = 0;
+  selectedSize = 'mediu';
+  pvQty = 1;
+
+  document.getElementById('pv-breadcrumb').innerHTML =
+    `<a href="#" id="bc-home">Acasă</a> / <a href="#" id="bc-cat" data-cat="${p.category}">${p.category}</a> / <span>${p.name}</span>`;
+  document.getElementById('bc-home').addEventListener('click', e => { e.preventDefault(); closeProduct(); });
+  document.getElementById('bc-cat').addEventListener('click', e => {
+    e.preventDefault();
+    currentCategory = p.category;
+    closeProduct();
+    renderPills();
+    applyFilters();
+    document.getElementById('bestsellers').scrollIntoView({behavior:'smooth'});
+  });
+
+  document.getElementById('pv-cat').textContent = p.category;
+  document.getElementById('pv-title').textContent = p.name;
+  document.getElementById('pv-rating').innerHTML =
+    `${starsHtml(p.rating)}<span class="rating-count">${p.rating.toFixed(1)} (${p.reviews} recenzii)</span>`;
+
+  renderPriceRow(p);
+  document.getElementById('color-name').textContent = COLORS[selectedColorIdx].name;
+  renderSwatches();
+  renderSizes();
+  document.getElementById('pv-qty').textContent = pvQty;
+
+  const wishBtn = document.getElementById('pv-wish');
+  wishBtn.textContent = wishlist.has(p.id) ? '♥' : '♡';
+  wishBtn.setAttribute('aria-pressed', wishlist.has(p.id));
+
+  updatePvInCartNote(p);
+  setActiveTab('desc');
+  renderTabs(p);
+  renderRelated(p);
+  openProductViewer(p, COLORS[selectedColorIdx].hex);
+}
+
+function renderPriceRow(p){
+  const mult = SIZES.find(s => s.key === selectedSize).priceMult;
+  const price = p.price * mult;
+  const oldPrice = p.oldPrice ? p.oldPrice * mult : null;
+  document.getElementById('pv-price-row').innerHTML =
+    `<span class="price-now" style="font-size:28px;">${fmt(price)}</span>${oldPrice ? `<span class="price-old" style="font-size:15px;">${fmt(oldPrice)}</span>` : ''}`;
+}
+
+function renderSwatches(){
+  document.getElementById('swatches').innerHTML = COLORS.map((c,i) =>
+    `<button class="swatch ${i===selectedColorIdx?'active':''}" data-idx="${i}" style="background:${c.hex}" aria-label="${c.name}" aria-pressed="${i===selectedColorIdx}"></button>`
+  ).join('');
+}
+
+function renderSizes(){
+  document.getElementById('size-options').innerHTML = SIZES.map(s =>
+    `<button class="size-pill ${s.key===selectedSize?'active':''}" data-key="${s.key}">${s.label}${s.priceMult!==1 ? `<small> ${s.priceMult>1?'+':''}${Math.round((s.priceMult-1)*100)}%</small>` : ''}</button>`
+  ).join('');
+}
+
+function updatePvInCartNote(p){
+  const el = document.getElementById('pv-incart-note');
+  if(!el) return;
+  const entry = cart[p.id];
+  el.textContent = entry ? `✓ Ai deja ${entry.qty} în coș` : '';
+}
+
+function buildSpecsHtml(p){
+  const mult = SIZES.find(s => s.key === selectedSize).dimMult;
+  const dims = p.dims.map(d => (d*mult).toFixed(1)).join(' × ') + ' cm';
+  const weight = Math.round(p.weight * Math.pow(mult, 2));
+  const printTime = (p.printTime * Math.pow(mult, 1.6)).toFixed(1);
+  const rows = [
+    ['Material', p.material],
+    ['Dimensiuni aproximative', dims],
+    ['Greutate aproximativă', weight + ' g'],
+    ['Timp de printare estimat', printTime + ' h'],
+    ['Densitate umplutură (infill)', p.infill + '%'],
+    ['Finisaj', p.finish],
+    ['Tehnologie de printare', 'FDM (depunere de filament strat cu strat)']
+  ];
+  return `<dl class="specs-table">${rows.map(([k,v]) => `<div class="specs-row"><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>`;
+}
+function updateSpecsPanel(p){
+  document.getElementById('tab-specs').innerHTML = buildSpecsHtml(p);
+}
+
+const REVIEW_NAMES = ['Andrei P.','Maria D.','Ioana T.','Mihai R.','Elena V.','Cristian B.','Ana M.','Bogdan S.','Larisa N.','Ștefan C.'];
+const REVIEW_COMMENTS = [
+  'Calitate foarte bună a printării, fără straturi vizibile. Exact cum era în poze.',
+  'A ajuns mai rapid decât mă așteptam, ambalat cu grijă. Recomand!',
+  'Culorile sunt fidele cu cele alese în configurator. Foarte mulțumit de achiziție.',
+  'Mi-a plăcut atenția la detalii, se simte că e făcut cu grijă, nu în masă.',
+  'Bun raport calitate-preț. L-am luat cadou și a fost un real succes.',
+  'Puțin mai mic decât mă așteptam, dar finisajul e impecabil.',
+  'Comunicare bună din partea magazinului, au răspuns rapid la întrebări despre personalizare.',
+  'Al doilea produs pe care îl cumpăr de la Cubico, la fel de mulțumită ca prima dată.'
+];
+const REVIEW_DATES = ['acum 3 zile','acum o săptămână','acum 2 săptămâni','acum o lună','acum 2 luni'];
+
+function buildReviews(p){
+  const seed = parseInt(p.id.replace('p',''), 10);
+  const ratings = [5, Math.max(3, Math.round(p.rating)), 4];
+  return [0,1,2].map(i => ({
+    name: REVIEW_NAMES[(seed + i*2) % REVIEW_NAMES.length],
+    rating: ratings[i],
+    date: REVIEW_DATES[(seed + i) % REVIEW_DATES.length],
+    comment: REVIEW_COMMENTS[(seed*3 + i*5) % REVIEW_COMMENTS.length]
+  }));
+}
+function buildReviewsHtml(p){
+  return buildReviews(p).map(r => `
+    <div class="review-card">
+      <div class="review-head">
+        <div class="review-avatar">${r.name.charAt(0)}</div>
+        <div>
+          <p class="review-name">${r.name}</p>
+          <div class="review-stars">${starsHtml(r.rating)}</div>
+        </div>
+        <span class="review-date">${r.date}</span>
+      </div>
+      <p class="review-comment">${r.comment}</p>
+    </div>`).join('');
+}
+
+function renderTabs(p){
+  document.getElementById('tab-desc').innerHTML = `<p>${p.description}</p>`;
+  updateSpecsPanel(p);
+  document.getElementById('tab-reviews').innerHTML = buildReviewsHtml(p);
+}
+function setActiveTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  ['desc','specs','reviews'].forEach(t => { document.getElementById('tab-'+t).hidden = (t !== tab); });
+}
+
+function renderRelated(p){
+  let rel = products.filter(x => x.id !== p.id && x.category === p.category);
+  if(rel.length < 4){
+    const others = products.filter(x => x.id !== p.id && x.category !== p.category);
+    rel = rel.concat(others).slice(0,4);
+  } else {
+    rel = rel.slice(0,4);
+  }
+  document.getElementById('related-grid').innerHTML = rel.map(cardHtml).join('');
+}
+
+/* ================= EVENT WIRING ================= */
+function handleGridClick(e){
+  const link = e.target.closest('a');
+  if(link) e.preventDefault();
+  const addBtn = e.target.closest('.btn-add');
+  if(addBtn){ addToCart(addBtn.dataset.id); return; }
+  const wishBtn = e.target.closest('.wish-btn');
+  if(wishBtn){ toggleWishlist(wishBtn.dataset.id, wishBtn); return; }
+  const card = e.target.closest('.card');
+  if(card){ openProduct(card.dataset.id); }
+}
+['bestsellers-grid','newarrivals-grid','deals-track','related-grid'].forEach(id => {
+  document.getElementById(id).addEventListener('click', handleGridClick);
+});
+
+document.getElementById('pill-row').addEventListener('click', e => {
+  const btn = e.target.closest('.pill');
+  if(!btn) return;
+  if(viewingProductId) closeProduct();
+  currentCategory = btn.dataset.cat;
+  renderPills();
+  applyFilters();
+  document.getElementById('bestsellers').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+document.getElementById('cat-tiles').addEventListener('click', e => {
+  const tile = e.target.closest('.cat-tile');
+  if(!tile) return;
+  if(viewingProductId) closeProduct();
+  currentCategory = tile.dataset.cat;
+  renderPills();
+  applyFilters();
+  document.getElementById('bestsellers').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+document.getElementById('search-form').addEventListener('submit', e => {
+  e.preventDefault();
+  if(viewingProductId) closeProduct();
+  searchTerm = document.getElementById('search-input').value;
+  const catVal = document.getElementById('search-cat').value;
+  currentCategory = catVal;
+  renderPills();
+  applyFilters();
+  document.getElementById('bestsellers').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+document.getElementById('sort-select').addEventListener('change', e => {
+  sortKey = e.target.value;
+  applyFilters();
+});
+
+document.getElementById('cart-open').addEventListener('click', openDrawer);
+document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+document.getElementById('backdrop').addEventListener('click', closeDrawer);
+document.getElementById('mobile-cartbar-btn').addEventListener('click', openDrawer);
+
+document.getElementById('drawer-body').addEventListener('click', e => {
+  const incBtn = e.target.closest('[data-action="inc"]');
+  const decBtn = e.target.closest('[data-action="dec"]');
+  const rmBtn = e.target.closest('.remove-btn');
+  if(incBtn) changeQty(incBtn.dataset.id, 1);
+  else if(decBtn) changeQty(decBtn.dataset.id, -1);
+  else if(rmBtn) removeFromCart(rmBtn.dataset.id);
+});
+
+document.getElementById('drawer-foot').addEventListener('click', e => {
+  if(e.target.closest('#checkout-btn')){
+    showToast("Acesta este un magazin demo — finalizarea comenzii nu este încă activă 🙂");
+  }
+});
+
+document.getElementById('newsletter-form').addEventListener('submit', e => {
+  e.preventDefault();
+  e.target.reset();
+  showToast('Verifică-ți emailul — reducerea de 10% e pe drum 🎉');
+});
+
+document.getElementById('upload-stl').addEventListener('click', () => {
+  showToast('Funcția de încărcare vine în curând — doar demo');
+});
+
+document.getElementById('logo-link').addEventListener('click', e => {
+  e.preventDefault();
+  if(viewingProductId) closeProduct();
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+/* --- Product view controls --- */
+document.getElementById('pv-back').addEventListener('click', closeProduct);
+
+document.getElementById('swatches').addEventListener('click', e => {
+  const btn = e.target.closest('.swatch');
+  if(!btn) return;
+  selectedColorIdx = parseInt(btn.dataset.idx, 10);
+  document.getElementById('color-name').textContent = COLORS[selectedColorIdx].name;
+  renderSwatches();
+  if(currentMaterial) currentMaterial.color.set(COLORS[selectedColorIdx].hex);
+});
+
+document.getElementById('size-options').addEventListener('click', e => {
+  const btn = e.target.closest('.size-pill');
+  if(!btn || !viewingProductId) return;
+  selectedSize = btn.dataset.key;
+  renderSizes();
+  const p = findProduct(viewingProductId);
+  renderPriceRow(p);
+  updateSpecsPanel(p);
+  if(currentGroup){
+    const mult = SIZES.find(s => s.key === selectedSize).dimMult;
+    currentGroup.scale.setScalar(mult);
+  }
+});
+
+document.getElementById('pv-qty-stepper').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  if(btn.dataset.action === 'inc') pvQty = Math.min(10, pvQty + 1);
+  else pvQty = Math.max(1, pvQty - 1);
+  document.getElementById('pv-qty').textContent = pvQty;
+});
+
+document.getElementById('pv-add').addEventListener('click', () => {
+  if(!viewingProductId) return;
+  const p = findProduct(viewingProductId);
+  const sizeObj = SIZES.find(s => s.key === selectedSize);
+  const unitPrice = +(p.price * sizeObj.priceMult).toFixed(2);
+  addToCart(p.id, {
+    qty: pvQty,
+    unitPrice,
+    color: COLORS[selectedColorIdx].hex,
+    colorName: COLORS[selectedColorIdx].name,
+    size: sizeObj.label
+  });
+});
+
+document.getElementById('pv-wish').addEventListener('click', e => {
+  if(!viewingProductId) return;
+  toggleWishlist(viewingProductId, e.currentTarget);
+});
+
+document.getElementById('tab-buttons').addEventListener('click', e => {
+  const btn = e.target.closest('.tab-btn');
+  if(!btn) return;
+  setActiveTab(btn.dataset.tab);
+});
+
+/* ================= INIT ================= */
+renderPills();
+renderCatTiles();
+renderDeals();
+applyFilters();
+renderCart();
+updateMobileCartBar();
+startCountdown();
+setupBackToTop();
+setupFooterAccordion();
+</script>
+</body>
+</html>
