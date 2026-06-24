@@ -91,3 +91,25 @@ on conflict (slug) do update set
   is_bestseller = excluded.is_bestseller,
   is_new_arrival = excluded.is_new_arrival,
   is_deal = excluded.is_deal;
+
+-- Orders placed from the storefront checkout
+create table if not exists public.orders (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  customer_name text not null,
+  customer_email text not null,
+  customer_phone text,
+  customer_address text not null,
+  items jsonb not null default '[]',
+  subtotal numeric(10,2) not null default 0,
+  status text not null default 'new'
+);
+
+alter table public.orders enable row level security;
+
+drop policy if exists "Public insert orders" on public.orders;
+create policy "Public insert orders"
+  on public.orders
+  for insert
+  to anon, authenticated
+  with check (true);

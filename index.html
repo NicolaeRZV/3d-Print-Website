@@ -310,6 +310,26 @@
   .subtotal-row{display:flex;justify-content:space-between;font-size:15px;font-weight:700;margin-bottom:14px;}
   .btn-checkout{display:block;width:100%;background:var(--orange-500);color:var(--white);padding:13px 0;border-radius:9px;font-weight:600;font-size:14.5px;text-align:center;}
   .btn-checkout:hover{background:var(--orange-600);}
+  .btn-checkout:disabled{opacity:.65;cursor:not-allowed;}
+
+  /* ===== Checkout modal ===== */
+  .checkout-modal{position:fixed;inset:0;z-index:220;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:opacity .2s ease, visibility .2s ease;}
+  .checkout-modal.open{opacity:1;visibility:visible;}
+  .checkout-modal .modal-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.55);}
+  .checkout-panel{position:relative;width:100%;max-width:440px;background:var(--white);border-radius:16px;box-shadow:var(--shadow-md);padding:22px;border:1px solid var(--border);}
+  .checkout-panel h3{font-size:18px;margin-bottom:4px;}
+  .checkout-panel .modal-sub{font-size:13px;color:var(--text-600);margin-bottom:18px;}
+  .checkout-field{margin-bottom:12px;}
+  .checkout-field label{display:block;font-size:12px;font-weight:600;color:var(--text-600);margin-bottom:5px;}
+  .checkout-field input,.checkout-field textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;}
+  .checkout-field input:focus,.checkout-field textarea:focus{outline:2px solid var(--blue-600);outline-offset:1px;border-color:var(--blue-600);}
+  .checkout-field textarea{resize:vertical;min-height:72px;}
+  .checkout-actions{display:flex;gap:10px;margin-top:18px;}
+  .checkout-actions button{flex:1;padding:12px 0;border-radius:10px;font-size:14px;font-weight:600;}
+  .checkout-cancel{background:var(--white);border:1px solid var(--border);color:var(--text-900);}
+  .checkout-submit{background:var(--orange-500);color:var(--white);border:none;}
+  .checkout-submit:disabled{opacity:.65;cursor:not-allowed;}
+  .checkout-error{font-size:12.5px;color:var(--red);margin-top:10px;min-height:18px;}
 
   /* ===== Toast ===== */
   .toast-stack{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:10px;z-index:200;}
@@ -785,6 +805,35 @@
 
 <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
 
+<div class="checkout-modal" id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title" hidden>
+  <div class="modal-backdrop" id="checkout-backdrop"></div>
+  <form class="checkout-panel" id="checkout-form">
+    <h3 id="checkout-title">Finalizează comanda</h3>
+    <p class="modal-sub">Completează datele de livrare. Te contactăm pentru confirmare și plată.</p>
+    <div class="checkout-field">
+      <label for="checkout-name">Nume complet</label>
+      <input id="checkout-name" name="name" type="text" required autocomplete="name" placeholder="Ion Popescu">
+    </div>
+    <div class="checkout-field">
+      <label for="checkout-email">Email</label>
+      <input id="checkout-email" name="email" type="email" required autocomplete="email" placeholder="ion@email.ro">
+    </div>
+    <div class="checkout-field">
+      <label for="checkout-phone">Telefon</label>
+      <input id="checkout-phone" name="phone" type="tel" autocomplete="tel" placeholder="07xx xxx xxx">
+    </div>
+    <div class="checkout-field">
+      <label for="checkout-address">Adresă livrare</label>
+      <textarea id="checkout-address" name="address" required placeholder="Stradă, număr, oraș, județ, cod poștal"></textarea>
+    </div>
+    <p class="checkout-error" id="checkout-error" aria-live="polite"></p>
+    <div class="checkout-actions">
+      <button type="button" class="checkout-cancel" id="checkout-cancel">Anulează</button>
+      <button type="submit" class="checkout-submit" id="checkout-submit">Trimite comanda</button>
+    </div>
+  </form>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -793,6 +842,7 @@
 const SUPABASE_URL = 'https://tilfngrtldwevtiilxpq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_A3fpQb9LjJb8XySpIJyJeg_gcjPOs3m';
 const STL_BUCKET = 'stl-files';
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1519356166361317468/Ilh0PQe-o14uePV9lorCGHEBM86kpYsM5TVmLuJ3gHSc5pZ1w3lcFKOkMeyeKIy18FV1'; // paste your Discord webhook URL here
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function getStlPublicUrl(path){
@@ -1103,6 +1153,97 @@ function renderCart(){
   foot.innerHTML = `
     <div class="subtotal-row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
     <button class="btn-checkout" id="checkout-btn">Finalizează comanda</button>`;
+}
+
+function getCartSubtotal(){
+  return Object.keys(cart).reduce((sum, id) => sum + cart[id].unitPrice * cart[id].qty, 0);
+}
+
+function buildOrderItems(){
+  return Object.keys(cart).map(id => {
+    const p = findProduct(id);
+    const entry = cart[id];
+    return {
+      product_id: id,
+      name: p ? p.name : id,
+      qty: entry.qty,
+      unit_price: entry.unitPrice,
+      line_total: +(entry.unitPrice * entry.qty).toFixed(2),
+      color: entry.colorName || null,
+      size: entry.size || null
+    };
+  });
+}
+
+function buildDiscordOrderEmbed(order, orderId){
+  const itemLines = order.items.map(item => {
+    const variantBits = [];
+    if(item.color) variantBits.push(item.color);
+    if(item.size) variantBits.push(item.size);
+    const variant = variantBits.length ? ` (${variantBits.join(', ')})` : '';
+    return `• ${item.qty}× ${item.name}${variant} — ${fmt(item.line_total)}`;
+  });
+  const fields = [
+    { name: 'Client', value: order.customer_name, inline: true },
+    { name: 'Email', value: order.customer_email, inline: true },
+    { name: 'Telefon', value: order.customer_phone || '—', inline: true },
+    { name: 'Adresă', value: order.customer_address },
+    { name: 'Produse', value: itemLines.join('\n') || '—' },
+    { name: 'Subtotal', value: fmt(order.subtotal), inline: true },
+    { name: 'ID comandă', value: orderId || '—', inline: true }
+  ];
+  return {
+    username: 'Cubico Comenzi',
+    embeds: [{
+      title: '🛒 Comandă nouă',
+      color: 0xFF7A1F,
+      fields,
+      timestamp: new Date().toISOString(),
+      footer: { text: 'Cubico 3D Print' }
+    }]
+  };
+}
+
+function sendDiscordOrderNotification(order, orderId){
+  if(!DISCORD_WEBHOOK_URL) return false;
+  const payload = buildDiscordOrderEmbed(order, orderId);
+  const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+  return navigator.sendBeacon(DISCORD_WEBHOOK_URL, blob);
+}
+
+function openCheckoutModal(){
+  const modal = document.getElementById('checkout-modal');
+  document.getElementById('checkout-error').textContent = '';
+  modal.hidden = false;
+  requestAnimationFrame(() => modal.classList.add('open'));
+  document.getElementById('checkout-name').focus();
+}
+
+function closeCheckoutModal(){
+  const modal = document.getElementById('checkout-modal');
+  modal.classList.remove('open');
+  setTimeout(() => { modal.hidden = true; }, 200);
+}
+
+async function placeOrder(customer){
+  const ids = Object.keys(cart);
+  if(!ids.length) throw new Error('Coșul este gol.');
+  const subtotal = getCartSubtotal();
+  const order = {
+    customer_name: customer.name,
+    customer_email: customer.email,
+    customer_phone: customer.phone || null,
+    customer_address: customer.address,
+    items: buildOrderItems(),
+    subtotal: +subtotal.toFixed(2),
+    status: 'new'
+  };
+  const { data, error } = await supabaseClient.from('orders').insert(order).select('id').single();
+  if(error) throw error;
+  sendDiscordOrderNotification(order, data.id);
+  Object.keys(cart).forEach(id => delete cart[id]);
+  afterCartChange();
+  return data.id;
 }
 
 /* ================= WISHLIST ================= */
@@ -1654,8 +1795,36 @@ document.getElementById('drawer-body').addEventListener('click', e => {
 });
 
 document.getElementById('drawer-foot').addEventListener('click', e => {
-  if(e.target.closest('#checkout-btn')){
-    showToast("Acesta este un magazin demo — finalizarea comenzii nu este încă activă 🙂");
+  if(e.target.closest('#checkout-btn')) openCheckoutModal();
+});
+
+document.getElementById('checkout-cancel').addEventListener('click', closeCheckoutModal);
+document.getElementById('checkout-backdrop').addEventListener('click', closeCheckoutModal);
+
+document.getElementById('checkout-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const submitBtn = document.getElementById('checkout-submit');
+  const errorEl = document.getElementById('checkout-error');
+  errorEl.textContent = '';
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Se trimite...';
+  try{
+    const orderId = await placeOrder({
+      name: document.getElementById('checkout-name').value.trim(),
+      email: document.getElementById('checkout-email').value.trim(),
+      phone: document.getElementById('checkout-phone').value.trim(),
+      address: document.getElementById('checkout-address').value.trim()
+    });
+    closeCheckoutModal();
+    closeDrawer();
+    e.target.reset();
+    showToast(`Comanda a fost trimisă! ID: ${orderId.slice(0, 8)}…`);
+  }catch(err){
+    console.error('Order failed:', err);
+    errorEl.textContent = err.message || 'Nu am putut trimite comanda. Încearcă din nou.';
+  }finally{
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Trimite comanda';
   }
 });
 
