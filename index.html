@@ -190,8 +190,10 @@
     cursor:pointer;
   }
   .card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px);}
-  .card-thumb{position:relative;height:150px;display:flex;align-items:center;justify-content:center;}
-  .thumb-emoji{font-size:54px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.12));}
+  .card-thumb{position:relative;height:150px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .card-stl-wrap{position:absolute;inset:0;pointer-events:none;}
+  .card-stl-wrap canvas{display:block;width:100%;height:100%;}
+  .thumb-emoji{font-size:54px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.12));position:relative;z-index:1;}
   .layer-watermark{position:absolute;bottom:10px;left:14px;right:14px;opacity:.5;}
   .layer-watermark rect{fill:rgba(255,255,255,0.85);}
   .badge{
@@ -784,9 +786,23 @@
 <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+/* ================= SUPABASE ================= */
+const SUPABASE_URL = 'https://tilfngrtldwevtiilxpq.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_A3fpQb9LjJb8XySpIJyJeg_gcjPOs3m';
+const STL_BUCKET = 'stl-files';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function getStlPublicUrl(path){
+  if(!path) return null;
+  if(/^https?:\/\//i.test(path)) return path;
+  return `${SUPABASE_URL}/storage/v1/object/public/${STL_BUCKET}/${path.replace(/^\/+/, '')}`;
+}
+
 /* ================= DATA ================= */
-const products = [
+const DEFAULT_PRODUCTS = [
   {id:'p1', name:'Vază Fațetată Geometrică', category:'Casă & Decor', price:89.99, oldPrice:119.99, rating:4.7, reviews:238, badge:'Cel mai vândut', emoji:'🏺', grad:'linear-gradient(135deg,#CDEFE6,#A9E3D2)',
    shape:'vase', material:'PLA mat', dims:[18,18,24], weight:180, printTime:7, infill:15, finish:'Vopsit manual, finisaj mat',
    description:'Această vază cu fațete geometrice transformă orice colț al casei într-un mic obiect de design. Printată strat cu strat în PLA mat, are o structură ușoară dar rezistentă, perfectă pentru flori uscate sau aranjamente decorative.'},
@@ -836,9 +852,58 @@ const products = [
    shape:'stand', material:'PLA+ ranforsat', dims:[10,10,13], weight:110, printTime:4, infill:25, finish:'Cauciucat la bază',
    description:'Suportul portabil pentru boxă amplifică sunetul printr-o cavitate acustică integrată, fără cabluri sau baterii. Baza cauciucată previne vibrațiile și deplasarea pe masă.'}
 ];
-const bestsellersPool = products.slice(0,8);
-const newArrivalsPool = products.slice(8,16);
-const dealIds = ['p1','p4','p6','p10','p16'];
+let products = [];
+let bestsellersPool = [];
+let newArrivalsPool = [];
+let dealIds = [];
+
+function rebuildProductPools(){
+  if(!products.length) return;
+  const best = products.filter(p => p.isBestseller);
+  const newer = products.filter(p => p.isNewArrival);
+  bestsellersPool = best.length ? best : products.slice(0, Math.min(8, products.length));
+  newArrivalsPool = newer.length ? newer : products.slice(Math.min(8, products.length));
+  dealIds = products.filter(p => p.isDeal).map(p => p.id);
+  if(!dealIds.length) dealIds = products.slice(0, Math.min(5, products.length)).map(p => p.id);
+}
+
+function mapSupabaseRow(row){
+  return {
+    id: row.slug || String(row.id),
+    name: row.name,
+    category: row.category,
+    price: Number(row.price),
+    oldPrice: row.old_price != null ? Number(row.old_price) : null,
+    rating: Number(row.rating),
+    reviews: Number(row.reviews),
+    badge: row.badge,
+    emoji: row.emoji || '📦',
+    grad: row.grad || 'linear-gradient(135deg,#E4E8EF,#CDD4E0)',
+    shape: row.shape || 'stand',
+    material: row.material || 'PLA mat',
+    dims: Array.isArray(row.dims) ? row.dims : (typeof row.dims === 'string' ? JSON.parse(row.dims) : [10,10,10]),
+    weight: Number(row.weight),
+    printTime: Number(row.print_time),
+    infill: Number(row.infill),
+    finish: row.finish || 'Natural',
+    description: row.description || '',
+    stlUrl: getStlPublicUrl(row.stl_path),
+    isBestseller: !!row.is_bestseller,
+    isNewArrival: !!row.is_new_arrival,
+    isDeal: !!row.is_deal
+  };
+}
+
+async function loadProductsFromSupabase(){
+  const { data, error } = await supabaseClient
+    .from('3dmodels')
+    .select('*')
+    .order('id', { ascending: true });
+  if(error) throw error;
+  if(!data || !data.length) throw new Error('No products in Supabase');
+  products = data.map(mapSupabaseRow);
+  rebuildProductPools();
+}
 const categories = [
   {name:'all', label:'Toate', emo:'🛒'},
   {name:'Casă & Decor', label:'Casă & Decor', emo:'🏠'},
@@ -903,12 +968,14 @@ function badgeHtml(p){
 
 function cardHtml(p){
   const inCartQty = cart[p.id] ? cart[p.id].qty : 0;
+  const hasStl = !!p.stlUrl;
   return `
   <article class="card" data-id="${p.id}">
     <div class="card-thumb" style="background:${p.grad}">
       ${badgeHtml(p)}
       <button class="wish-btn" data-id="${p.id}" aria-label="Salvează ${p.name} la favorite" aria-pressed="${wishlist.has(p.id)}">${wishlist.has(p.id) ? '♥' : '♡'}</button>
-      <span class="thumb-emoji" aria-hidden="true">${p.emoji}</span>
+      ${hasStl ? `<div class="card-stl-wrap" data-stl-url="${p.stlUrl}" aria-hidden="true"></div>` : ''}
+      <span class="thumb-emoji" aria-hidden="true"${hasStl ? ' style="display:none"' : ''}>${p.emoji}</span>
       <svg class="layer-watermark" viewBox="0 0 120 14" aria-hidden="true">
         <rect y="0" width="40" height="3" rx="1.5"/><rect y="5.5" width="70" height="3" rx="1.5"/><rect y="11" width="110" height="3" rx="1.5"/>
       </svg>
@@ -951,6 +1018,7 @@ function renderCatTiles(){
 function renderDeals(){
   document.getElementById('deals-track').innerHTML =
     dealIds.map(id => cardHtml(findProduct(id))).join('');
+  initCardPreviews(document.getElementById('deals-track'));
 }
 
 function matches(p){
@@ -975,6 +1043,7 @@ function applyFilters(){
   document.getElementById('newarrivals-grid').innerHTML = newer.map(cardHtml).join('');
   document.getElementById('bestsellers-empty').style.display = best.length ? 'none' : 'block';
   document.getElementById('newarrivals-empty').style.display = newer.length ? 'none' : 'block';
+  initCardPreviews();
 }
 
 /* ================= CART ================= */
@@ -1149,6 +1218,85 @@ function setupFooterAccordion(){
 /* ================= 3D PREVIEW (THREE.JS) ================= */
 let scene, camera, renderer, currentGroup = null, currentMaterial = null;
 let isDragging = false, dragStartX = 0, dragStartY = 0, rafId = null, threeReady = false;
+const stlGeometryCache = new Map();
+const cardPreviewObserver = typeof IntersectionObserver !== 'undefined'
+  ? new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if(!entry.isIntersecting) return;
+        const wrap = entry.target;
+        cardPreviewObserver.unobserve(wrap);
+        renderCardPreview(wrap, wrap.dataset.stlUrl);
+      });
+    }, { rootMargin: '120px' })
+  : null;
+
+function fitObjectToView(object, targetSize){
+  const box = new THREE.Box3().setFromObject(object);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  object.position.sub(center);
+  const maxDim = Math.max(size.x, size.y, size.z);
+  if(maxDim > 0) object.scale.setScalar(targetSize / maxDim);
+}
+
+function loadStlGeometry(url){
+  if(stlGeometryCache.has(url)) return Promise.resolve(stlGeometryCache.get(url).clone());
+  return new Promise((resolve, reject) => {
+    if(typeof THREE === 'undefined' || typeof THREE.STLLoader === 'undefined'){
+      reject(new Error('STLLoader unavailable'));
+      return;
+    }
+    new THREE.STLLoader().load(url, geometry => {
+      geometry.computeVertexNormals();
+      stlGeometryCache.set(url, geometry);
+      resolve(geometry.clone());
+    }, undefined, reject);
+  });
+}
+
+function renderCardPreview(container, url){
+  if(!container || !url || container.dataset.loaded) return;
+  container.dataset.loaded = '1';
+  loadStlGeometry(url).then(geometry => {
+    const sceneLocal = new THREE.Scene();
+    const cameraLocal = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    cameraLocal.position.set(0, 0.25, 5.5);
+    const material = new THREE.MeshStandardMaterial({color:'#F2F1ED', flatShading:true, roughness:0.55, metalness:0.04});
+    const mesh = new THREE.Mesh(geometry, material);
+    fitObjectToView(mesh, 2.2);
+    mesh.rotation.x = -0.35;
+    mesh.rotation.y = 0.75;
+    sceneLocal.add(mesh);
+    sceneLocal.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.15));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+    dir.position.set(3, 4, 5);
+    sceneLocal.add(dir);
+    const localRenderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+    localRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    const w = container.clientWidth || 150;
+    const h = container.clientHeight || 150;
+    localRenderer.setSize(w, h, false);
+    container.appendChild(localRenderer.domElement);
+    cameraLocal.aspect = w / h;
+    cameraLocal.updateProjectionMatrix();
+    localRenderer.render(sceneLocal, cameraLocal);
+    geometry.dispose();
+    material.dispose();
+    localRenderer.dispose();
+  }).catch(() => {
+    const emoji = container.closest('.card-thumb')?.querySelector('.thumb-emoji');
+    if(emoji) emoji.style.display = '';
+    container.remove();
+  });
+}
+
+function initCardPreviews(root){
+  const scope = root || document;
+  scope.querySelectorAll('.card-stl-wrap[data-stl-url]:not([data-loaded])').forEach(wrap => {
+    if(cardPreviewObserver) cardPreviewObserver.observe(wrap);
+    else renderCardPreview(wrap, wrap.dataset.stlUrl);
+  });
+}
 
 function initThree(container){
   if(threeReady) return true;
@@ -1286,12 +1434,31 @@ function openProductViewer(p, colorHex){
   }
   if(currentMaterial) currentMaterial.dispose();
   currentMaterial = new THREE.MeshStandardMaterial({color:colorHex, flatShading:true, roughness:0.55, metalness:0.04});
-  currentGroup = buildShape(p.shape, currentMaterial);
   const mult = SIZES.find(s => s.key === selectedSize).dimMult;
-  currentGroup.scale.setScalar(mult);
-  scene.add(currentGroup);
-  resizeThree(container);
-  if(!rafId) animateThree();
+
+  function showProcedural(){
+    currentGroup = buildShape(p.shape, currentMaterial);
+    currentGroup.scale.setScalar(mult);
+    scene.add(currentGroup);
+    resizeThree(container);
+    if(!rafId) animateThree();
+  }
+
+  if(p.stlUrl){
+    loadStlGeometry(p.stlUrl).then(geometry => {
+      if(viewingProductId !== p.id) { geometry.dispose(); return; }
+      currentGroup = new THREE.Group();
+      const mesh = new THREE.Mesh(geometry, currentMaterial);
+      currentGroup.add(mesh);
+      fitObjectToView(currentGroup, 2.5);
+      currentGroup.scale.multiplyScalar(mult);
+      scene.add(currentGroup);
+      resizeThree(container);
+      if(!rafId) animateThree();
+    }).catch(() => showProcedural());
+    return;
+  }
+  showProcedural();
 }
 
 function animateThree(){
@@ -1466,6 +1633,7 @@ function renderRelated(p){
     rel = rel.slice(0,4);
   }
   document.getElementById('related-grid').innerHTML = rel.map(cardHtml).join('');
+  initCardPreviews(document.getElementById('related-grid'));
 }
 
 /* ================= EVENT WIRING ================= */
@@ -1615,15 +1783,27 @@ document.getElementById('tab-buttons').addEventListener('click', e => {
 });
 
 /* ================= INIT ================= */
-renderPills();
-renderCatTiles();
-renderDeals();
-applyFilters();
-renderCart();
-updateMobileCartBar();
-startCountdown();
-setupBackToTop();
-setupFooterAccordion();
+async function bootstrap(){
+  try{
+    await loadProductsFromSupabase();
+  }catch(err){
+    console.warn('Supabase unavailable, using local catalog:', err);
+    products = DEFAULT_PRODUCTS.map(p => ({...p, stlUrl: null}));
+    bestsellersPool = products.slice(0, 8);
+    newArrivalsPool = products.slice(8, 16);
+    dealIds = ['p1','p4','p6','p10','p16'];
+  }
+  renderPills();
+  renderCatTiles();
+  renderDeals();
+  applyFilters();
+  renderCart();
+  updateMobileCartBar();
+  startCountdown();
+  setupBackToTop();
+  setupFooterAccordion();
+}
+bootstrap();
 </script>
 </body>
 </html>
