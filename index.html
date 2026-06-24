@@ -1229,7 +1229,9 @@ async function placeOrder(customer){
   const ids = Object.keys(cart);
   if(!ids.length) throw new Error('Coșul este gol.');
   const subtotal = getCartSubtotal();
+  const orderId = crypto.randomUUID();
   const order = {
+    id: orderId,
     customer_name: customer.name,
     customer_email: customer.email,
     customer_phone: customer.phone || null,
@@ -1238,12 +1240,12 @@ async function placeOrder(customer){
     subtotal: +subtotal.toFixed(2),
     status: 'new'
   };
-  const { data, error } = await supabaseClient.from('orders').insert(order).select('id').single();
+  const { error } = await supabaseClient.from('orders').insert(order);
   if(error) throw error;
-  sendDiscordOrderNotification(order, data.id);
+  sendDiscordOrderNotification(order, orderId);
   Object.keys(cart).forEach(id => delete cart[id]);
   afterCartChange();
-  return data.id;
+  return orderId;
 }
 
 /* ================= WISHLIST ================= */

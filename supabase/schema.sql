@@ -107,6 +107,8 @@ create table if not exists public.orders (
 
 alter table public.orders enable row level security;
 
+grant insert on public.orders to anon, authenticated;
+
 drop policy if exists "Public insert orders" on public.orders;
 create policy "Public insert orders"
   on public.orders
