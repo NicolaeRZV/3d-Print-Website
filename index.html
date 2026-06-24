@@ -2,8 +2,8 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cubico — Magazin de Obiecte Printate 3D</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>artblu — Magazin de Obiecte Printate 3D</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='20' width='14' height='5' rx='2' fill='%23FF7A1F'/%3E%3Crect x='4' y='12' width='22' height='5' rx='2' fill='%232553F2'/%3E%3Crect x='4' y='4' width='28' height='5' rx='2' fill='%230F1B2D'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,6 +13,7 @@
     --navy-900:#0F1B2D;
     --navy-800:#16243B;
     --blue-600:#2553F2;
+    --blue-500:#4DA3FF;
     --blue-700:#1B3FC2;
     --orange-500:#FF7A1F;
     --orange-600:#E8650A;
@@ -24,9 +25,9 @@
     --green:#1C9C6B;
     --star:#FFB020;
     --red:#E0263E;
-    --radius:14px;
-    --shadow-sm:0 1px 3px rgba(15,27,45,0.08);
-    --shadow-md:0 10px 24px rgba(15,27,45,0.10);
+    --radius:16px;
+    --shadow-sm:0 2px 8px rgba(15,27,45,0.06);
+    --shadow-md:0 16px 40px rgba(15,27,45,0.10);
   }
 
   *{box-sizing:border-box;}
@@ -36,6 +37,7 @@
     color:var(--text-900);
     background:var(--bg);
     -webkit-font-smoothing:antialiased;
+    padding-bottom:env(safe-area-inset-bottom);
   }
   h1,h2,h3,h4{font-family:'Poppins',system-ui,sans-serif;margin:0;letter-spacing:-0.01em;}
   p{margin:0;}
@@ -68,9 +70,11 @@
   .header .container{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
 
   .logo{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-  .logo-mark rect{fill:var(--orange-500);}
-  .logo-word{color:var(--white);font-size:22px;font-weight:700;}
-  .logo-word span{color:var(--orange-500);}
+  .logo-mark rect:nth-child(1){fill:var(--blue-500);}
+  .logo-mark rect:nth-child(2){fill:var(--blue-600);}
+  .logo-mark rect:nth-child(3){fill:rgba(255,255,255,0.35);}
+  .logo-word{color:var(--white);font-size:22px;font-weight:700;font-family:'Poppins',sans-serif;letter-spacing:-0.02em;}
+  .logo-word span{color:var(--blue-500);}
 
   .searchbar{flex:1 1 380px;display:flex;height:44px;border-radius:8px;overflow:hidden;background:var(--white);min-width:240px;}
   .searchbar select{
@@ -111,37 +115,76 @@
   .pill.active{background:var(--blue-600);color:var(--white);}
 
   /* ===== Hero ===== */
-  .hero{background:linear-gradient(135deg,var(--navy-900),var(--navy-800));position:relative;overflow:hidden;}
-  .hero .container{display:flex;align-items:center;gap:50px;padding:64px 24px;flex-wrap:wrap;}
-  .hero-text{flex:1 1 380px;min-width:280px;}
-  .hero-eyebrow{display:inline-flex;align-items:center;gap:6px;color:var(--orange-500);font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px;}
-  .hero-text h1{color:var(--white);font-size:42px;line-height:1.12;margin-bottom:16px;}
-  .hero-text p{color:#B9C2D2;font-size:16px;line-height:1.6;max-width:460px;margin-bottom:26px;}
+  .hero{
+    background:linear-gradient(135deg,var(--navy-900) 0%,#132038 50%,var(--navy-800) 100%);
+    position:relative;overflow:hidden;
+  }
+  .hero::before,.hero::after{
+    content:'';position:absolute;border-radius:50%;pointer-events:none;
+  }
+  .hero::before{
+    width:420px;height:420px;top:-120px;right:-80px;
+    background:radial-gradient(circle,rgba(77,163,255,0.18) 0%,transparent 70%);
+  }
+  .hero::after{
+    width:300px;height:300px;bottom:-100px;left:-60px;
+    background:radial-gradient(circle,rgba(255,122,31,0.12) 0%,transparent 70%);
+  }
+  .hero .container{
+    display:flex;align-items:center;justify-content:space-between;gap:40px;
+    padding:72px 24px;flex-wrap:wrap;position:relative;z-index:1;
+  }
+  .hero-text{flex:1 1 420px;min-width:280px;max-width:580px;}
+  .hero-eyebrow{
+    display:inline-flex;align-items:center;gap:8px;color:var(--blue-500);
+    font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px;
+    background:rgba(77,163,255,0.12);padding:6px 12px;border-radius:20px;
+  }
+  .hero-text h1{color:var(--white);font-size:44px;line-height:1.1;margin-bottom:18px;}
+  .hero-text p{color:#B9C2D2;font-size:16.5px;line-height:1.65;max-width:500px;margin-bottom:28px;}
   .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;}
   .btn{
-    display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:9px;
+    display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:11px;
     font-size:14.5px;font-weight:600;transition:transform .12s ease, background .15s ease, box-shadow .15s ease;
   }
-  .btn-primary{background:var(--orange-500);color:var(--white);}
-  .btn-primary:hover{background:var(--orange-600);transform:translateY(-1px);}
-  .btn-ghost{background:rgba(255,255,255,0.08);color:var(--white);border:1px solid rgba(255,255,255,0.25);}
-  .btn-ghost:hover{background:rgba(255,255,255,0.15);}
-
-  .hero-card{
-    flex:0 0 300px;background:var(--white);border-radius:18px;padding:22px;box-shadow:var(--shadow-md);
-    transform:rotate(2deg);
+  .btn-primary{background:linear-gradient(135deg,var(--orange-500),var(--orange-600));color:var(--white);box-shadow:0 4px 14px rgba(255,122,31,0.35);}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,122,31,0.4);}
+  .btn-ghost{background:rgba(255,255,255,0.06);color:var(--white);border:1px solid rgba(255,255,255,0.2);}
+  .btn-ghost:hover{background:rgba(255,255,255,0.12);}
+  .btn-disabled{
+    background:rgba(255,255,255,0.08);color:#8A9BB5;border:1px dashed rgba(255,255,255,0.25);
+    cursor:default;pointer-events:none;
   }
-  .hero-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-  .hero-card-top span{font-size:12.5px;color:var(--text-600);font-weight:600;}
-  .hero-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;animation:pulse 1.6s infinite;}
-  .hero-object{font-size:46px;text-align:center;background:linear-gradient(135deg,#E9EEFB,#DCE6FB);border-radius:12px;padding:22px 0;margin-bottom:16px;}
-  .hero-progress-label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-600);margin-bottom:8px;}
-  .hero-progress-label b{color:var(--text-900);}
+
+  .hero-visual{
+    flex:0 1 280px;display:flex;align-items:center;justify-content:center;
+    min-width:200px;
+  }
+  .hero-art{
+    width:220px;height:220px;border-radius:28px;
+    position:relative;
+    background:linear-gradient(145deg,rgba(77,163,255,0.25),rgba(37,83,242,0.15));
+    border:1px solid rgba(255,255,255,0.12);
+    box-shadow:0 20px 50px rgba(0,0,0,0.25);
+    backdrop-filter:blur(8px);
+    overflow:hidden;
+  }
+  .hero-stl-wrap{position:absolute;inset:0;touch-action:none;}
+  .hero-stl-wrap canvas{display:block;width:100% !important;height:100% !important;}
+  .hero-stl-fallback{
+    position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    font-size:72px;
+  }
+  .hero-stl-label{
+    position:absolute;left:0;right:0;bottom:0;padding:10px 12px 12px;
+    font-size:11px;font-weight:600;color:rgba(255,255,255,0.92);
+    background:linear-gradient(transparent,rgba(15,27,45,0.72));
+    text-align:center;line-height:1.35;margin:0;
+  }
+
   .layerbar{display:flex;flex-direction:column-reverse;gap:3px;height:34px;}
   .layerbar i{display:block;height:4px;border-radius:2px;background:#E3E7ED;}
   .layerbar i.filled{background:linear-gradient(90deg,var(--blue-600),var(--orange-500));}
-
-  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
 
   .layer-divider{height:34px;display:flex;align-items:center;justify-content:center;gap:4px;background:var(--bg);}
   .layer-divider i{display:block;height:4px;border-radius:2px;background:var(--border);}
@@ -189,7 +232,7 @@
     display:flex;flex-direction:column;overflow:hidden;transition:box-shadow .15s ease, transform .15s ease;
     cursor:pointer;
   }
-  .card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px);}
+  .card:hover{box-shadow:var(--shadow-md);transform:translateY(-4px);border-color:rgba(37,83,242,0.15);}
   .card-thumb{position:relative;height:150px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
   .card-stl-wrap{position:absolute;inset:0;pointer-events:none;}
   .card-stl-wrap canvas{display:block;width:100%;height:100%;}
@@ -235,11 +278,31 @@
   .empty-state h3{font-size:16px;margin-bottom:6px;color:var(--text-900);}
 
   /* ===== Mid banner ===== */
-  .midbanner{background:linear-gradient(120deg,var(--blue-700),var(--blue-600));border-radius:18px;padding:40px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;color:var(--white);}
-  .midbanner h2{font-size:24px;margin-bottom:8px;}
-  .midbanner p{color:#DCE5FC;max-width:440px;font-size:14.5px;line-height:1.55;}
-  .midbanner .btn-primary{background:var(--white);color:var(--blue-700);}
-  .midbanner .btn-primary:hover{background:#EEF1FF;}
+  .midbanner{
+    position:relative;background:linear-gradient(135deg,var(--navy-900),var(--blue-700));
+    border-radius:20px;padding:40px;display:flex;align-items:center;justify-content:space-between;
+    gap:24px;flex-wrap:wrap;color:var(--white);overflow:hidden;
+    box-shadow:var(--shadow-md);
+  }
+  .midbanner::before{
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(circle at 90% 20%,rgba(77,163,255,0.2),transparent 50%);
+    pointer-events:none;
+  }
+  .midbanner > *{position:relative;z-index:1;}
+  .midbanner h2{font-size:24px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .midbanner p{color:#C8D8F8;max-width:440px;font-size:14.5px;line-height:1.6;}
+  .coming-soon-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);
+    color:var(--white);font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:5px 12px;border-radius:20px;backdrop-filter:blur(4px);
+  }
+  .midbanner .btn-coming-soon{
+    background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);
+    border:1px dashed rgba(255,255,255,0.3);cursor:default;pointer-events:none;
+    padding:14px 24px;border-radius:11px;font-size:14.5px;font-weight:600;white-space:nowrap;
+  }
 
   /* ===== Trust strip ===== */
   .trust{background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
@@ -343,7 +406,8 @@
   /* ===== Mobile cart bar & back to top ===== */
   .mobile-cartbar{
     position:fixed;left:0;right:0;bottom:0;background:var(--navy-900);color:#fff;display:none;align-items:center;
-    justify-content:space-between;padding:12px 16px;z-index:80;box-shadow:0 -6px 16px rgba(0,0,0,0.18);
+    justify-content:space-between;padding:12px 16px;padding-bottom:max(12px, env(safe-area-inset-bottom));
+    z-index:80;box-shadow:0 -6px 16px rgba(0,0,0,0.18);
   }
   .mobile-cartbar.visible{display:flex;}
   .mobile-cartbar span{font-size:13px;}
@@ -424,45 +488,64 @@
     .cat-grid{grid-template-columns:repeat(3,1fr);}
     .footer-grid{grid-template-columns:repeat(2,1fr);}
     .trust .container{grid-template-columns:repeat(2,1fr);}
+    .hero-visual{flex:0 0 auto;}
   }
   @media (max-width:860px){
     .pv-grid{grid-template-columns:1fr;gap:28px;}
     .pv-media{position:static;}
+    .hero .container{justify-content:center;text-align:center;}
+    .hero-text{max-width:100%;}
+    .hero-text p{margin-left:auto;margin-right:auto;}
+    .hero-ctas{justify-content:center;}
+    .hero-visual{margin:0 auto;}
   }
   @media (max-width:760px){
-    .header .container{gap:12px;}
-    .header .container{flex-wrap:wrap;}
+    .header{padding:12px 0;padding-top:max(12px, env(safe-area-inset-top));}
+    .header .container{gap:10px;flex-wrap:wrap;}
     .logo{order:1;}
-    .header-actions{order:2;gap:14px;margin-left:0;}
-    .searchbar{order:3;flex:1 0 100%;margin-top:10px;}
+    .header-actions{order:2;gap:12px;margin-left:auto;}
+    .searchbar{order:3;flex:1 0 100%;margin-top:8px;height:46px;}
+    .header-action{padding:6px;}
     .header-action span.label{display:none;}
-    .hero .container{padding:42px 24px;}
-    .hero-text h1{font-size:30px;}
-    .hero-card{transform:none;}
-    .midbanner{padding:28px;}
-    .qty-btn{width:32px;height:32px;}
-    .wish-btn{width:34px;height:34px;}
-    .pill{padding:9px 16px;}
-    .back-to-top{bottom:84px;}
+    .hero .container{padding:48px 20px 52px;}
+    .hero-text h1{font-size:32px;}
+    .hero-art{width:160px;height:160px;font-size:56px;border-radius:22px;}
+    .midbanner{padding:28px 24px;flex-direction:column;align-items:flex-start;}
+    .midbanner .btn-coming-soon{width:100%;text-align:center;}
+    .qty-btn{width:36px;height:36px;}
+    .wish-btn{width:38px;height:38px;}
+    .pill{padding:10px 16px;font-size:14px;}
+    .back-to-top{bottom:calc(84px + env(safe-area-inset-bottom));}
     .footer-grid summary{cursor:pointer;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08);}
     .footer-grid details ul{padding-top:10px;}
+    .btn{padding:14px 22px;min-height:48px;}
+    .toast-stack{bottom:calc(80px + env(safe-area-inset-bottom));left:16px;right:16px;}
+    .toast{max-width:none;}
   }
   @media (max-width:560px){
-    .cat-grid{grid-template-columns:repeat(2,1fr);}
+    .cat-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
+    .cat-tile{padding:16px 10px;}
     .footer-grid{grid-template-columns:1fr 1fr;}
     .newsletter .container, .newsletter form{flex-direction:column;align-items:stretch;}
-    .newsletter input{min-width:0;}
+    .newsletter input{min-width:0;width:100%;}
+    .grid{gap:14px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+    .topstrip .container{flex-direction:column;height:auto;padding:8px 0;gap:4px;text-align:center;}
+    .topstrip-links{gap:14px;}
   }
   @media (max-width:480px){
     .container{padding:0 16px;}
     .trust .container{grid-template-columns:1fr;}
     .deal-banner{flex-direction:column;align-items:flex-start;}
-    .hero-text h1{font-size:26px;}
-    .section{padding:34px 0;}
+    .hero-text h1{font-size:28px;line-height:1.15;}
+    .hero-eyebrow{font-size:11.5px;}
+    .section{padding:32px 0;}
     .footer-grid{grid-template-columns:1fr;}
     .section-head{align-items:flex-start;}
     #pv-title{font-size:21px;}
     .pv-add{width:100%;}
+    .hero-visual{display:flex;margin:4px auto 0;}
+    .hero-art{width:150px;height:150px;border-radius:20px;}
+    .checkout-panel{padding:18px;border-radius:14px;}
   }
 
   @media (prefers-reduced-motion:reduce){
@@ -489,13 +572,13 @@
 <!-- ===== Header ===== -->
 <header class="header">
   <div class="container">
-    <a href="#" class="logo" id="logo-link" aria-label="Cubico - pagina principală">
+    <a href="#" class="logo" id="logo-link" aria-label="artblu - pagina principală">
       <svg class="logo-mark" width="30" height="22" viewBox="0 0 30 22" aria-hidden="true">
         <rect x="0" y="16" width="14" height="4" rx="2"/>
-        <rect x="0" y="9" width="22" height="4" rx="2" opacity="0.75"/>
-        <rect x="0" y="2" width="30" height="4" rx="2" opacity="0.5"/>
+        <rect x="0" y="9" width="22" height="4" rx="2"/>
+        <rect x="0" y="2" width="30" height="4" rx="2"/>
       </svg>
-      <span class="logo-word">Cub<span>ico</span></span>
+      <span class="logo-word">art<span>blu</span></span>
     </a>
 
     <form class="searchbar" id="search-form">
@@ -515,7 +598,7 @@
     </form>
 
     <div class="header-actions">
-      <a href="#" class="header-action">
+      <a href="login.html" class="header-action" id="account-link" aria-label="Autentificare">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E7EBF2" stroke-width="1.8"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
         <span class="label"><small>Autentificare</small>Cont</span>
       </a>
@@ -539,24 +622,19 @@
 <section class="hero">
   <div class="container">
     <div class="hero-text">
-      <span class="hero-eyebrow">● Printat proaspăt, la fiecare comandă</span>
+      <span class="hero-eyebrow">Artă printată 3D, la comandă</span>
       <h1>Frumos printate.<br>Personalizabile la infinit.</h1>
-      <p>Decorațiuni unice pentru casă, accesorii de birou și jucării — printate strat cu strat, la comandă, în culoarea și mărimea pe care le vrei cu adevărat.</p>
+      <p>Decorațiuni unice pentru casă, accesorii de birou și jucării — printate strat cu strat, în culoarea și mărimea pe care le vrei cu adevărat.</p>
       <div class="hero-ctas">
         <a href="#bestsellers" class="btn btn-primary">Vezi cele mai vândute</a>
         <a href="#custom" class="btn btn-ghost">Printează designul meu</a>
       </div>
     </div>
-    <div class="hero-card" aria-hidden="true">
-      <div class="hero-card-top">
-        <span><span class="hero-dot"></span>Se printează acum</span>
-        <span>#A1042</span>
-      </div>
-      <div class="hero-object">🏺</div>
-      <div class="hero-progress-label"><span>Vază Fațetată Geometrică</span><b>78%</b></div>
-      <div class="layerbar">
-        <i class="filled"></i><i class="filled"></i><i class="filled"></i><i class="filled"></i><i class="filled"></i>
-        <i class="filled"></i><i class="filled"></i><i></i>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="hero-art">
+        <div class="hero-stl-wrap" id="hero-stl-wrap"></div>
+        <span class="hero-stl-fallback" id="hero-stl-fallback">🎨</span>
+        <p class="hero-stl-label" id="hero-stl-label" hidden></p>
       </div>
     </div>
   </div>
@@ -618,10 +696,13 @@
   <div class="container">
     <div class="midbanner">
       <div>
-        <h2>Ai un design? Îl printăm noi.</h2>
-        <p>Încarcă propriul fișier STL și îl printăm în materialul, culoarea și mărimea aleasă de tine — pregătit de livrare în 48 de ore.</p>
+        <h2>
+          Ai un design? Îl printăm noi.
+          <span class="coming-soon-badge">În curând</span>
+        </h2>
+        <p>Încarcă propriul fișier STL și îl printăm în materialul, culoarea și mărimea aleasă de tine. Funcția va fi disponibilă în curând.</p>
       </div>
-      <button class="btn btn-primary" id="upload-stl">Încarcă fișierul STL</button>
+      <span class="btn-coming-soon" aria-disabled="true">Coming Soon</span>
     </div>
   </div>
 </section>
@@ -741,7 +822,7 @@
   <div class="container">
     <div class="footer-grid">
       <details open>
-        <summary>Despre Cubico <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
+        <summary>Despre artblu <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
         <ul>
           <li><a href="#">Povestea noastră</a></li>
           <li><a href="#">Materiale & calitate</a></li>
@@ -770,6 +851,8 @@
       <details open>
         <summary>Conectează-te <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
         <ul>
+          <li><a href="login.html">Autentificare</a></li>
+          <li><a href="account.html">Contul meu</a></li>
           <li><a href="#">Instagram</a></li>
           <li><a href="#">TikTok</a></li>
           <li><a href="#">Pinterest</a></li>
@@ -778,7 +861,7 @@
       </details>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 Cubico. Toate drepturile rezervate.</span>
+      <span>© 2026 artblu. Toate drepturile rezervate.</span>
       <span>Visa · Mastercard · Plata ramburs</span>
     </div>
   </div>
@@ -809,7 +892,7 @@
   <div class="modal-backdrop" id="checkout-backdrop"></div>
   <form class="checkout-panel" id="checkout-form">
     <h3 id="checkout-title">Finalizează comanda</h3>
-    <p class="modal-sub">Completează datele de livrare. Te contactăm pentru confirmare și plată.</p>
+    <p class="modal-sub">Completează datele de livrare. Contul nu este obligatoriu — poți comanda ca vizitator.</p>
     <div class="checkout-field">
       <label for="checkout-name">Nume complet</label>
       <input id="checkout-name" name="name" type="text" required autocomplete="name" placeholder="Ion Popescu">
@@ -837,6 +920,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="auth.js"></script>
 <script>
 /* ================= SUPABASE ================= */
 const SUPABASE_URL = 'https://tilfngrtldwevtiilxpq.supabase.co';
@@ -1193,13 +1277,13 @@ function buildDiscordOrderEmbed(order, orderId){
     { name: 'ID comandă', value: orderId || '—', inline: true }
   ];
   return {
-    username: 'Cubico Comenzi',
+    username: 'artblu Comenzi',
     embeds: [{
       title: '🛒 Comandă nouă',
       color: 0xFF7A1F,
       fields,
       timestamp: new Date().toISOString(),
-      footer: { text: 'Cubico 3D Print' }
+      footer: { text: 'artblu 3D Print' }
     }]
   };
 }
@@ -1313,6 +1397,7 @@ function setupFooterAccordion(){
 /* ================= 3D PREVIEW (THREE.JS) ================= */
 let scene, camera, renderer, currentGroup = null, currentMaterial = null;
 let isDragging = false, dragStartX = 0, dragStartY = 0, rafId = null, threeReady = false;
+let heroScene, heroCamera, heroRenderer, heroGroup, heroMaterial, heroRafId = null;
 const stlGeometryCache = new Map();
 const cardPreviewObserver = typeof IntersectionObserver !== 'undefined'
   ? new IntersectionObserver(entries => {
@@ -1391,6 +1476,90 @@ function initCardPreviews(root){
     if(cardPreviewObserver) cardPreviewObserver.observe(wrap);
     else renderCardPreview(wrap, wrap.dataset.stlUrl);
   });
+}
+
+function showHeroFallback(emoji){
+  const fallback = document.getElementById('hero-stl-fallback');
+  const wrap = document.getElementById('hero-stl-wrap');
+  if(wrap) wrap.style.display = 'none';
+  if(fallback){
+    fallback.textContent = emoji || '🎨';
+    fallback.style.display = 'flex';
+  }
+}
+
+function resizeHeroPreview(){
+  const container = document.getElementById('hero-stl-wrap');
+  if(!heroRenderer || !container || !container.clientWidth) return;
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+  heroRenderer.setSize(w, h, false);
+  heroCamera.aspect = w / h;
+  heroCamera.updateProjectionMatrix();
+}
+
+function animateHeroPreview(){
+  heroRafId = requestAnimationFrame(animateHeroPreview);
+  if(heroGroup) heroGroup.rotation.y += 0.008;
+  if(heroRenderer && heroScene && heroCamera) heroRenderer.render(heroScene, heroCamera);
+}
+
+function initHeroStlPreview(){
+  const container = document.getElementById('hero-stl-wrap');
+  const label = document.getElementById('hero-stl-label');
+  if(!container) return;
+
+  const withStl = products.filter(p => p.stlUrl);
+  if(!withStl.length){
+    showHeroFallback('🎨');
+    return;
+  }
+
+  const product = withStl[Math.floor(Math.random() * withStl.length)];
+  if(label){
+    label.textContent = product.name;
+    label.hidden = false;
+  }
+
+  if(typeof THREE === 'undefined'){
+    showHeroFallback(product.emoji);
+    return;
+  }
+
+  loadStlGeometry(product.stlUrl).then(geometry => {
+    heroScene = new THREE.Scene();
+    heroCamera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    heroCamera.position.set(0, 0.25, 5.5);
+    heroMaterial = new THREE.MeshStandardMaterial({
+      color: 0xC8DCFF,
+      flatShading: true,
+      roughness: 0.45,
+      metalness: 0.08,
+      emissive: 0x1a3a7a,
+      emissiveIntensity: 0.08
+    });
+    heroGroup = new THREE.Group();
+    const mesh = new THREE.Mesh(geometry, heroMaterial);
+    heroGroup.add(mesh);
+    fitObjectToView(heroGroup, 2.4);
+    heroGroup.rotation.x = -0.25;
+    heroGroup.rotation.y = 0.6;
+    heroScene.add(heroGroup);
+    heroScene.add(new THREE.HemisphereLight(0xffffff, 0x334466, 1.2));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.95);
+    dir.position.set(3, 4, 5);
+    heroScene.add(dir);
+    const rim = new THREE.DirectionalLight(0x88bbff, 0.45);
+    rim.position.set(-4, 1, -2);
+    heroScene.add(rim);
+
+    heroRenderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+    heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    container.appendChild(heroRenderer.domElement);
+    resizeHeroPreview();
+    if(!heroRafId) animateHeroPreview();
+    window.addEventListener('resize', resizeHeroPreview);
+  }).catch(() => showHeroFallback(product.emoji));
 }
 
 function initThree(container){
@@ -1680,7 +1849,7 @@ const REVIEW_COMMENTS = [
   'Bun raport calitate-preț. L-am luat cadou și a fost un real succes.',
   'Puțin mai mic decât mă așteptam, dar finisajul e impecabil.',
   'Comunicare bună din partea magazinului, au răspuns rapid la întrebări despre personalizare.',
-  'Al doilea produs pe care îl cumpăr de la Cubico, la fel de mulțumită ca prima dată.'
+  'Al doilea produs pe care îl cumpăr de la artblu, la fel de mulțumită ca prima dată.'
 ];
 const REVIEW_DATES = ['acum 3 zile','acum o săptămână','acum 2 săptămâni','acum o lună','acum 2 luni'];
 
@@ -1836,10 +2005,6 @@ document.getElementById('newsletter-form').addEventListener('submit', e => {
   showToast('Verifică-ți emailul — reducerea de 10% e pe drum 🎉');
 });
 
-document.getElementById('upload-stl').addEventListener('click', () => {
-  showToast('Funcția de încărcare vine în curând — doar demo');
-});
-
 document.getElementById('logo-link').addEventListener('click', e => {
   e.preventDefault();
   if(viewingProductId) closeProduct();
@@ -1925,6 +2090,7 @@ async function bootstrap(){
   startCountdown();
   setupBackToTop();
   setupFooterAccordion();
+  initHeroStlPreview();
 }
 bootstrap();
 </script>

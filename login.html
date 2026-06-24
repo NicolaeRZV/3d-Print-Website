@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Autentificare — artblu</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='20' width='14' height='5' rx='2' fill='%234DA3FF'/%3E%3Crect x='4' y='12' width='22' height='5' rx='2' fill='%232553F2'/%3E%3Crect x='4' y='4' width='28' height='5' rx='2' fill='%230F1B2D'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-900:#0F1B2D;
+    --navy-800:#16243B;
+    --blue-600:#2553F2;
+    --blue-500:#4DA3FF;
+    --blue-700:#1B3FC2;
+    --orange-500:#FF7A1F;
+    --bg:#F4F6F9;
+    --white:#FFFFFF;
+    --text-900:#161B22;
+    --text-600:#5B6472;
+    --border:#E3E7ED;
+    --green:#1C9C6B;
+    --red:#E0263E;
+    --radius:16px;
+    --shadow-md:0 16px 40px rgba(15,27,45,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;min-height:100%;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--text-900);
+    background:var(--bg);
+    -webkit-font-smoothing:antialiased;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+  }
+  h1,h2{font-family:'Poppins',system-ui,sans-serif;margin:0;letter-spacing:-0.02em;}
+  a{color:inherit;text-decoration:none;}
+  button,input{font-family:inherit;}
+
+  .auth-header{
+    background:var(--navy-900);
+    padding:16px 0;
+    padding-top:max(16px, env(safe-area-inset-top));
+  }
+  .auth-header .inner{
+    max-width:480px;margin:0 auto;padding:0 20px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+  }
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo-mark rect:nth-child(1){fill:var(--blue-500);}
+  .logo-mark rect:nth-child(2){fill:var(--blue-600);}
+  .logo-mark rect:nth-child(3){fill:rgba(255,255,255,0.35);}
+  .logo-word{color:var(--white);font-size:21px;font-weight:700;font-family:'Poppins',sans-serif;}
+  .logo-word span{color:var(--blue-500);}
+  .back-link{
+    font-size:13px;font-weight:600;color:#B9C2D2;display:flex;align-items:center;gap:6px;
+    padding:8px 12px;border-radius:8px;transition:background .15s,color .15s;
+  }
+  .back-link:hover{background:rgba(255,255,255,0.08);color:var(--white);}
+
+  .auth-main{
+    flex:1;display:flex;align-items:center;justify-content:center;
+    padding:32px 20px 48px;
+    padding-bottom:max(48px, env(safe-area-inset-bottom));
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 0%, rgba(77,163,255,0.12), transparent 50%),
+      radial-gradient(ellipse 60% 50% at 90% 100%, rgba(37,83,242,0.08), transparent 50%),
+      var(--bg);
+  }
+  .auth-card{
+    width:100%;max-width:440px;background:var(--white);
+    border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow-md);overflow:hidden;
+  }
+  .auth-card-head{padding:28px 28px 0;text-align:center;}
+  .auth-card-head h1{font-size:24px;margin-bottom:8px;}
+  .auth-card-head p{font-size:14px;color:var(--text-600);line-height:1.55;}
+  .optional-note{
+    margin-top:14px;padding:10px 14px;background:#EEF4FF;border-radius:10px;
+    font-size:12.5px;color:#3B5BDB;line-height:1.5;
+  }
+
+  .tabs{
+    display:flex;margin:24px 28px 0;background:#F0F3F8;border-radius:10px;padding:4px;
+  }
+  .tab{
+    flex:1;padding:10px 12px;border:none;background:transparent;
+    font-size:13.5px;font-weight:600;color:var(--text-600);border-radius:8px;
+    cursor:pointer;transition:background .15s,color .15s,box-shadow .15s;
+  }
+  .tab.active{background:var(--white);color:var(--text-900);box-shadow:0 1px 4px rgba(15,27,45,0.08);}
+
+  .auth-form{padding:24px 28px 28px;display:flex;flex-direction:column;gap:14px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--text-600);margin-bottom:6px;}
+  .field input{
+    width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;
+    font-size:15px;color:var(--text-900);background:var(--white);
+    transition:border-color .15s,box-shadow .15s;
+  }
+  .field input:focus{outline:none;border-color:var(--blue-600);box-shadow:0 0 0 3px rgba(37,83,242,0.15);}
+  .submit{
+    margin-top:6px;padding:14px;border:none;border-radius:10px;
+    background:linear-gradient(135deg,var(--blue-600),var(--blue-700));
+    color:var(--white);font-size:15px;font-weight:600;cursor:pointer;
+    transition:transform .12s ease,opacity .15s;
+  }
+  .submit:hover{transform:translateY(-1px);}
+  .submit:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .form-error{font-size:13px;color:var(--red);min-height:18px;line-height:1.4;}
+  .form-success{
+    font-size:13px;color:var(--green);padding:12px 14px;background:#E8F8F1;
+    border-radius:10px;line-height:1.5;display:none;
+  }
+  .form-success.show{display:block;}
+
+  .auth-footer{
+    text-align:center;padding:0 28px 28px;font-size:13px;color:var(--text-600);
+  }
+  .auth-footer a{color:var(--blue-600);font-weight:600;}
+  .auth-footer a:hover{text-decoration:underline;}
+
+  @media (max-width:480px){
+    .auth-card-head,.auth-form,.auth-footer{padding-left:20px;padding-right:20px;}
+    .tabs{margin-left:20px;margin-right:20px;}
+    .auth-card-head h1{font-size:22px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="auth-header">
+  <div class="inner">
+    <a href="index.html" class="logo" aria-label="artblu - pagina principală">
+      <svg class="logo-mark" width="30" height="22" viewBox="0 0 30 22" aria-hidden="true">
+        <rect x="0" y="16" width="14" height="4" rx="2"/>
+        <rect x="0" y="9" width="22" height="4" rx="2"/>
+        <rect x="0" y="2" width="30" height="4" rx="2"/>
+      </svg>
+      <span class="logo-word">art<span>blu</span></span>
+    </a>
+    <a href="index.html" class="back-link">← Magazin</a>
+  </div>
+</header>
+
+<main class="auth-main">
+  <div class="auth-card">
+    <div class="auth-card-head">
+      <h1 id="page-title">Bine ai venit</h1>
+      <p>Creează un cont sau autentifică-te pentru comenzi mai rapide și istoricul comenzilor.</p>
+      <p class="optional-note">Contul nu este obligatoriu — poți cumpăra oricând ca vizitator.</p>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab active" id="tab-login" role="tab" aria-selected="true">Autentificare</button>
+      <button type="button" class="tab" id="tab-register" role="tab" aria-selected="false">Înregistrare</button>
+    </div>
+
+    <form class="auth-form" id="login-form">
+      <div class="field" id="name-field" hidden>
+        <label for="full-name">Nume complet</label>
+        <input id="full-name" type="text" autocomplete="name" placeholder="Ion Popescu">
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" required autocomplete="email" placeholder="tu@email.com">
+      </div>
+      <div class="field">
+        <label for="password">Parolă</label>
+        <input id="password" type="password" required autocomplete="current-password" minlength="6" placeholder="Minim 6 caractere">
+      </div>
+      <p class="form-error" id="form-error" aria-live="polite"></p>
+      <p class="form-success" id="form-success"></p>
+      <button type="submit" class="submit" id="submit-btn">Autentifică-te</button>
+    </form>
+
+    <div class="auth-footer">
+      <a href="index.html">Continuă fără cont →</a>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="auth.js"></script>
+<script>
+let mode = 'login';
+
+const tabLogin = document.getElementById('tab-login');
+const tabRegister = document.getElementById('tab-register');
+const nameField = document.getElementById('name-field');
+const passwordInput = document.getElementById('password');
+const submitBtn = document.getElementById('submit-btn');
+const pageTitle = document.getElementById('page-title');
+const form = document.getElementById('login-form');
+const errorEl = document.getElementById('form-error');
+const successEl = document.getElementById('form-success');
+
+function setMode(next) {
+  mode = next;
+  const isLogin = mode === 'login';
+  tabLogin.classList.toggle('active', isLogin);
+  tabRegister.classList.toggle('active', !isLogin);
+  tabLogin.setAttribute('aria-selected', isLogin);
+  tabRegister.setAttribute('aria-selected', !isLogin);
+  nameField.hidden = isLogin;
+  passwordInput.autocomplete = isLogin ? 'current-password' : 'new-password';
+  submitBtn.textContent = isLogin ? 'Autentifică-te' : 'Creează cont';
+  pageTitle.textContent = isLogin ? 'Bine ai venit' : 'Creează cont';
+  errorEl.textContent = '';
+  successEl.classList.remove('show');
+  successEl.textContent = '';
+}
+
+tabLogin.addEventListener('click', () => setMode('login'));
+tabRegister.addEventListener('click', () => setMode('register'));
+
+getCurrentUser().then(user => {
+  if (user) window.location.href = 'account.html';
+});
+
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  errorEl.textContent = '';
+  successEl.classList.remove('show');
+  submitBtn.disabled = true;
+
+  const email = document.getElementById('email').value.trim();
+  const password = passwordInput.value;
+  const fullName = document.getElementById('full-name').value.trim();
+
+  try {
+    if (mode === 'login') {
+      await signIn(email, password);
+      window.location.href = 'account.html';
+      return;
+    }
+
+    const result = await signUp(email, password, fullName);
+    if (result.session) {
+      window.location.href = 'account.html';
+      return;
+    }
+
+    successEl.textContent = 'Cont creat! Verifică emailul pentru confirmare, apoi autentifică-te.';
+    successEl.classList.add('show');
+    setMode('login');
+  } catch (err) {
+    errorEl.textContent = err.message || 'A apărut o eroare. Încearcă din nou.';
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

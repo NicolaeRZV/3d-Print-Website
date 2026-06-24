@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Contul meu — artblu</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='20' width='14' height='5' rx='2' fill='%234DA3FF'/%3E%3Crect x='4' y='12' width='22' height='5' rx='2' fill='%232553F2'/%3E%3Crect x='4' y='4' width='28' height='5' rx='2' fill='%230F1B2D'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-900:#0F1B2D;
+    --navy-800:#16243B;
+    --blue-600:#2553F2;
+    --blue-500:#4DA3FF;
+    --blue-700:#1B3FC2;
+    --orange-500:#FF7A1F;
+    --bg:#F4F6F9;
+    --white:#FFFFFF;
+    --text-900:#161B22;
+    --text-600:#5B6472;
+    --border:#E3E7ED;
+    --green:#1C9C6B;
+    --red:#E0263E;
+    --radius:16px;
+    --shadow-sm:0 1px 3px rgba(15,27,45,0.08);
+    --shadow-md:0 16px 40px rgba(15,27,45,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;min-height:100%;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--text-900);
+    background:var(--bg);
+    -webkit-font-smoothing:antialiased;
+    min-height:100dvh;
+  }
+  h1,h2,h3{font-family:'Poppins',system-ui,sans-serif;margin:0;letter-spacing:-0.02em;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+  .auth-header{
+    background:var(--navy-900);
+    padding:16px 0;
+    padding-top:max(16px, env(safe-area-inset-top));
+  }
+  .auth-header .inner{
+    max-width:720px;margin:0 auto;padding:0 20px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+  }
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo-mark rect:nth-child(1){fill:var(--blue-500);}
+  .logo-mark rect:nth-child(2){fill:var(--blue-600);}
+  .logo-mark rect:nth-child(3){fill:rgba(255,255,255,0.35);}
+  .logo-word{color:var(--white);font-size:21px;font-weight:700;font-family:'Poppins',sans-serif;}
+  .logo-word span{color:var(--blue-500);}
+  .header-links{display:flex;gap:8px;flex-wrap:wrap;}
+  .header-link{
+    font-size:13px;font-weight:600;color:#B9C2D2;padding:8px 12px;border-radius:8px;
+    transition:background .15s,color .15s;
+  }
+  .header-link:hover{background:rgba(255,255,255,0.08);color:var(--white);}
+
+  .account-main{
+    max-width:720px;margin:0 auto;
+    padding:32px 20px 48px;
+    padding-bottom:max(48px, env(safe-area-inset-bottom));
+  }
+  .page-head{margin-bottom:24px;}
+  .page-head h1{font-size:28px;margin-bottom:6px;}
+  .page-head p{font-size:14px;color:var(--text-600);}
+
+  .profile-card{
+    background:linear-gradient(135deg,var(--navy-900),var(--navy-800));
+    border-radius:var(--radius);padding:24px;color:var(--white);
+    display:flex;align-items:center;gap:18px;margin-bottom:20px;
+    box-shadow:var(--shadow-md);
+  }
+  .avatar{
+    width:56px;height:56px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(135deg,var(--blue-500),var(--blue-600));
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;font-weight:700;font-family:'Poppins',sans-serif;
+  }
+  .profile-info h2{font-size:18px;margin-bottom:4px;}
+  .profile-info p{font-size:13.5px;color:#B9C2D2;}
+
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+  .info-card{
+    background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+    padding:20px;box-shadow:var(--shadow-sm);
+  }
+  .info-card h3{font-size:15px;margin-bottom:6px;}
+  .info-card p{font-size:13px;color:var(--text-600);line-height:1.55;}
+
+  .actions{display:flex;flex-wrap:wrap;gap:12px;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:13px 22px;border-radius:10px;font-size:14px;font-weight:600;
+    transition:transform .12s ease,background .15s;
+  }
+  .btn-primary{background:var(--orange-500);color:var(--white);}
+  .btn-primary:hover{background:#E8650A;transform:translateY(-1px);}
+  .btn-ghost{background:var(--white);border:1px solid var(--border);color:var(--text-900);}
+  .btn-ghost:hover{background:#F8FAFC;}
+  .btn-danger{background:#FEE2E5;color:var(--red);}
+  .btn-danger:hover{background:#FECDD3;}
+
+  .loading-screen{
+    min-height:50vh;display:flex;align-items:center;justify-content:center;
+    color:var(--text-600);font-size:14px;
+  }
+
+  @media (max-width:560px){
+    .cards{grid-template-columns:1fr;}
+    .profile-card{flex-direction:column;text-align:center;padding:22px 20px;}
+    .page-head h1{font-size:24px;}
+    .actions{flex-direction:column;}
+    .actions .btn{width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<header class="auth-header">
+  <div class="inner">
+    <a href="index.html" class="logo" aria-label="artblu - pagina principală">
+      <svg class="logo-mark" width="30" height="22" viewBox="0 0 30 22" aria-hidden="true">
+        <rect x="0" y="16" width="14" height="4" rx="2"/>
+        <rect x="0" y="9" width="22" height="4" rx="2"/>
+        <rect x="0" y="2" width="30" height="4" rx="2"/>
+      </svg>
+      <span class="logo-word">art<span>blu</span></span>
+    </a>
+    <div class="header-links">
+      <a href="index.html" class="header-link">Magazin</a>
+    </div>
+  </div>
+</header>
+
+<main class="account-main" id="account-content">
+  <div class="loading-screen">Se încarcă contul…</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="auth.js"></script>
+<script>
+const content = document.getElementById('account-content');
+
+function getInitials(name, email) {
+  const source = name || email || '?';
+  const parts = source.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return source.slice(0, 2).toUpperCase();
+}
+
+function renderAccount(user) {
+  const name = getDisplayName(user);
+  const email = user.email || '';
+  const initials = getInitials(user.user_metadata?.full_name, email);
+  const joined = user.created_at
+    ? new Date(user.created_at).toLocaleDateString('ro-RO', { year: 'numeric', month: 'long', day: 'numeric' })
+    : '—';
+
+  content.innerHTML = `
+    <div class="page-head">
+      <h1>Contul meu</h1>
+      <p>Gestionează profilul tău artblu. Contul este opțional — poți continua să cumperi ca vizitator.</p>
+    </div>
+
+    <div class="profile-card">
+      <div class="avatar" aria-hidden="true">${initials}</div>
+      <div class="profile-info">
+        <h2>${escapeHtml(name)}</h2>
+        <p>${escapeHtml(email)}</p>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="info-card">
+        <h3>📦 Comenzi</h3>
+        <p>Istoricul comenzilor va apărea aici în curând. Deocamdată poți plasa comenzi ca vizitator din magazin.</p>
+      </div>
+      <div class="info-card">
+        <h3>🎨 Print personalizat</h3>
+        <p>Funcția „Printează designul meu” vine în curând. Te anunțăm când e gata!</p>
+      </div>
+    </div>
+
+    <div class="info-card" style="margin-bottom:20px;">
+      <h3>Detalii cont</h3>
+      <p style="margin-top:8px;">Membru din: <strong>${joined}</strong></p>
+    </div>
+
+    <div class="actions">
+      <a href="index.html" class="btn btn-primary">Continuă cumpărăturile</a>
+      <button type="button" class="btn btn-ghost" id="logout-btn">Deconectare</button>
+    </div>
+  `;
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    try {
+      await signOut();
+      window.location.href = 'index.html';
+    } catch (err) {
+      alert(err.message || 'Nu am putut face deconectarea.');
+    }
+  });
+}
+
+getCurrentUser().then(user => {
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+  renderAccount(user);
+});
+</script>
+</body>
+</html>
