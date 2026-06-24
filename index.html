@@ -802,69 +802,22 @@ function getStlPublicUrl(path){
 }
 
 /* ================= DATA ================= */
-const DEFAULT_PRODUCTS = [
-  {id:'p1', name:'Vază Fațetată Geometrică', category:'Casă & Decor', price:89.99, oldPrice:119.99, rating:4.7, reviews:238, badge:'Cel mai vândut', emoji:'🏺', grad:'linear-gradient(135deg,#CDEFE6,#A9E3D2)',
-   shape:'vase', material:'PLA mat', dims:[18,18,24], weight:180, printTime:7, infill:15, finish:'Vopsit manual, finisaj mat',
-   description:'Această vază cu fațete geometrice transformă orice colț al casei într-un mic obiect de design. Printată strat cu strat în PLA mat, are o structură ușoară dar rezistentă, perfectă pentru flori uscate sau aranjamente decorative.'},
-  {id:'p2', name:'Set Ghivece de Perete Fagure (3 buc)', category:'Grădină', price:64.99, oldPrice:79.99, rating:4.6, reviews:112, badge:null, emoji:'🪴', grad:'linear-gradient(135deg,#DFF2D8,#BFE6B3)',
-   shape:'planter', material:'PLA rezistent UV', dims:[10,10,9], weight:95, printTime:3, infill:20, finish:'Natural, fără vopsire',
-   description:'Setul de trei ghivece de perete în formă de fagure aduce un plus de verdeață fără să ocupe loc pe pervaz. Sistemul de prindere este inclus, iar materialul rezistă bine la umiditate și expunere la soare.'},
-  {id:'p3', name:'Figurină Dragon Articulată', category:'Jucării & Figurine', price:54.99, oldPrice:null, rating:4.9, reviews:401, badge:'Cel mai vândut', emoji:'🐉', grad:'linear-gradient(135deg,#E7DBF8,#D2BCF0)',
-   shape:'figure', material:'PLA+ articulat', dims:[22,8,10], weight:140, printTime:9, infill:10, finish:'Asamblat manual, fără lipire',
-   description:'Figurina de dragon are articulații funcționale, imprimate direct fără a fi nevoie de asamblare sau lipire. Poate fi mișcată și poziționată liber — un obiect de colecție care impresionează la fiecare detaliu.'},
-  {id:'p4', name:'Suport Telefon Minimalist', category:'Birou', price:24.99, oldPrice:34.99, rating:4.5, reviews:560, badge:null, emoji:'📱', grad:'linear-gradient(135deg,#D9E6FB,#B9D0F6)',
-   shape:'stand', material:'PETG transparent', dims:[9,7,10], weight:60, printTime:2, infill:25, finish:'Lustruit la bază',
-   description:'Suportul minimalist pentru telefon ține dispozitivul în unghiul perfect pentru apeluri video sau urmărit filme. Designul transparent din PETG se integrează discret pe orice birou.'},
-  {id:'p5', name:'Organizator Modular de Cabluri', category:'Birou', price:19.99, oldPrice:null, rating:4.3, reviews:98, badge:null, emoji:'🔌', grad:'linear-gradient(135deg,#E4E8EF,#CDD4E0)',
-   shape:'organizer', material:'TPU flexibil', dims:[12,4,3], weight:35, printTime:1.5, infill:30, finish:'Flexibil, anti-zgârieturi',
-   description:'Organizatorul modular de cabluri pune capăt încurcăturilor de pe birou. Realizat din TPU flexibil, se montează ușor pe orice suprafață și acceptă cabluri de diverse grosimi.'},
-  {id:'p6', name:'Lampă de Birou Topografică', category:'Casă & Decor', price:139.99, oldPrice:169.99, rating:4.8, reviews:76, badge:'Nou', emoji:'💡', grad:'linear-gradient(135deg,#FCEFD0,#F8DDA1)',
-   shape:'lamp', material:'PLA + LED inclus', dims:[16,16,30], weight:320, printTime:14, infill:20, finish:'Difuzor sablat',
-   description:'Lampa de birou cu suprafață topografică proiectează jocuri de lumină și umbră ca un relief de munte. Vine cu LED inclus și un difuzor sablat care oferă o lumină caldă, plăcută ochilor.'},
-  {id:'p7', name:'Set de Șah Voronoi', category:'Jucării & Figurine', price:249.99, oldPrice:null, rating:4.9, reviews:143, badge:'Premium', emoji:'♟️', grad:'linear-gradient(135deg,#D8DEEC,#B6C0DC)',
-   shape:'chess', material:'Rășină foto-curabilă', dims:[40,40,4], weight:650, printTime:22, infill:100, finish:'Lustruit, lac protector',
-   description:'Setul de șah Voronoi reinterpretează jocul clasic printr-o estetică organică, generată algoritmic. Printat în rășină foto-curabilă pentru detalii fine, fiecare piesă are o personalitate unică.'},
-  {id:'p8', name:'Suport de Încărcare pentru Căști Wireless', category:'Accesorii Tech', price:34.99, oldPrice:44.99, rating:4.4, reviews:210, badge:null, emoji:'🎧', grad:'linear-gradient(135deg,#FBE0DA,#F5BFB3)',
-   shape:'stand', material:'PLA mat', dims:[8,8,11], weight:70, printTime:3, infill:20, finish:'Cauciucat la bază',
-   description:'Suportul de încărcare pentru căști wireless ține dispozitivul stabil în timpul încărcării și eliberează spațiu pe birou. Baza cauciucată previne zgârierea suprafețelor.'},
-  {id:'p9', name:'Set Breloc Personalizabil (5 buc)', category:'Cadouri', price:14.99, oldPrice:null, rating:4.2, reviews:890, badge:'Cel mai vândut', emoji:'🔑', grad:'linear-gradient(135deg,#FCF1C7,#F8E296)',
-   shape:'keychain', material:'PLA multicolor', dims:[5,3,0.6], weight:8, printTime:0.5, infill:100, finish:'Margini șlefuite',
-   description:'Setul de cinci brelocuri personalizabile poate fi gravat cu inițiale sau un mesaj scurt la cerere. Perfect pentru cadouri rapide sau pentru a-ți marca cheile, bagajele sau rucsacul.'},
-  {id:'p10', name:'Robot Jucărie Articulat', category:'Jucării & Figurine', price:44.99, oldPrice:59.99, rating:4.7, reviews:322, badge:null, emoji:'🤖', grad:'linear-gradient(135deg,#D2F1F5,#A9E3EC)',
-   shape:'figure', material:'PLA+ articulat', dims:[14,9,18], weight:160, printTime:8, infill:15, finish:'Asamblat, fără lipire',
-   description:'Robotul jucărie are articulații mobile imprimate direct în piesă, fără șuruburi sau adezivi. Brațele, picioarele și capul se pot poziționa liber pentru joacă sau pentru fotografii.'},
-  {id:'p11', name:'Suport Fațetat pentru Bijuterii', category:'Casă & Decor', price:29.99, oldPrice:null, rating:4.6, reviews:156, badge:null, emoji:'💍', grad:'linear-gradient(135deg,#FBDFEA,#F5BAD5)',
-   shape:'ring', material:'PETG perlat', dims:[7,7,12], weight:55, printTime:2.5, infill:20, finish:'Lustruit manual',
-   description:'Suportul fațetat pentru bijuterii combină funcționalitatea cu un aspect sculptural. Inelele, cerceii și brățările își găsesc locul perfect pe formele sale geometrice.'},
-  {id:'p12', name:'Trio Organizatoare de Birou Stivuibile', category:'Birou', price:49.99, oldPrice:null, rating:4.5, reviews:204, badge:'Nou', emoji:'🗄️', grad:'linear-gradient(135deg,#CFEFE8,#A6E1D4)',
-   shape:'organizer', material:'PLA mat', dims:[24,10,8], weight:210, printTime:6, infill:20, finish:'Natural',
-   description:'Trio-ul de organizatoare de birou stivuibile separă pixurile, agrafele și notițele într-un sistem compact. Se pot rearanja în funcție de spațiul disponibil pe birou.'},
-  {id:'p13', name:'Diorama Castel Miniatural', category:'Jucării & Figurine', price:89.99, oldPrice:109.99, rating:4.8, reviews:67, badge:null, emoji:'🏰', grad:'linear-gradient(135deg,#E9E5DD,#D3CBBC)',
-   shape:'castle', material:'PLA detaliat', dims:[20,20,16], weight:280, printTime:16, infill:12, finish:'Vopsit parțial manual',
-   description:'Diorama castelului miniatural recreează o fortăreață medievală cu turnuri, ziduri și porți detaliate. Un obiect de decor care funcționează la fel de bine pe un raft sau ca platformă pentru figurine.'},
-  {id:'p14', name:'Ghiveci Cactus cu Auto-Udare', category:'Grădină', price:22.99, oldPrice:null, rating:4.4, reviews:289, badge:'Eco', emoji:'🌵', grad:'linear-gradient(135deg,#DCF0D3,#B9E3A8)',
-   shape:'planter', material:'PLA rezistent la umiditate', dims:[9,9,11], weight:75, printTime:3, infill:20, finish:'Strat hidrofob',
-   description:'Ghiveciul de cactus cu auto-udare păstrează planta hidratată mai mult timp printr-un rezervor integrat în bază. Stratul hidrofob protejează materialul de umiditatea constantă.'},
-  {id:'p15', name:'Suport Geometric pentru Ochelari de Soare', category:'Cadouri', price:19.99, oldPrice:null, rating:4.1, reviews:54, badge:null, emoji:'🕶️', grad:'linear-gradient(135deg,#FBE6D2,#F5CBA0)',
-   shape:'stand', material:'PLA mat', dims:[16,6,9], weight:65, printTime:2.5, infill:20, finish:'Natural',
-   description:'Suportul geometric pentru ochelari de soare ține lentilele protejate de zgârieturi atunci când nu le porți. Forma sculpturală funcționează și ca obiect decorativ pe noptieră sau birou.'},
-  {id:'p16', name:'Suport Portabil pentru Boxă & Amplificator', category:'Accesorii Tech', price:27.99, oldPrice:32.99, rating:4.6, reviews:178, badge:null, emoji:'🔊', grad:'linear-gradient(135deg,#DEDFF8,#BFC2F0)',
-   shape:'stand', material:'PLA+ ranforsat', dims:[10,10,13], weight:110, printTime:4, infill:25, finish:'Cauciucat la bază',
-   description:'Suportul portabil pentru boxă amplifică sunetul printr-o cavitate acustică integrată, fără cabluri sau baterii. Baza cauciucată previne vibrațiile și deplasarea pe masă.'}
-];
 let products = [];
 let bestsellersPool = [];
 let newArrivalsPool = [];
 let dealIds = [];
 
 function rebuildProductPools(){
-  if(!products.length) return;
-  const best = products.filter(p => p.isBestseller);
-  const newer = products.filter(p => p.isNewArrival);
-  bestsellersPool = best.length ? best : products.slice(0, Math.min(8, products.length));
-  newArrivalsPool = newer.length ? newer : products.slice(Math.min(8, products.length));
+  if(!products.length){
+    bestsellersPool = [];
+    newArrivalsPool = [];
+    dealIds = [];
+    return;
+  }
+  bestsellersPool = products.filter(p => p.isBestseller);
+  newArrivalsPool = products.filter(p => p.isNewArrival);
   dealIds = products.filter(p => p.isDeal).map(p => p.id);
-  if(!dealIds.length) dealIds = products.slice(0, Math.min(5, products.length)).map(p => p.id);
+  if(!bestsellersPool.length) bestsellersPool = [...products];
 }
 
 function mapSupabaseRow(row){
@@ -900,8 +853,7 @@ async function loadProductsFromSupabase(){
     .select('*')
     .order('id', { ascending: true });
   if(error) throw error;
-  if(!data || !data.length) throw new Error('No products in Supabase');
-  products = data.map(mapSupabaseRow);
+  products = (data || []).map(mapSupabaseRow);
   rebuildProductPools();
 }
 const categories = [
@@ -1787,11 +1739,11 @@ async function bootstrap(){
   try{
     await loadProductsFromSupabase();
   }catch(err){
-    console.warn('Supabase unavailable, using local catalog:', err);
-    products = DEFAULT_PRODUCTS.map(p => ({...p, stlUrl: null}));
-    bestsellersPool = products.slice(0, 8);
-    newArrivalsPool = products.slice(8, 16);
-    dealIds = ['p1','p4','p6','p10','p16'];
+    console.error('Failed to load products from Supabase:', err);
+    products = [];
+    bestsellersPool = [];
+    newArrivalsPool = [];
+    dealIds = [];
   }
   renderPills();
   renderCatTiles();

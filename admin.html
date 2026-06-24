@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cubico Admin — Gestionare produse 3D</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='20' width='14' height='5' rx='2' fill='%23FF7A1F'/%3E%3Crect x='4' y='12' width='22' height='5' rx='2' fill='%232553F2'/%3E%3Crect x='4' y='4' width='28' height='5' rx='2' fill='%230F1B2D'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-900:#0F1B2D;
+    --blue-600:#2553F2;
+    --blue-700:#1B3FC2;
+    --orange-500:#FF7A1F;
+    --orange-600:#E8650A;
+    --bg:#F4F6F9;
+    --white:#FFFFFF;
+    --text-900:#161B22;
+    --text-600:#5B6472;
+    --border:#E3E7ED;
+    --green:#1C9C6B;
+    --red:#E0263E;
+    --radius:14px;
+    --shadow-sm:0 1px 3px rgba(15,27,45,0.08);
+    --shadow-md:0 10px 24px rgba(15,27,45,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--text-900);background:var(--bg);-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:'Poppins',system-ui,sans-serif;margin:0;}
+  a{color:inherit;text-decoration:none;}
+  button,input,select,textarea{font-family:inherit;}
+  .container{max-width:1100px;margin:0 auto;padding:0 24px;}
+
+  .header{background:var(--navy-900);padding:18px 0;color:#fff;}
+  .header .container{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .header h1{font-size:22px;}
+  .header h1 span{color:var(--orange-500);}
+  .header-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:background .15s,transform .1s;}
+  .btn:active{transform:scale(.98);}
+  .btn-primary{background:var(--orange-500);color:#fff;}
+  .btn-primary:hover{background:var(--orange-600);}
+  .btn-secondary{background:rgba(255,255,255,.12);color:#fff;}
+  .btn-secondary:hover{background:rgba(255,255,255,.2);}
+  .btn-danger{background:#FEE2E5;color:var(--red);}
+  .btn-danger:hover{background:#FECDD3;}
+  .btn-ghost{background:var(--white);border:1px solid var(--border);color:var(--text-900);}
+  .btn-ghost:hover{background:#F8FAFC;}
+  .btn:disabled{opacity:.55;cursor:not-allowed;}
+
+  main{padding:28px 0 60px;}
+  .layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+
+  .panel{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;}
+  .panel-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .panel-head h2{font-size:18px;}
+  .panel-head p{font-size:13px;color:var(--text-600);margin-top:4px;}
+  .panel-body{padding:22px;}
+
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-grid .full{grid-column:1/-1;}
+  @media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+
+  label{display:block;font-size:12px;font-weight:600;color:var(--text-600);margin-bottom:6px;}
+  input[type="text"],input[type="number"],input[type="file"],select,textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;
+    font-size:14px;color:var(--text-900);background:#fff;
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--blue-600);outline-offset:1px;border-color:var(--blue-600);}
+  textarea{min-height:88px;resize:vertical;}
+
+  .checks{display:flex;flex-wrap:wrap;gap:16px;margin-top:4px;}
+  .check{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-900);cursor:pointer;}
+  .check input{width:16px;height:16px;accent-color:var(--blue-600);}
+
+  .hint{font-size:12px;color:var(--text-600);margin-top:6px;}
+  .alert{padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:16px;}
+  .alert-warn{background:#FFF7E6;border:1px solid #F8E296;color:#8A6D00;}
+  .alert-error{background:#FEE2E5;border:1px solid #FECDD3;color:#9B1C2E;}
+
+  .list-empty{padding:40px 22px;text-align:center;color:var(--text-600);}
+  .list-empty .emo{font-size:42px;margin-bottom:10px;}
+  .product-list{display:flex;flex-direction:column;}
+  .product-row{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+    padding:16px 22px;border-bottom:1px solid var(--border);
+  }
+  .product-row:last-child{border-bottom:none;}
+  .product-emoji{
+    width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:24px;background:linear-gradient(135deg,#E4E8EF,#CDD4E0);
+  }
+  .product-meta h3{font-size:15px;margin-bottom:4px;}
+  .product-meta p{font-size:12px;color:var(--text-600);line-height:1.45;}
+  .product-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;background:#EDF2FF;color:var(--blue-700);}
+  .tag.deal{background:#FFF0E8;color:#C44F00;}
+  .row-actions{display:flex;gap:8px;flex-shrink:0;}
+  .count-badge{font-size:12px;font-weight:600;background:#EDEFF3;padding:4px 10px;border-radius:999px;color:var(--text-600);}
+
+  .toast-stack{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:10px;pointer-events:none;}
+  .toast{
+    background:var(--navy-900);color:#fff;padding:12px 16px;border-radius:12px;font-size:14px;
+    box-shadow:var(--shadow-md);opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;
+    max-width:320px;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast.error{background:var(--red);}
+
+  .loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <div>
+      <h1>Cubico <span>Admin</span></h1>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="btn btn-secondary">← Magazin</a>
+      <button type="button" class="btn btn-ghost" id="refresh-btn" style="background:#fff;color:var(--text-900);">Reîncarcă lista</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <div class="alert alert-warn" id="policy-hint">
+      Dacă adăugarea sau ștergerea eșuează, rulează <code>supabase/admin-policies.sql</code> în SQL Editor.
+    </div>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Adaugă produs</h2>
+            <p>Salvează în tabelul <code>3dmodels</code> și încarcă fișierul STL.</p>
+          </div>
+        </div>
+        <div class="panel-body">
+          <form id="add-form">
+            <div class="form-grid">
+              <div>
+                <label for="slug">Slug (ID magazin) *</label>
+                <input type="text" id="slug" name="slug" required pattern="[a-z0-9-]+" placeholder="ex: vaza-geometrica">
+                <p class="hint">Doar litere mici, cifre și liniuțe. Folosit în URL-ul magazinului.</p>
+              </div>
+              <div>
+                <label for="name">Nume produs *</label>
+                <input type="text" id="name" name="name" required placeholder="ex: Vază Fațetată">
+              </div>
+              <div>
+                <label for="category">Categorie *</label>
+                <select id="category" name="category" required></select>
+              </div>
+              <div>
+                <label for="emoji">Emoji</label>
+                <input type="text" id="emoji" name="emoji" maxlength="4" value="📦">
+              </div>
+              <div>
+                <label for="price">Preț (lei) *</label>
+                <input type="number" id="price" name="price" required min="0" step="0.01" value="29.99">
+              </div>
+              <div>
+                <label for="old_price">Preț vechi (lei)</label>
+                <input type="number" id="old_price" name="old_price" min="0" step="0.01" placeholder="Opțional">
+              </div>
+              <div>
+                <label for="rating">Rating</label>
+                <input type="number" id="rating" name="rating" min="1" max="5" step="0.1" value="4.5">
+              </div>
+              <div>
+                <label for="reviews">Recenzii</label>
+                <input type="number" id="reviews" name="reviews" min="0" step="1" value="0">
+              </div>
+              <div>
+                <label for="badge">Badge</label>
+                <input type="text" id="badge" name="badge" placeholder="ex: Nou, Eco">
+              </div>
+              <div>
+                <label for="shape">Formă fallback 3D</label>
+                <select id="shape" name="shape">
+                  <option value="stand">Stand</option>
+                  <option value="vase">Vază</option>
+                  <option value="planter">Ghiveci</option>
+                  <option value="figure">Figurină</option>
+                  <option value="lamp">Lampă</option>
+                  <option value="organizer">Organizator</option>
+                  <option value="ring">Inel / bijuterii</option>
+                  <option value="chess">Șah</option>
+                  <option value="keychain">Breloc</option>
+                  <option value="castle">Castel</option>
+                </select>
+              </div>
+              <div>
+                <label for="material">Material</label>
+                <input type="text" id="material" name="material" value="PLA mat">
+              </div>
+              <div>
+                <label for="dim_l">Dimensiuni (cm) L × l × H</label>
+                <div style="display:flex;gap:8px;">
+                  <input type="number" id="dim_l" min="0" step="0.1" value="10" aria-label="Lungime">
+                  <input type="number" id="dim_w" min="0" step="0.1" value="10" aria-label="Lățime">
+                  <input type="number" id="dim_h" min="0" step="0.1" value="10" aria-label="Înălțime">
+                </div>
+              </div>
+              <div>
+                <label for="weight">Greutate (g)</label>
+                <input type="number" id="weight" name="weight" min="0" step="1" value="100">
+              </div>
+              <div>
+                <label for="print_time">Timp print (h)</label>
+                <input type="number" id="print_time" name="print_time" min="0" step="0.1" value="3">
+              </div>
+              <div>
+                <label for="infill">Infill (%)</label>
+                <input type="number" id="infill" name="infill" min="0" max="100" step="1" value="20">
+              </div>
+              <div>
+                <label for="finish">Finisaj</label>
+                <input type="text" id="finish" name="finish" value="Natural">
+              </div>
+              <div class="full">
+                <label for="grad">Gradient card (CSS)</label>
+                <input type="text" id="grad" name="grad" value="linear-gradient(135deg,#E4E8EF,#CDD4E0)">
+              </div>
+              <div class="full">
+                <label for="description">Descriere</label>
+                <textarea id="description" name="description" placeholder="Descriere produs..."></textarea>
+              </div>
+              <div class="full">
+                <label for="stl_file">Fișier STL</label>
+                <input type="file" id="stl_file" name="stl_file" accept=".stl,model/stl">
+                <p class="hint">Se încarcă în bucket-ul <code>stl-files</code>. Dacă lipsește, magazinul folosește forma 3D fallback.</p>
+              </div>
+              <div class="full">
+                <span class="checks">
+                  <label class="check"><input type="checkbox" id="is_bestseller"> Cel mai vândut</label>
+                  <label class="check"><input type="checkbox" id="is_new_arrival"> Nou</label>
+                  <label class="check"><input type="checkbox" id="is_deal"> Ofertă</label>
+                </span>
+              </div>
+              <div class="full">
+                <button type="submit" class="btn btn-primary" id="submit-btn" style="width:100%;">Adaugă produs</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Produse existente</h2>
+            <p>Din Supabase · tabel <code>3dmodels</code></p>
+          </div>
+          <span class="count-badge" id="product-count">0 produse</span>
+        </div>
+        <div id="list-wrap">
+          <div class="list-empty" id="list-empty">
+            <div class="emo">📦</div>
+            <p>Se încarcă produsele...</p>
+          </div>
+          <div class="product-list" id="product-list" hidden></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://tilfngrtldwevtiilxpq.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_A3fpQb9LjJb8XySpIJyJeg_gcjPOs3m';
+const STL_BUCKET = 'stl-files';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const CATEGORIES = [
+  'Casă & Decor',
+  'Birou',
+  'Jucării & Figurine',
+  'Accesorii Tech',
+  'Grădină',
+  'Cadouri'
+];
+
+const categorySelect = document.getElementById('category');
+CATEGORIES.forEach(cat => {
+  const opt = document.createElement('option');
+  opt.value = cat;
+  opt.textContent = cat;
+  categorySelect.appendChild(opt);
+});
+
+document.getElementById('name').addEventListener('input', e => {
+  const slugInput = document.getElementById('slug');
+  if(slugInput.dataset.manual === '1') return;
+  slugInput.value = e.target.value
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 48);
+});
+document.getElementById('slug').addEventListener('input', e => {
+  e.target.dataset.manual = '1';
+});
+
+function showToast(msg, isError){
+  const stack = document.getElementById('toast-stack');
+  const el = document.createElement('div');
+  el.className = 'toast' + (isError ? ' error' : '');
+  el.textContent = msg;
+  stack.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 250);
+  }, 3200);
+}
+
+function fmtPrice(n){
+  return Number(n).toFixed(2).replace('.', ',') + ' lei';
+}
+
+function escapeHtml(str){
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function renderProductRow(row){
+  const tags = [];
+  if(row.is_bestseller) tags.push('<span class="tag">Cel mai vândut</span>');
+  if(row.is_new_arrival) tags.push('<span class="tag">Nou</span>');
+  if(row.is_deal) tags.push('<span class="tag deal">Ofertă</span>');
+  if(row.stl_path) tags.push('<span class="tag">STL: ' + escapeHtml(row.stl_path) + '</span>');
+
+  return `
+    <article class="product-row" data-id="${row.id}">
+      <div class="product-emoji" style="background:${escapeHtml(row.grad || 'linear-gradient(135deg,#E4E8EF,#CDD4E0)')}">${escapeHtml(row.emoji || '📦')}</div>
+      <div class="product-meta">
+        <h3>${escapeHtml(row.name)}</h3>
+        <p><strong>${escapeHtml(row.slug || row.id)}</strong> · ${escapeHtml(row.category || '—')} · ${fmtPrice(row.price)}</p>
+        <div class="product-tags">${tags.join('') || '<span class="tag">Fără etichete</span>'}</div>
+      </div>
+      <div class="row-actions">
+        <button type="button" class="btn btn-danger btn-delete" data-id="${row.id}" data-stl="${escapeHtml(row.stl_path || '')}" data-name="${escapeHtml(row.name)}">Șterge</button>
+      </div>
+    </article>`;
+}
+
+async function loadProducts(){
+  const list = document.getElementById('product-list');
+  const empty = document.getElementById('list-empty');
+  const countEl = document.getElementById('product-count');
+
+  const { data, error } = await supabaseClient
+    .from('3dmodels')
+    .select('*')
+    .order('id', { ascending: true });
+
+  if(error){
+    empty.hidden = false;
+    list.hidden = true;
+    empty.innerHTML = `<div class="emo">⚠️</div><p>Nu am putut încărca produsele:<br>${escapeHtml(error.message)}</p>`;
+    countEl.textContent = 'Eroare';
+    return;
+  }
+
+  const rows = data || [];
+  countEl.textContent = rows.length + (rows.length === 1 ? ' produs' : ' produse');
+
+  if(!rows.length){
+    empty.hidden = false;
+    list.hidden = true;
+    empty.innerHTML = '<div class="emo">📭</div><p>Nu există produse încă.<br>Adaugă primul produs din formular.</p>';
+    return;
+  }
+
+  empty.hidden = true;
+  list.hidden = false;
+  list.innerHTML = rows.map(renderProductRow).join('');
+}
+
+async function uploadStl(file, slug){
+  const safeName = slug.replace(/[^a-z0-9-]/gi, '') + '.stl';
+  const { error } = await supabaseClient.storage
+    .from(STL_BUCKET)
+    .upload(safeName, file, { upsert: true, contentType: 'model/stl' });
+  if(error) throw error;
+  return safeName;
+}
+
+async function deleteStl(path){
+  if(!path) return;
+  await supabaseClient.storage.from(STL_BUCKET).remove([path]);
+}
+
+document.getElementById('add-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span> Se salvează...';
+
+  try{
+    const slug = document.getElementById('slug').value.trim().toLowerCase();
+    const stlFile = document.getElementById('stl_file').files[0];
+    let stlPath = null;
+
+    if(stlFile){
+      stlPath = await uploadStl(stlFile, slug);
+    }
+
+    const oldPriceVal = document.getElementById('old_price').value;
+    const badgeVal = document.getElementById('badge').value.trim();
+
+    const payload = {
+      slug,
+      name: document.getElementById('name').value.trim(),
+      category: document.getElementById('category').value,
+      price: Number(document.getElementById('price').value),
+      old_price: oldPriceVal ? Number(oldPriceVal) : null,
+      rating: Number(document.getElementById('rating').value),
+      reviews: Number(document.getElementById('reviews').value),
+      badge: badgeVal || null,
+      emoji: document.getElementById('emoji').value.trim() || '📦',
+      grad: document.getElementById('grad').value.trim(),
+      shape: document.getElementById('shape').value,
+      material: document.getElementById('material').value.trim(),
+      dims: [
+        Number(document.getElementById('dim_l').value),
+        Number(document.getElementById('dim_w').value),
+        Number(document.getElementById('dim_h').value)
+      ],
+      weight: Number(document.getElementById('weight').value),
+      print_time: Number(document.getElementById('print_time').value),
+      infill: Number(document.getElementById('infill').value),
+      finish: document.getElementById('finish').value.trim(),
+      description: document.getElementById('description').value.trim(),
+      stl_path: stlPath,
+      is_bestseller: document.getElementById('is_bestseller').checked,
+      is_new_arrival: document.getElementById('is_new_arrival').checked,
+      is_deal: document.getElementById('is_deal').checked
+    };
+
+    const { error } = await supabaseClient.from('3dmodels').insert(payload);
+    if(error){
+      if(stlPath) await deleteStl(stlPath);
+      throw error;
+    }
+
+    showToast('Produs adăugat cu succes');
+    e.target.reset();
+    document.getElementById('slug').dataset.manual = '';
+    document.getElementById('emoji').value = '📦';
+    document.getElementById('material').value = 'PLA mat';
+    document.getElementById('finish').value = 'Natural';
+    document.getElementById('grad').value = 'linear-gradient(135deg,#E4E8EF,#CDD4E0)';
+    await loadProducts();
+  }catch(err){
+    showToast(err.message || 'Eroare la adăugare', true);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'Adaugă produs';
+  }
+});
+
+document.getElementById('product-list').addEventListener('click', async e => {
+  const btn = e.target.closest('.btn-delete');
+  if(!btn) return;
+
+  const id = btn.dataset.id;
+  const name = btn.dataset.name;
+  const stlPath = btn.dataset.stl;
+
+  if(!confirm(`Ștergi produsul „${name}”?`)) return;
+
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  try{
+    const { error } = await supabaseClient.from('3dmodels').delete().eq('id', id);
+    if(error) throw error;
+    if(stlPath) await deleteStl(stlPath);
+    showToast('Produs șters');
+    await loadProducts();
+  }catch(err){
+    showToast(err.message || 'Eroare la ștergere', true);
+    btn.disabled = false;
+    btn.textContent = 'Șterge';
+  }
+});
+
+document.getElementById('refresh-btn').addEventListener('click', () => {
+  loadProducts();
+  showToast('Listă reîncărcată');
+});
+
+loadProducts();
+</script>
+</body>
+</html>
