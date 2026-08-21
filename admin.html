@@ -376,20 +376,20 @@
       </section>
     </div>
 
-    <section class="panel" style="margin-top:24px;">
+    <section class="panel" style="margin-top:20px;">
       <div class="panel-head">
         <div>
-          <h2>Recenzii în așteptare</h2>
-          <p>Aprobă sau respinge recenziile trimise de clienți pe magazin.</p>
+          <h2>Cererile de print personalizat</h2>
+          <p>Modele încărcate de clienți · tabel <code>custom_prints</code></p>
         </div>
-        <span class="count-badge" id="review-count">0</span>
+        <span class="count-badge" id="custom-count">0</span>
       </div>
-      <div id="review-wrap">
-        <div class="list-empty" id="review-empty">
-          <div class="emo">⭐</div>
-          <p>Se încarcă recenziile...</p>
+      <div id="custom-wrap">
+        <div class="list-empty" id="custom-empty">
+          <div class="emo">📤</div>
+          <p>Se încarcă cererile...</p>
         </div>
-        <div class="review-queue" id="review-queue" hidden></div>
+        <div class="product-list" id="custom-list" hidden></div>
       </div>
     </section>
   </div>
@@ -974,35 +974,64 @@ document.getElementById('product-list').addEventListener('click', async e => {
 
 document.getElementById('refresh-btn').addEventListener('click', () => {
   loadProducts();
-  loadPendingReviews();
+  loadCustomPrints();
   showToast('Listă reîncărcată');
 });
 
-document.getElementById('review-queue').addEventListener('click', async e => {
-  const approveBtn = e.target.closest('.btn-approve-review');
-  const rejectBtn = e.target.closest('.btn-reject-review');
-  const btn = approveBtn || rejectBtn;
-  if(!btn) return;
+async function loadCustomPrints(){
+  const list = document.getElementById('custom-list');
+  const empty = document.getElementById('custom-empty');
+  const countEl = document.getElementById('custom-count');
+  const { data, error } = await supabaseClient
+    .from('custom_prints')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(50);
 
-  btn.disabled = true;
-  try{
-    const status = approveBtn ? 'approved' : 'rejected';
-    const { error } = await supabaseClient
-      .from('product_reviews')
-      .update({ status })
-      .eq('id', btn.dataset.id);
-    if(error) throw error;
-    if(approveBtn) await updateProductRatingFromReviews(approveBtn.dataset.slug);
-    showToast(approveBtn ? 'Recenzie aprobată' : 'Recenzie respinsă');
-    await loadPendingReviews();
-  }catch(err){
-    showToast(err.message || 'Eroare la moderarea recenziei', true);
-    btn.disabled = false;
+  if(error){
+    empty.hidden = false;
+    list.hidden = true;
+    empty.innerHTML = `<div class="emo">⚠️</div><p>Rulează <code>supabase/custom-prints.sql</code><br>${escapeHtml(error.message)}</p>`;
+    countEl.textContent = 'Eroare';
+    return;
   }
-});
+
+  const rows = data || [];
+  countEl.textContent = rows.length + (rows.length === 1 ? ' cerere' : ' cereri');
+  if(!rows.length){
+    empty.hidden = false;
+    list.hidden = true;
+    empty.innerHTML = '<div class="emo">📭</div><p>Nicio cerere de print personalizat încă.</p>';
+    return;
+  }
+
+  empty.hidden = true;
+  list.hidden = false;
+  list.innerHTML = rows.map(row => {
+    const date = new Date(row.created_at).toLocaleString('ro-RO');
+    const price = row.estimated_price != null ? fmtPrice(row.estimated_price) : '—';
+    const stlUrl = row.stl_path
+      ? `${SUPABASE_URL}/storage/v1/object/public/${STL_BUCKET}/${row.stl_path}`
+      : '#';
+    return `
+      <article class="product-row">
+        <div class="product-emoji" style="background:linear-gradient(135deg,#D9E6FB,#B9D0F6)">📤</div>
+        <div class="product-meta">
+          <h3>${escapeHtml(row.file_name || row.stl_path || 'Model')}</h3>
+          <p><strong>${escapeHtml(row.customer_name)}</strong> · ${escapeHtml(row.customer_email)} · ${escapeHtml(row.material || '—')} · ${escapeHtml(row.color_name || '—')} · ${escapeHtml(row.size_key || '—')} · ${price}</p>
+          <div class="product-tags">
+            <span class="tag">${escapeHtml(row.status || 'new')}</span>
+            <span class="tag">${escapeHtml(date)}</span>
+            ${row.stl_path ? `<a class="tag" href="${stlUrl}" target="_blank" rel="noopener">Descarcă fișier</a>` : ''}
+          </div>
+          ${row.notes ? `<p style="margin-top:6px;">${escapeHtml(row.notes)}</p>` : ''}
+        </div>
+      </article>`;
+  }).join('');
+}
 
 loadProducts();
-loadPendingReviews();
+loadCustomPrints();
 </script>
 </body>
 </html>

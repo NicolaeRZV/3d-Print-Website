@@ -94,6 +94,19 @@
   .info-card h3{font-size:15px;margin-bottom:6px;}
   .info-card p{font-size:13px;color:var(--text-600);line-height:1.55;}
 
+  .prints-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+  .print-row{
+    display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
+    padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#F8FAFC;
+  }
+  .print-row h4{font-size:14px;margin:0 0 4px;font-family:'Poppins',sans-serif;}
+  .print-row p{font-size:12.5px;color:var(--text-600);margin:0;line-height:1.45;}
+  .print-status{
+    flex-shrink:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+    padding:4px 8px;border-radius:999px;background:#EEF2FF;color:var(--blue-600);
+  }
+  .print-empty{font-size:13px;color:var(--text-600);padding:8px 0;}
+
   .actions{display:flex;flex-wrap:wrap;gap:12px;}
   .btn{
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -146,6 +159,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="auth.js"></script>
 <script>
+const SUPABASE_URL = 'https://tilfngrtldwevtiilxpq.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_A3fpQb9LjJb8XySpIJyJeg_gcjPOs3m';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const content = document.getElementById('account-content');
 
 function getInitials(name, email) {
@@ -166,7 +182,7 @@ function renderAccount(user) {
   content.innerHTML = `
     <div class="page-head">
       <h1>Contul meu</h1>
-      <p>Gestionează profilul tău artblu. Contul este opțional — poți continua să cumperi ca vizitator.</p>
+      <p>Gestionează profilul și cererile tale de print personalizat.</p>
     </div>
 
     <div class="profile-card">
@@ -177,14 +193,20 @@ function renderAccount(user) {
       </div>
     </div>
 
+    <div class="info-card" style="margin-bottom:20px;" id="prints-card">
+      <h3>Modelele mele încărcate</h3>
+      <p>Cererile de print din STL / OBJ / 3MF pe care le-ai trimis.</p>
+      <div class="prints-list" id="prints-list"><p class="print-empty">Se încarcă…</p></div>
+    </div>
+
     <div class="cards">
       <div class="info-card">
-        <h3>📦 Comenzi</h3>
-        <p>Istoricul comenzilor va apărea aici în curând. Deocamdată poți plasa comenzi ca vizitator din magazin.</p>
+        <h3>Comenzi magazin</h3>
+        <p>Istoricul comenzilor din colecție va apărea aici în curând. Poți comanda și ca vizitator.</p>
       </div>
       <div class="info-card">
-        <h3>🎨 Print personalizat</h3>
-        <p>Funcția „Printează designul meu” vine în curând. Te anunțăm când e gata!</p>
+        <h3>Print personalizat</h3>
+        <p>Încarcă un fișier 3D pe pagina principală, alege materialul și culoarea, apoi trimite cererea.</p>
       </div>
     </div>
 
@@ -194,8 +216,9 @@ function renderAccount(user) {
     </div>
 
     <div class="actions">
-      <a href="index.html" class="btn btn-primary">Continuă cumpărăturile</a>
-      <button type="button" class="btn btn-ghost" id="logout-btn">Deconectare</button>
+      <a href="index.html#upload" class="btn btn-primary">Încarcă un model</a>
+      <a href="index.html#catalog" class="btn btn-ghost">Vezi colecția</a>
+      <button type="button" class="btn btn-danger" id="logout-btn">Deconectare</button>
     </div>
   `;
 
@@ -207,6 +230,44 @@ function renderAccount(user) {
       alert(err.message || 'Nu am putut face deconectarea.');
     }
   });
+
+  loadCustomPrints(user);
+}
+
+async function loadCustomPrints(user) {
+  const list = document.getElementById('prints-list');
+  if (!list) return;
+  try {
+    const emailFilter = (user.email || '').replace(/"/g, '');
+    const { data, error } = await supabaseClient
+      .from('custom_prints')
+      .select('id, created_at, file_name, material, color_name, size_key, estimated_price, status')
+      .or(`user_id.eq.${user.id},customer_email.eq."${emailFilter}"`)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (error) throw error;
+    if (!data || !data.length) {
+      list.innerHTML = '<p class="print-empty">Nicio cerere încă. <a href="index.html#upload">Încarcă primul model →</a></p>';
+      return;
+    }
+    list.innerHTML = data.map(row => {
+      const date = new Date(row.created_at).toLocaleDateString('ro-RO');
+      const price = row.estimated_price != null
+        ? Number(row.estimated_price).toFixed(2).replace('.', ',') + ' lei'
+        : '—';
+      return `
+        <article class="print-row">
+          <div>
+            <h4>${escapeHtml(row.file_name || 'Model 3D')}</h4>
+            <p>${escapeHtml(row.material || '—')} · ${escapeHtml(row.color_name || '—')} · ${escapeHtml(row.size_key || '—')} · ${price}<br>${date}</p>
+          </div>
+          <span class="print-status">${escapeHtml(row.status || 'new')}</span>
+        </article>`;
+    }).join('');
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = '<p class="print-empty">Nu am putut încărca cererile. Rulează SQL-ul din supabase/custom-prints.sql dacă tabelul lipsește.</p>';
+  }
 }
 
 getCurrentUser().then(user => {

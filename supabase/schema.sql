@@ -93,6 +93,7 @@ on conflict (slug) do update set
   is_deal = excluded.is_deal;
 
 -- Orders placed from the storefront checkout
+-- Also see custom-prints.sql for user STL upload requests.
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>artblu — Magazin de Obiecte Printate 3D</title>
+<title>artblu — Încarcă STL & Print 3D la comandă</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='20' width='14' height='5' rx='2' fill='%23FF7A1F'/%3E%3Crect x='4' y='12' width='22' height='5' rx='2' fill='%232553F2'/%3E%3Crect x='4' y='4' width='28' height='5' rx='2' fill='%230F1B2D'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -116,33 +116,27 @@
 
   /* ===== Hero ===== */
   .hero{
-    background:linear-gradient(135deg,var(--navy-900) 0%,#132038 50%,var(--navy-800) 100%);
+    background:
+      radial-gradient(ellipse 70% 60% at 85% 15%, rgba(77,163,255,0.22), transparent 55%),
+      radial-gradient(ellipse 50% 45% at 10% 90%, rgba(255,122,31,0.14), transparent 50%),
+      linear-gradient(160deg, var(--navy-900) 0%, #132038 48%, var(--navy-800) 100%);
     position:relative;overflow:hidden;
   }
-  .hero::before,.hero::after{
-    content:'';position:absolute;border-radius:50%;pointer-events:none;
-  }
-  .hero::before{
-    width:420px;height:420px;top:-120px;right:-80px;
-    background:radial-gradient(circle,rgba(77,163,255,0.18) 0%,transparent 70%);
-  }
-  .hero::after{
-    width:300px;height:300px;bottom:-100px;left:-60px;
-    background:radial-gradient(circle,rgba(255,122,31,0.12) 0%,transparent 70%);
-  }
   .hero .container{
-    display:flex;align-items:center;justify-content:space-between;gap:40px;
-    padding:72px 24px;flex-wrap:wrap;position:relative;z-index:1;
+    display:grid;grid-template-columns:1fr 1.05fr;gap:36px;align-items:center;
+    padding:56px 24px 64px;position:relative;z-index:1;
   }
-  .hero-text{flex:1 1 420px;min-width:280px;max-width:580px;}
+  .hero-text{min-width:0;}
   .hero-eyebrow{
     display:inline-flex;align-items:center;gap:8px;color:var(--blue-500);
     font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px;
     background:rgba(77,163,255,0.12);padding:6px 12px;border-radius:20px;
   }
-  .hero-text h1{color:var(--white);font-size:44px;line-height:1.1;margin-bottom:18px;}
-  .hero-text p{color:#B9C2D2;font-size:16.5px;line-height:1.65;max-width:500px;margin-bottom:28px;}
-  .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;}
+  .hero-text h1{color:var(--white);font-size:42px;line-height:1.08;margin-bottom:16px;}
+  .hero-text p{color:#B9C2D2;font-size:16px;line-height:1.65;max-width:460px;margin-bottom:26px;}
+  .hero-ctas{display:flex;gap:12px;flex-wrap:wrap;}
+  .hero-meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;color:#8FA0B8;font-size:12.5px;}
+  .hero-meta span{display:inline-flex;align-items:center;gap:6px;}
   .btn{
     display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:11px;
     font-size:14.5px;font-weight:600;transition:transform .12s ease, background .15s ease, box-shadow .15s ease;
@@ -151,36 +145,52 @@
   .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,122,31,0.4);}
   .btn-ghost{background:rgba(255,255,255,0.06);color:var(--white);border:1px solid rgba(255,255,255,0.2);}
   .btn-ghost:hover{background:rgba(255,255,255,0.12);}
-  .btn-disabled{
-    background:rgba(255,255,255,0.08);color:#8A9BB5;border:1px dashed rgba(255,255,255,0.25);
-    cursor:default;pointer-events:none;
-  }
+  .btn-secondary{background:var(--white);color:var(--navy-900);border:1px solid var(--border);}
+  .btn-secondary:hover{background:#F8FAFC;}
+  .btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
 
-  .hero-visual{
-    flex:0 1 280px;display:flex;align-items:center;justify-content:center;
-    min-width:200px;
+  .hero-stage{
+    position:relative;min-height:420px;border-radius:24px;overflow:hidden;
+    background:linear-gradient(155deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.14);
+    box-shadow:0 28px 60px rgba(0,0,0,0.28);
   }
-  .hero-art{
-    width:220px;height:220px;border-radius:28px;
-    position:relative;
-    background:linear-gradient(145deg,rgba(77,163,255,0.25),rgba(37,83,242,0.15));
-    border:1px solid rgba(255,255,255,0.12);
-    box-shadow:0 20px 50px rgba(0,0,0,0.25);
-    backdrop-filter:blur(8px);
-    overflow:hidden;
+  .hero-drop{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:12px;padding:28px;cursor:pointer;z-index:2;transition:background .2s ease, border-color .2s ease;
+    border:2px dashed transparent;
   }
-  .hero-stl-wrap{position:absolute;inset:0;touch-action:none;}
-  .hero-stl-wrap canvas{display:block;width:100% !important;height:100% !important;}
-  .hero-stl-fallback{
-    position:absolute;inset:0;display:none;align-items:center;justify-content:center;
-    font-size:72px;
+  .hero-drop:hover,.hero-drop.dragover{
+    background:rgba(77,163,255,0.12);
+    border-color:rgba(77,163,255,0.55);
   }
-  .hero-stl-label{
-    position:absolute;left:0;right:0;bottom:0;padding:10px 12px 12px;
-    font-size:11px;font-weight:600;color:rgba(255,255,255,0.92);
-    background:linear-gradient(transparent,rgba(15,27,45,0.72));
-    text-align:center;line-height:1.35;margin:0;
+  .hero-drop.has-file{cursor:default;pointer-events:none;opacity:0;visibility:hidden;}
+  .hero-drop-icon{
+    width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+    background:rgba(77,163,255,0.18);color:var(--blue-500);
   }
+  .hero-drop h2{color:var(--white);font-size:20px;text-align:center;margin:0;}
+  .hero-drop p{color:#A8B4C8;font-size:13.5px;text-align:center;max-width:280px;line-height:1.5;margin:0;}
+  .hero-drop .formats{font-size:12px;color:#7E8FA8;letter-spacing:.02em;}
+  .hero-preview{
+    position:absolute;inset:0;z-index:1;opacity:0;visibility:hidden;transition:opacity .25s ease;
+  }
+  .hero-preview.active{opacity:1;visibility:visible;}
+  .hero-preview-canvas{position:absolute;inset:0;cursor:grab;touch-action:none;}
+  .hero-preview-canvas:active{cursor:grabbing;}
+  .hero-preview-canvas canvas{display:block;width:100% !important;height:100% !important;}
+  .hero-preview-bar{
+    position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;align-items:center;justify-content:space-between;
+    gap:10px;padding:12px 14px;background:linear-gradient(transparent, rgba(15,27,45,0.85));
+    color:#E7EBF2;font-size:12.5px;
+  }
+  .hero-preview-bar strong{font-weight:600;}
+  .hero-preview-bar button{
+    flex-shrink:0;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;
+    background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.2);
+  }
+  .hero-preview-bar button:hover{background:rgba(255,255,255,0.2);}
+  #custom-file-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
 
   .layerbar{display:flex;flex-direction:column-reverse;gap:3px;height:34px;}
   .layerbar i{display:block;height:4px;border-radius:2px;background:#E3E7ED;}
@@ -277,59 +287,82 @@
   .empty-state .layerbar i{width:18px;height:18px;border-radius:5px;}
   .empty-state h3{font-size:16px;margin-bottom:6px;color:var(--text-900);}
 
-  /* ===== Mid banner ===== */
-  .midbanner{
-    position:relative;background:linear-gradient(135deg,var(--navy-900),var(--blue-700));
-    border-radius:20px;padding:40px;display:flex;align-items:center;justify-content:space-between;
-    gap:24px;flex-wrap:wrap;color:var(--white);overflow:hidden;
-    box-shadow:var(--shadow-md);
+  /* ===== Upload studio ===== */
+  .upload-studio{background:var(--white);border-bottom:1px solid var(--border);}
+  .upload-grid{
+    display:grid;grid-template-columns:1.05fr 0.95fr;gap:28px;align-items:start;
   }
-  .midbanner::before{
-    content:'';position:absolute;inset:0;
-    background:radial-gradient(circle at 90% 20%,rgba(77,163,255,0.2),transparent 50%);
-    pointer-events:none;
+  .upload-panel{
+    background:linear-gradient(180deg, #F8FAFC 0%, var(--white) 40%);
+    border:1px solid var(--border);border-radius:20px;padding:22px;
   }
-  .midbanner > *{position:relative;z-index:1;}
-  .midbanner h2{font-size:24px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-  .midbanner p{color:#C8D8F8;max-width:440px;font-size:14.5px;line-height:1.6;}
-  .coming-soon-badge{
-    display:inline-flex;align-items:center;gap:6px;
-    background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);
-    color:var(--white);font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-    padding:5px 12px;border-radius:20px;backdrop-filter:blur(4px);
+  .upload-panel h2{font-size:20px;margin-bottom:6px;}
+  .upload-panel .sub{color:var(--text-600);font-size:13.5px;margin-bottom:18px;line-height:1.5;}
+  .upload-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .upload-field{display:flex;flex-direction:column;gap:6px;}
+  .upload-field.full{grid-column:1 / -1;}
+  .upload-field label{font-size:12px;font-weight:600;color:var(--text-600);}
+  .upload-field input,.upload-field select,.upload-field textarea{
+    width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;
+    font-size:14px;font-family:inherit;background:var(--white);color:var(--text-900);
   }
-  .midbanner .btn-coming-soon{
-    background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);
-    border:1px dashed rgba(255,255,255,0.3);cursor:default;pointer-events:none;
-    padding:14px 24px;border-radius:11px;font-size:14.5px;font-weight:600;white-space:nowrap;
+  .upload-field textarea{resize:vertical;min-height:84px;}
+  .upload-field input:focus,.upload-field select:focus,.upload-field textarea:focus{
+    outline:2px solid var(--blue-600);outline-offset:1px;border-color:var(--blue-600);
   }
+  .upload-swatches{display:flex;gap:8px;flex-wrap:wrap;}
+  .upload-swatch{
+    width:30px;height:30px;border-radius:50%;border:2px solid var(--white);
+    box-shadow:0 0 0 1px var(--border);transition:transform .12s, box-shadow .15s;
+  }
+  .upload-swatch:hover{transform:scale(1.08);}
+  .upload-swatch.active{box-shadow:0 0 0 2px var(--blue-600);}
+  .upload-sizes{display:flex;gap:8px;flex-wrap:wrap;}
+  .upload-size{
+    padding:9px 14px;border:1.5px solid var(--border);border-radius:20px;
+    font-size:13px;font-weight:600;background:var(--white);color:var(--text-900);
+  }
+  .upload-size small{font-weight:500;color:var(--text-600);}
+  .upload-size.active{border-color:var(--blue-600);background:#EEF2FF;color:var(--blue-600);}
+  .upload-estimate{
+    margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--bg);
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .upload-estimate .label{font-size:13px;color:var(--text-600);}
+  .upload-estimate .price{font-size:22px;font-weight:700;font-family:'Poppins',sans-serif;}
+  .upload-estimate .hint{font-size:12px;color:var(--text-600);width:100%;}
+  .upload-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+  .upload-actions .btn{flex:1;justify-content:center;min-width:140px;}
+  .upload-status{font-size:13px;color:var(--text-600);min-height:20px;margin-top:10px;}
+  .upload-status.error{color:var(--red);}
+  .upload-status.ok{color:var(--green);font-weight:600;}
+  .upload-file-chip{
+    display:none;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;
+    background:#EEF2FF;border:1px solid #D6DFFF;margin-bottom:14px;font-size:13px;
+  }
+  .upload-file-chip.visible{display:flex;}
+  .upload-file-chip strong{font-weight:600;word-break:break-all;}
+  .upload-file-chip button{margin-left:auto;color:var(--blue-600);font-weight:600;font-size:12.5px;}
 
-  /* ===== Custom upload & contact ===== */
-  .custom-panel,.contact-panel{
-    background:var(--white);border:1px solid var(--border);border-radius:20px;
-    padding:28px;box-shadow:var(--shadow-md);
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px;}
+  .step{
+    padding:18px 16px;border-radius:16px;border:1px solid var(--border);
+    background:linear-gradient(180deg, #FBFCFF, var(--white));
   }
-  .custom-grid,.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
-  .custom-form-grid{display:grid;gap:14px;}
-  .custom-form-grid label{font-size:12px;font-weight:600;color:var(--text-600);display:block;margin-bottom:6px;}
-  .custom-form-grid input,.custom-form-grid select,.custom-form-grid textarea{
-    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;
+  .step-num{
+    width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    background:var(--navy-900);color:#fff;font-size:13px;font-weight:700;margin-bottom:12px;
   }
-  .custom-price-box{margin-top:4px;padding:18px;border-radius:14px;background:#F0F4FF;border:1px solid #D6E0FF;}
-  .custom-price{font-size:28px;font-weight:800;color:var(--orange-500);font-family:'Poppins',sans-serif;}
-  .custom-status{font-size:13px;color:var(--text-600);margin-top:8px;line-height:1.5;}
-  .custom-status.error{color:var(--red);}
-  .custom-status.ok{color:var(--green);}
-  .custom-preview{
-    min-height:280px;border:1px dashed var(--border);border-radius:14px;background:#F8FAFC;
-    display:flex;align-items:center;justify-content:center;color:var(--text-600);font-size:14px;
-    position:relative;overflow:hidden;text-align:center;padding:20px;
+  .step h3{font-size:15px;margin-bottom:6px;}
+  .step p{font-size:13px;color:var(--text-600);line-height:1.55;}
+
+  .catalog-intro{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px;
   }
-  .custom-preview canvas{display:block;width:100%!important;height:100%!important;}
-  .review-form{margin-top:24px;padding-top:24px;border-top:1px solid var(--border);}
-  .review-form-grid{display:grid;gap:12px;max-width:560px;}
-  .review-pending-note{font-size:13px;color:var(--text-600);margin-top:8px;}
-  @media(max-width:900px){.custom-grid,.contact-grid{grid-template-columns:1fr;}}
+  .catalog-intro h2{font-size:24px;}
+  .catalog-intro p{color:var(--text-600);font-size:13.5px;margin-top:4px;}
+  .catalog-intro a{font-size:13.5px;font-weight:600;color:var(--blue-600);}
+  .catalog-intro a:hover{text-decoration:underline;}
 
   /* ===== Trust strip ===== */
   .trust{background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
@@ -515,16 +548,17 @@
     .cat-grid{grid-template-columns:repeat(3,1fr);}
     .footer-grid{grid-template-columns:repeat(2,1fr);}
     .trust .container{grid-template-columns:repeat(2,1fr);}
-    .hero-visual{flex:0 0 auto;}
+    .hero .container{grid-template-columns:1fr;gap:28px;}
+    .hero-stage{min-height:360px;}
+    .upload-grid{grid-template-columns:1fr;}
+    .steps{grid-template-columns:1fr;}
   }
   @media (max-width:860px){
     .pv-grid{grid-template-columns:1fr;gap:28px;}
     .pv-media{position:static;}
-    .hero .container{justify-content:center;text-align:center;}
-    .hero-text{max-width:100%;}
+    .hero-text{text-align:center;}
     .hero-text p{margin-left:auto;margin-right:auto;}
-    .hero-ctas{justify-content:center;}
-    .hero-visual{margin:0 auto;}
+    .hero-ctas,.hero-meta{justify-content:center;}
   }
   @media (max-width:760px){
     .header{padding:12px 0;padding-top:max(12px, env(safe-area-inset-top));}
@@ -534,11 +568,10 @@
     .searchbar{order:3;flex:1 0 100%;margin-top:8px;height:46px;}
     .header-action{padding:6px;}
     .header-action span.label{display:none;}
-    .hero .container{padding:48px 20px 52px;}
-    .hero-text h1{font-size:32px;}
-    .hero-art{width:160px;height:160px;font-size:56px;border-radius:22px;}
-    .midbanner{padding:28px 24px;flex-direction:column;align-items:flex-start;}
-    .midbanner .btn-coming-soon{width:100%;text-align:center;}
+    .hero .container{padding:40px 20px 48px;}
+    .hero-text h1{font-size:30px;}
+    .hero-stage{min-height:300px;border-radius:18px;}
+    .upload-fields{grid-template-columns:1fr;}
     .qty-btn{width:36px;height:36px;}
     .wish-btn{width:38px;height:38px;}
     .pill{padding:10px 16px;font-size:14px;}
@@ -563,16 +596,16 @@
     .container{padding:0 16px;}
     .trust .container{grid-template-columns:1fr;}
     .deal-banner{flex-direction:column;align-items:flex-start;}
-    .hero-text h1{font-size:28px;line-height:1.15;}
+    .hero-text h1{font-size:26px;line-height:1.15;}
     .hero-eyebrow{font-size:11.5px;}
     .section{padding:32px 0;}
     .footer-grid{grid-template-columns:1fr;}
     .section-head{align-items:flex-start;}
     #pv-title{font-size:21px;}
     .pv-add{width:100%;}
-    .hero-visual{display:flex;margin:4px auto 0;}
-    .hero-art{width:150px;height:150px;border-radius:20px;}
     .checkout-panel{padding:18px;border-radius:14px;}
+    .upload-actions{flex-direction:column;}
+    .upload-actions .btn{width:100%;}
   }
 
   @media (prefers-reduced-motion:reduce){
@@ -587,10 +620,10 @@
 <!-- ===== Top strip ===== -->
 <div class="topstrip">
   <div class="container">
-    <span>🚚 Livrare gratuită la comenzi peste 250 lei</span>
+    <span>🖨️ Încarcă STL-ul tău — îl printăm în 48h</span>
     <div class="topstrip-links">
-      <a href="#">Ajutor</a>
-      <a href="#">Urmărește comanda</a>
+      <a href="#upload">Încarcă model</a>
+      <a href="#catalog">Magazin</a>
       <a href="#">RO · Lei</a>
     </div>
   </div>
@@ -618,7 +651,7 @@
         <option>Grădină</option>
         <option>Cadouri</option>
       </select>
-      <input id="search-input" type="text" placeholder="Caută vaze, figurine, suporturi 3D printate…" aria-label="Caută produse">
+      <input id="search-input" type="text" placeholder="Caută în colecție sau încarcă propriul STL…" aria-label="Caută produse">
       <button type="submit" aria-label="Caută">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </button>
@@ -645,23 +678,138 @@
 
 <main id="continut">
 
-<!-- ===== Hero ===== -->
-<section class="hero">
+<!-- ===== Hero: upload-first ===== -->
+<section class="hero" id="upload">
   <div class="container">
     <div class="hero-text">
-      <span class="hero-eyebrow">Artă printată 3D, la comandă</span>
-      <h1>Frumos printate.<br>Personalizabile la infinit.</h1>
-      <p>Decorațiuni unice pentru casă, accesorii de birou și jucării — printate strat cu strat, în culoarea și mărimea pe care le vrei cu adevărat.</p>
+      <span class="hero-eyebrow">Print pe baza modelului tău</span>
+      <h1>Încarcă STL-ul.<br>Noi îl printăm.</h1>
+      <p>Trage fișierul 3D aici, alege materialul și culoarea, iar noi îl printăm strat cu strat — personalizat, la comandă.</p>
       <div class="hero-ctas">
-        <a href="#bestsellers" class="btn btn-primary">Vezi cele mai vândute</a>
-        <a href="#custom" class="btn btn-ghost">Printează designul meu</a>
+        <button type="button" class="btn btn-primary" id="hero-pick-btn">Alege fișierul 3D</button>
+        <a href="#catalog" class="btn btn-ghost">Vezi colecția gata</a>
+      </div>
+      <div class="hero-meta">
+        <span>✓ STL · OBJ · 3MF</span>
+        <span>✓ Previzualizare 3D</span>
+        <span>✓ Estimare preț instant</span>
       </div>
     </div>
-    <div class="hero-visual" aria-hidden="true">
-      <div class="hero-art">
-        <div class="hero-stl-wrap" id="hero-stl-wrap"></div>
-        <span class="hero-stl-fallback" id="hero-stl-fallback">🎨</span>
-        <p class="hero-stl-label" id="hero-stl-label" hidden></p>
+
+    <div class="hero-stage" id="hero-stage">
+      <input type="file" id="custom-file-input" accept=".stl,.obj,.3mf,model/stl,model/obj,application/sla" aria-label="Încarcă fișier 3D">
+      <div class="hero-drop" id="hero-drop" role="button" tabindex="0" aria-label="Zonă de încărcare model 3D">
+        <div class="hero-drop-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        </div>
+        <h2>Trage modelul aici</h2>
+        <p>sau click pentru a selecta din calculator</p>
+        <span class="formats">Max. 50 MB · STL recomandat pentru previzualizare</span>
+      </div>
+      <div class="hero-preview" id="hero-preview">
+        <div class="hero-preview-canvas" id="custom-stl-wrap"></div>
+        <div class="hero-preview-bar">
+          <span><strong id="custom-file-name">model.stl</strong></span>
+          <button type="button" id="custom-clear-btn">Schimbă fișierul</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Configure & submit ===== -->
+<section class="section upload-studio" id="configure">
+  <div class="container">
+    <div class="upload-grid">
+      <form class="upload-panel" id="custom-print-form">
+        <div class="upload-file-chip" id="custom-file-chip">
+          <span>📦</span>
+          <strong id="custom-file-chip-name">—</strong>
+          <button type="button" id="custom-file-chip-clear">Elimină</button>
+        </div>
+        <h2>Configurează printul</h2>
+        <p class="sub">Completează opțiunile și datele de contact. Te contactăm cu confirmarea și prețul final înainte de printare.</p>
+
+        <div class="upload-fields">
+          <div class="upload-field">
+            <label for="custom-material">Material</label>
+            <select id="custom-material" name="material">
+              <option value="PLA" data-mult="1">PLA — versatil</option>
+              <option value="PETG" data-mult="1.2">PETG — rezistent</option>
+              <option value="ABS" data-mult="1.3">ABS — durabil</option>
+              <option value="TPU" data-mult="1.4">TPU — flexibil</option>
+              <option value="Rășină" data-mult="1.8">Rășină — detalii fine</option>
+            </select>
+          </div>
+          <div class="upload-field">
+            <label>Mărime print</label>
+            <div class="upload-sizes" id="custom-sizes" role="group" aria-label="Mărime print"></div>
+          </div>
+          <div class="upload-field full">
+            <label>Culoare filament: <span id="custom-color-name">Alb</span></label>
+            <div class="upload-swatches" id="custom-swatches" role="group" aria-label="Culoare filament"></div>
+          </div>
+          <div class="upload-field">
+            <label for="custom-name">Nume</label>
+            <input id="custom-name" name="name" type="text" required autocomplete="name" placeholder="Ion Popescu">
+          </div>
+          <div class="upload-field">
+            <label for="custom-email">Email</label>
+            <input id="custom-email" name="email" type="email" required autocomplete="email" placeholder="ion@email.ro">
+          </div>
+          <div class="upload-field">
+            <label for="custom-phone">Telefon</label>
+            <input id="custom-phone" name="phone" type="tel" autocomplete="tel" placeholder="07xx xxx xxx">
+          </div>
+          <div class="upload-field">
+            <label for="custom-address">Adresă livrare (opțional)</label>
+            <input id="custom-address" name="address" type="text" autocomplete="street-address" placeholder="Stradă, oraș, județ">
+          </div>
+          <div class="upload-field full">
+            <label for="custom-notes">Note / detalii</label>
+            <textarea id="custom-notes" name="notes" placeholder="Ex: orientare pe pat, toleranțe, text de gravat…"></textarea>
+          </div>
+        </div>
+
+        <div class="upload-estimate">
+          <div>
+            <div class="label">Estimare orientativă</div>
+            <div class="price" id="custom-price">59,99 lei</div>
+          </div>
+          <span class="hint">Prețul final depinde de volum, suporturi și timp de print. Confirmăm înainte de producție.</span>
+        </div>
+
+        <div class="upload-actions">
+          <button type="submit" class="btn btn-primary" id="custom-submit">Trimite cererea de print</button>
+          <button type="button" class="btn btn-secondary" id="custom-pick-again">Alt fișier</button>
+        </div>
+        <p class="upload-status" id="custom-status" aria-live="polite"></p>
+      </form>
+
+      <div>
+        <div class="section-head" style="margin-bottom:14px;">
+          <div>
+            <h2>Cum funcționează</h2>
+            <p class="sub">De la fișier la obiect, în trei pași</p>
+          </div>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <h3>Încarcă modelul</h3>
+            <p>Adaugi STL, OBJ sau 3MF. Pentru STL vezi imediat previzualizarea 3D pe care o poți roti.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <h3>Alege finisajul</h3>
+            <p>Material, culoare și mărime — cu estimare de preț pe loc, înainte să trimiți cererea.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <h3>Noi printăm</h3>
+            <p>Verificăm fișierul, confirmăm prețul și tipărim pe platformă. Livrare tipic în 2–4 zile.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -669,8 +817,21 @@
 
 <div class="layer-divider" aria-hidden="true"><i style="width:24px"></i><i style="width:40px"></i><i style="width:60px"></i><i style="width:40px"></i><i style="width:24px"></i></div>
 
+<!-- ===== Catalog (secondary) ===== -->
+<section class="section" id="catalog" style="background:var(--bg);padding-bottom:12px;">
+  <div class="container">
+    <div class="catalog-intro">
+      <div>
+        <h2>Sau alege din colecție</h2>
+        <p>Modele gata de print, cu previzualizare 3D — dacă nu ai propriul fișier.</p>
+      </div>
+      <a href="#upload">Prefer să încarc STL →</a>
+    </div>
+  </div>
+</section>
+
 <!-- ===== Deals ===== -->
-<section class="section deals">
+<section class="section deals" style="padding-top:12px;">
   <div class="container">
     <div class="deal-banner">
       <h2>🔥 Oferte pe Straturi</h2>
@@ -706,7 +867,7 @@
             <option value="rating">Cele mai bine notate</option>
           </select>
         </div>
-        <a href="#" class="view-all">Vezi tot →</a>
+        <a href="#catalog" class="view-all">Sus la colecție →</a>
       </div>
     </div>
     <div class="grid" id="bestsellers-grid"></div>
@@ -718,59 +879,12 @@
   </div>
 </section>
 
-<!-- ===== Custom print ===== -->
-<section class="section" id="custom">
-  <div class="container">
-    <div class="custom-panel">
-      <div class="section-head" style="margin-bottom:20px;">
-        <div>
-          <h2>Ai un design? Îl printăm noi.</h2>
-          <p class="sub">Încarcă STL + export Bambu Studio, alege materialul și vezi prețul calculat automat.</p>
-        </div>
-      </div>
-      <div class="custom-grid">
-        <div>
-          <div class="custom-preview" id="custom-preview">Previzualizarea 3D apare aici după ce încarci STL-ul.</div>
-          <p class="custom-status" id="custom-bed-status"></p>
-        </div>
-        <form id="custom-upload-form" class="custom-form-grid">
-          <div>
-            <label for="custom-stl">Fișier STL *</label>
-            <input type="file" id="custom-stl" accept=".stl,model/stl" required>
-            <p class="custom-status">Modelul trebuie să încapă pe platforma Bambu Lab 256×256×256 mm.</p>
-          </div>
-          <div>
-            <label for="custom-bambu">Export Bambu Studio (G-code sau 3MF sliced) *</label>
-            <input type="file" id="custom-bambu" accept=".gcode,.3mf,application/octet-stream" required>
-          </div>
-          <div>
-            <label for="custom-material">Material *</label>
-            <select id="custom-material" required>
-              <option value="PLA">PLA</option>
-              <option value="PETG">PETG</option>
-              <option value="TPU">TPU</option>
-              <option value="ABS">ABS</option>
-            </select>
-          </div>
-          <div class="custom-price-box" id="custom-price-box" hidden>
-            <p style="font-size:13px;color:var(--text-600);margin-bottom:6px;">Preț estimat</p>
-            <div class="custom-price" id="custom-price">—</div>
-            <p class="custom-status">Calculat cu aceeași formulă ca în admin. Detaliile costurilor nu sunt afișate public.</p>
-          </div>
-          <p class="custom-status error" id="custom-error"></p>
-          <button type="submit" class="btn btn-primary" id="custom-add-btn" style="padding:14px 20px;border-radius:11px;background:var(--orange-500);color:#fff;font-weight:700;" disabled>Adaugă în coș</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ===== New arrivals ===== -->
 <section class="section" style="background:var(--white);">
   <div class="container">
     <div class="section-head">
       <div><h2>Noutăți</h2><p class="sub">Proaspăt scoase de pe platforma de printare</p></div>
-      <a href="#" class="view-all">Vezi tot →</a>
+      <a href="#upload" class="view-all">Încarcă modelul tău →</a>
     </div>
     <div class="grid" id="newarrivals-grid"></div>
     <div class="empty-state" id="newarrivals-empty">
@@ -784,10 +898,10 @@
 <!-- ===== Trust strip ===== -->
 <section class="trust">
   <div class="container">
-    <div class="trust-item"><span class="emo">🚚</span><div><h4>Livrare gratuită</h4><p>La comenzi peste 250 lei</p></div></div>
-    <div class="trust-item"><span class="emo">🔒</span><div><h4>Plată securizată</h4><p>Plăți criptate</p></div></div>
-    <div class="trust-item"><span class="emo">⏱️</span><div><h4>Printat în 48h</h4><p>La comandă, de fiecare dată</p></div></div>
-    <div class="trust-item"><span class="emo">↩️</span><div><h4>Retur în 30 zile</h4><p>Dacă nu e pe gustul tău, îl returnezi</p></div></div>
+    <div class="trust-item"><span class="emo">📤</span><div><h4>Încarcă orice model</h4><p>STL, OBJ sau 3MF</p></div></div>
+    <div class="trust-item"><span class="emo">🖨️</span><div><h4>Printat în 48h</h4><p>La comandă, de fiecare dată</p></div></div>
+    <div class="trust-item"><span class="emo">🔒</span><div><h4>Plată securizată</h4><p>Confirmare înainte de print</p></div></div>
+    <div class="trust-item"><span class="emo">↩️</span><div><h4>Retur în 30 zile</h4><p>Dacă nu e pe gustul tău</p></div></div>
   </div>
 </section>
 
@@ -900,10 +1014,10 @@
       <details open>
         <summary>Magazin <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
         <ul>
-          <li><a href="#">Toate categoriile</a></li>
+          <li><a href="#upload">Încarcă modelul tău</a></li>
+          <li><a href="#catalog">Colecția gata</a></li>
           <li><a href="#bestsellers">Cele mai vândute</a></li>
-          <li><a href="#">Noutăți</a></li>
-          <li><a href="#custom">Printări personalizate</a></li>
+          <li><a href="#configure">Configurează printul</a></li>
         </ul>
       </details>
       <details open>
@@ -1141,7 +1255,8 @@ function cardHtml(p){
 /* ================= RENDER: PILLS, TILES, GRIDS ================= */
 function renderPills(){
   const row = document.getElementById('pill-row');
-  row.innerHTML = categories.map(c =>
+  const uploadPill = `<a class="pill" href="#upload" style="background:linear-gradient(135deg,var(--orange-500),var(--orange-600));color:#fff;"><span aria-hidden="true">📤</span> Încarcă STL</a>`;
+  row.innerHTML = uploadPill + categories.map(c =>
     `<button class="pill ${c.name===currentCategory?'active':''}" data-cat="${c.name}">
        <span aria-hidden="true">${c.emo}</span> ${c.label}
      </button>`).join('');
@@ -1456,6 +1571,11 @@ function setupFooterAccordion(){
 let scene, camera, renderer, currentGroup = null, currentMaterial = null;
 let isDragging = false, dragStartX = 0, dragStartY = 0, rafId = null, threeReady = false;
 let heroScene, heroCamera, heroRenderer, heroGroup, heroMaterial, heroRafId = null;
+let customFile = null, customObjectUrl = null, customColorIdx = 0, customSize = 'mediu';
+let isDraggingCustom = false, customDragX = 0, customDragY = 0;
+const CUSTOM_BASE_PRICE = 59.99;
+const CUSTOM_MAX_BYTES = 50 * 1024 * 1024;
+const ALLOWED_MODEL_EXT = ['stl', 'obj', '3mf'];
 const stlGeometryCache = new Map();
 const cardPreviewObserver = typeof IntersectionObserver !== 'undefined'
   ? new IntersectionObserver(entries => {
@@ -1536,18 +1656,8 @@ function initCardPreviews(root){
   });
 }
 
-function showHeroFallback(emoji){
-  const fallback = document.getElementById('hero-stl-fallback');
-  const wrap = document.getElementById('hero-stl-wrap');
-  if(wrap) wrap.style.display = 'none';
-  if(fallback){
-    fallback.textContent = emoji || '🎨';
-    fallback.style.display = 'flex';
-  }
-}
-
-function resizeHeroPreview(){
-  const container = document.getElementById('hero-stl-wrap');
+function resizeCustomPreview(){
+  const container = document.getElementById('custom-stl-wrap');
   if(!heroRenderer || !container || !container.clientWidth) return;
   const w = container.clientWidth;
   const h = container.clientHeight;
@@ -1556,68 +1666,88 @@ function resizeHeroPreview(){
   heroCamera.updateProjectionMatrix();
 }
 
-function animateHeroPreview(){
-  heroRafId = requestAnimationFrame(animateHeroPreview);
-  if(heroGroup) heroGroup.rotation.y += 0.008;
+function animateCustomPreview(){
+  heroRafId = requestAnimationFrame(animateCustomPreview);
+  if(!isDraggingCustom && heroGroup) heroGroup.rotation.y += 0.006;
   if(heroRenderer && heroScene && heroCamera) heroRenderer.render(heroScene, heroCamera);
 }
 
-function initHeroStlPreview(){
-  const container = document.getElementById('hero-stl-wrap');
-  const label = document.getElementById('hero-stl-label');
-  if(!container) return;
+function disposeCustomPreview(){
+  if(heroRafId){ cancelAnimationFrame(heroRafId); heroRafId = null; }
+  const wrap = document.getElementById('custom-stl-wrap');
+  if(wrap) wrap.innerHTML = '';
+  if(heroRenderer){ heroRenderer.dispose(); heroRenderer = null; }
+  heroScene = null;
+  heroCamera = null;
+  heroGroup = null;
+  heroMaterial = null;
+}
 
-  const withStl = products.filter(p => p.stlUrl);
-  if(!withStl.length){
-    showHeroFallback('🎨');
-    return;
-  }
+function clearCustomFile(){
+  customFile = null;
+  if(customObjectUrl){ URL.revokeObjectURL(customObjectUrl); customObjectUrl = null; }
+  disposeCustomPreview();
+  const input = document.getElementById('custom-file-input');
+  if(input) input.value = '';
+  setCustomUiHasFile(false);
+  setCustomStatus('');
+  updateCustomPrice();
+}
 
-  const product = withStl[Math.floor(Math.random() * withStl.length)];
-  if(label){
-    label.textContent = product.name;
-    label.hidden = false;
-  }
+function initCustomPreviewFromGeometry(geometry){
+  const container = document.getElementById('custom-stl-wrap');
+  if(!container || typeof THREE === 'undefined') return;
+  disposeCustomPreview();
+  heroScene = new THREE.Scene();
+  heroCamera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+  heroCamera.position.set(0, 0.25, 5.5);
+  const colorHex = COLORS[customColorIdx]?.hex || '#F2F1ED';
+  heroMaterial = new THREE.MeshStandardMaterial({
+    color: colorHex,
+    flatShading: true,
+    roughness: 0.5,
+    metalness: 0.05
+  });
+  heroGroup = new THREE.Group();
+  const mesh = new THREE.Mesh(geometry, heroMaterial);
+  heroGroup.add(mesh);
+  fitObjectToView(heroGroup, 2.5);
+  heroGroup.rotation.x = -0.3;
+  heroGroup.rotation.y = 0.55;
+  heroScene.add(heroGroup);
+  heroScene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.2));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.95);
+  dir.position.set(3, 4, 5);
+  heroScene.add(dir);
+  heroRenderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+  heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  container.appendChild(heroRenderer.domElement);
+  resizeCustomPreview();
+  if(!heroRafId) animateCustomPreview();
+  window.addEventListener('resize', resizeCustomPreview);
+  setupCustomPreviewDrag(container);
+}
 
-  if(typeof THREE === 'undefined'){
-    showHeroFallback(product.emoji);
-    return;
-  }
-
-  loadStlGeometry(product.stlUrl).then(geometry => {
-    heroScene = new THREE.Scene();
-    heroCamera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-    heroCamera.position.set(0, 0.25, 5.5);
-    heroMaterial = new THREE.MeshStandardMaterial({
-      color: 0xC8DCFF,
-      flatShading: true,
-      roughness: 0.45,
-      metalness: 0.08,
-      emissive: 0x1a3a7a,
-      emissiveIntensity: 0.08
-    });
-    heroGroup = new THREE.Group();
-    const mesh = new THREE.Mesh(geometry, heroMaterial);
-    heroGroup.add(mesh);
-    fitObjectToView(heroGroup, 2.4);
-    heroGroup.rotation.x = -0.25;
-    heroGroup.rotation.y = 0.6;
-    heroScene.add(heroGroup);
-    heroScene.add(new THREE.HemisphereLight(0xffffff, 0x334466, 1.2));
-    const dir = new THREE.DirectionalLight(0xffffff, 0.95);
-    dir.position.set(3, 4, 5);
-    heroScene.add(dir);
-    const rim = new THREE.DirectionalLight(0x88bbff, 0.45);
-    rim.position.set(-4, 1, -2);
-    heroScene.add(rim);
-
-    heroRenderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
-    heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    container.appendChild(heroRenderer.domElement);
-    resizeHeroPreview();
-    if(!heroRafId) animateHeroPreview();
-    window.addEventListener('resize', resizeHeroPreview);
-  }).catch(() => showHeroFallback(product.emoji));
+function setupCustomPreviewDrag(container){
+  if(container.dataset.dragBound) return;
+  container.dataset.dragBound = '1';
+  container.addEventListener('pointerdown', e => {
+    isDraggingCustom = true;
+    customDragX = e.clientX;
+    customDragY = e.clientY;
+    container.setPointerCapture(e.pointerId);
+  });
+  container.addEventListener('pointermove', e => {
+    if(!isDraggingCustom || !heroGroup) return;
+    const dx = e.clientX - customDragX;
+    const dy = e.clientY - customDragY;
+    heroGroup.rotation.y += dx * 0.01;
+    heroGroup.rotation.x += dy * 0.01;
+    customDragX = e.clientX;
+    customDragY = e.clientY;
+  });
+  container.addEventListener('pointerup', () => { isDraggingCustom = false; });
+  container.addEventListener('pointercancel', () => { isDraggingCustom = false; });
 }
 
 function initThree(container){
@@ -1958,6 +2088,284 @@ function renderRelated(p){
   initCardPreviews(document.getElementById('related-grid'));
 }
 
+/* ================= CUSTOM PRINT UPLOAD ================= */
+function getFileExt(name){
+  const parts = String(name || '').toLowerCase().split('.');
+  return parts.length > 1 ? parts.pop() : '';
+}
+
+function formatBytes(n){
+  if(n < 1024) return n + ' B';
+  if(n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+  return (n / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function estimateCustomPrice(){
+  const matOpt = document.getElementById('custom-material')?.selectedOptions?.[0];
+  const matMult = matOpt ? Number(matOpt.dataset.mult || 1) : 1;
+  const sizeMult = SIZES.find(s => s.key === customSize)?.priceMult || 1;
+  let sizeBoost = 1;
+  if(customFile){
+    const mb = customFile.size / (1024 * 1024);
+    if(mb > 8) sizeBoost = 1.35;
+    else if(mb > 3) sizeBoost = 1.15;
+  }
+  return +(CUSTOM_BASE_PRICE * matMult * sizeMult * sizeBoost).toFixed(2);
+}
+
+function updateCustomPrice(){
+  const el = document.getElementById('custom-price');
+  if(el) el.textContent = fmt(estimateCustomPrice());
+}
+
+function setCustomStatus(msg, kind){
+  const el = document.getElementById('custom-status');
+  if(!el) return;
+  el.textContent = msg || '';
+  el.className = 'upload-status' + (kind ? ' ' + kind : '');
+}
+
+function renderCustomSwatches(){
+  const row = document.getElementById('custom-swatches');
+  if(!row) return;
+  row.innerHTML = COLORS.map((c, i) =>
+    `<button type="button" class="upload-swatch ${i===customColorIdx?'active':''}" data-idx="${i}" style="background:${c.hex}" aria-label="${c.name}" title="${c.name}"></button>`
+  ).join('');
+  const nameEl = document.getElementById('custom-color-name');
+  if(nameEl) nameEl.textContent = COLORS[customColorIdx].name;
+}
+
+function renderCustomSizes(){
+  const row = document.getElementById('custom-sizes');
+  if(!row) return;
+  row.innerHTML = SIZES.map(s =>
+    `<button type="button" class="upload-size ${s.key===customSize?'active':''}" data-key="${s.key}">${s.label} <small>×${s.priceMult}</small></button>`
+  ).join('');
+}
+
+function setCustomUiHasFile(has){
+  document.getElementById('hero-drop')?.classList.toggle('has-file', has);
+  document.getElementById('hero-preview')?.classList.toggle('active', has);
+  document.getElementById('custom-file-chip')?.classList.toggle('visible', has);
+}
+
+async function loadCustomFilePreview(file){
+  const ext = getFileExt(file.name);
+  if(ext !== 'stl'){
+    if(customObjectUrl){ URL.revokeObjectURL(customObjectUrl); customObjectUrl = null; }
+    disposeCustomPreview();
+    setCustomStatus('Previzualizarea 3D e disponibilă pentru STL. Fișierul va fi totuși trimis pentru print.', '');
+    return;
+  }
+  if(typeof THREE === 'undefined' || typeof THREE.STLLoader === 'undefined'){
+    setCustomStatus('Previzualizarea 3D nu este disponibilă în acest browser.', 'error');
+    return;
+  }
+  if(customObjectUrl) URL.revokeObjectURL(customObjectUrl);
+  customObjectUrl = URL.createObjectURL(file);
+  try{
+    const geometry = await loadStlGeometry(customObjectUrl);
+    initCustomPreviewFromGeometry(geometry);
+    setCustomStatus('Poți roti modelul cu mouse-ul sau degetul.', 'ok');
+  }catch(err){
+    console.error(err);
+    setCustomStatus('Nu am putut încărca previzualizarea STL. Verifică fișierul.', 'error');
+  }
+}
+
+async function handleCustomFile(file){
+  if(!file) return;
+  const ext = getFileExt(file.name);
+  if(!ALLOWED_MODEL_EXT.includes(ext)){
+    setCustomStatus('Format neacceptat. Folosește STL, OBJ sau 3MF.', 'error');
+    return;
+  }
+  if(file.size > CUSTOM_MAX_BYTES){
+    setCustomStatus('Fișierul depășește 50 MB.', 'error');
+    return;
+  }
+  customFile = file;
+  document.getElementById('custom-file-name').textContent = file.name;
+  document.getElementById('custom-file-chip-name').textContent = `${file.name} · ${formatBytes(file.size)}`;
+  setCustomUiHasFile(true);
+  updateCustomPrice();
+  await loadCustomFilePreview(file);
+  document.getElementById('configure')?.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function openCustomFilePicker(){
+  document.getElementById('custom-file-input')?.click();
+}
+
+async function uploadCustomStl(file){
+  const ext = getFileExt(file.name) || 'stl';
+  const path = `custom/${crypto.randomUUID()}.${ext}`;
+  const contentType = ext === 'stl' ? 'model/stl' : 'application/octet-stream';
+  const { error } = await supabaseClient.storage
+    .from(STL_BUCKET)
+    .upload(path, file, { upsert: false, contentType });
+  if(error) throw error;
+  return path;
+}
+
+function buildDiscordCustomEmbed(payload, requestId){
+  return {
+    username: 'artblu Print personalizat',
+    embeds: [{
+      title: '🖨️ Cerere print personalizat',
+      color: 0x2553F2,
+      fields: [
+        { name: 'Client', value: payload.customer_name, inline: true },
+        { name: 'Email', value: payload.customer_email, inline: true },
+        { name: 'Telefon', value: payload.customer_phone || '—', inline: true },
+        { name: 'Fișier', value: payload.file_name || payload.stl_path },
+        { name: 'Material', value: payload.material || '—', inline: true },
+        { name: 'Culoare', value: payload.color_name || '—', inline: true },
+        { name: 'Mărime', value: payload.size_key || '—', inline: true },
+        { name: 'Estimare', value: fmt(payload.estimated_price || 0), inline: true },
+        { name: 'Note', value: payload.notes || '—' },
+        { name: 'ID', value: requestId || '—', inline: true }
+      ],
+      timestamp: new Date().toISOString(),
+      footer: { text: 'artblu custom print' }
+    }]
+  };
+}
+
+function sendDiscordCustomNotification(payload, requestId){
+  if(!DISCORD_WEBHOOK_URL) return false;
+  const body = buildDiscordCustomEmbed(payload, requestId);
+  const blob = new Blob([JSON.stringify(body)], { type: 'application/json' });
+  return navigator.sendBeacon(DISCORD_WEBHOOK_URL, blob);
+}
+
+async function submitCustomPrint(e){
+  e.preventDefault();
+  const submitBtn = document.getElementById('custom-submit');
+  if(!customFile){
+    setCustomStatus('Încarcă mai întâi un fișier 3D.', 'error');
+    openCustomFilePicker();
+    return;
+  }
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Se încarcă…';
+  setCustomStatus('Încărcăm modelul și trimitem cererea…');
+  try{
+    const user = typeof getCurrentUser === 'function' ? await getCurrentUser() : null;
+    const stlPath = await uploadCustomStl(customFile);
+    const color = COLORS[customColorIdx];
+    const requestId = crypto.randomUUID();
+    const payload = {
+      id: requestId,
+      user_id: user?.id || null,
+      customer_name: document.getElementById('custom-name').value.trim(),
+      customer_email: document.getElementById('custom-email').value.trim(),
+      customer_phone: document.getElementById('custom-phone').value.trim() || null,
+      customer_address: document.getElementById('custom-address').value.trim() || null,
+      stl_path: stlPath,
+      file_name: customFile.name,
+      material: document.getElementById('custom-material').value,
+      color_name: color.name,
+      color_hex: color.hex,
+      size_key: customSize,
+      notes: document.getElementById('custom-notes').value.trim() || null,
+      estimated_price: estimateCustomPrice(),
+      status: 'new'
+    };
+    const { error } = await supabaseClient.from('custom_prints').insert(payload);
+    if(error) throw error;
+    sendDiscordCustomNotification(payload, requestId);
+    setCustomStatus(`Cererea a fost trimisă! ID: ${requestId.slice(0, 8)}… Te contactăm pe email.`, 'ok');
+    showToast('Cererea de print personalizat a fost trimisă!');
+    e.target.reset();
+    clearCustomFile();
+    customColorIdx = 0;
+    customSize = 'mediu';
+    renderCustomSwatches();
+    renderCustomSizes();
+    updateCustomPrice();
+    if(user?.email) document.getElementById('custom-email').value = user.email;
+    if(user?.user_metadata?.full_name) document.getElementById('custom-name').value = user.user_metadata.full_name;
+  }catch(err){
+    console.error('Custom print failed:', err);
+    setCustomStatus(err.message || 'Nu am putut trimite cererea. Verifică conexiunea și încearcă din nou.', 'error');
+  }finally{
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Trimite cererea de print';
+  }
+}
+
+function setupCustomUpload(){
+  renderCustomSwatches();
+  renderCustomSizes();
+  updateCustomPrice();
+
+  const drop = document.getElementById('hero-drop');
+  const input = document.getElementById('custom-file-input');
+  const stage = document.getElementById('hero-stage');
+
+  document.getElementById('hero-pick-btn')?.addEventListener('click', openCustomFilePicker);
+  document.getElementById('custom-pick-again')?.addEventListener('click', openCustomFilePicker);
+  document.getElementById('custom-clear-btn')?.addEventListener('click', clearCustomFile);
+  document.getElementById('custom-file-chip-clear')?.addEventListener('click', clearCustomFile);
+
+  drop?.addEventListener('click', openCustomFilePicker);
+  drop?.addEventListener('keydown', e => {
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openCustomFilePicker(); }
+  });
+
+  input?.addEventListener('change', () => {
+    const file = input.files?.[0];
+    if(file) handleCustomFile(file);
+  });
+
+  ['dragenter','dragover'].forEach(evt => {
+    stage?.addEventListener(evt, e => {
+      e.preventDefault();
+      drop?.classList.add('dragover');
+    });
+  });
+  ['dragleave','drop'].forEach(evt => {
+    stage?.addEventListener(evt, e => {
+      e.preventDefault();
+      drop?.classList.remove('dragover');
+    });
+  });
+  stage?.addEventListener('drop', e => {
+    const file = e.dataTransfer?.files?.[0];
+    if(file) handleCustomFile(file);
+  });
+
+  document.getElementById('custom-swatches')?.addEventListener('click', e => {
+    const btn = e.target.closest('.upload-swatch');
+    if(!btn) return;
+    customColorIdx = parseInt(btn.dataset.idx, 10);
+    renderCustomSwatches();
+    if(heroMaterial) heroMaterial.color.set(COLORS[customColorIdx].hex);
+  });
+
+  document.getElementById('custom-sizes')?.addEventListener('click', e => {
+    const btn = e.target.closest('.upload-size');
+    if(!btn) return;
+    customSize = btn.dataset.key;
+    renderCustomSizes();
+    updateCustomPrice();
+  });
+
+  document.getElementById('custom-material')?.addEventListener('change', updateCustomPrice);
+  document.getElementById('custom-print-form')?.addEventListener('submit', submitCustomPrint);
+
+  if(typeof getCurrentUser === 'function'){
+    getCurrentUser().then(user => {
+      if(!user) return;
+      const emailEl = document.getElementById('custom-email');
+      const nameEl = document.getElementById('custom-name');
+      if(emailEl && !emailEl.value) emailEl.value = user.email || '';
+      if(nameEl && !nameEl.value) nameEl.value = user.user_metadata?.full_name || '';
+    });
+  }
+}
+
 /* ================= EVENT WIRING ================= */
 function handleGridClick(e){
   const link = e.target.closest('a');
@@ -1974,13 +2382,13 @@ function handleGridClick(e){
 });
 
 document.getElementById('pill-row').addEventListener('click', e => {
-  const btn = e.target.closest('.pill');
+  const btn = e.target.closest('button.pill');
   if(!btn) return;
   if(viewingProductId) closeProduct();
   currentCategory = btn.dataset.cat;
   renderPills();
   applyFilters();
-  document.getElementById('bestsellers').scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById('catalog')?.scrollIntoView({behavior:'smooth', block:'start'});
 });
 
 document.getElementById('cat-tiles').addEventListener('click', e => {
@@ -1990,7 +2398,7 @@ document.getElementById('cat-tiles').addEventListener('click', e => {
   currentCategory = tile.dataset.cat;
   renderPills();
   applyFilters();
-  document.getElementById('bestsellers').scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById('catalog')?.scrollIntoView({behavior:'smooth', block:'start'});
 });
 
 document.getElementById('search-form').addEventListener('submit', e => {
@@ -2001,7 +2409,7 @@ document.getElementById('search-form').addEventListener('submit', e => {
   currentCategory = catVal;
   renderPills();
   applyFilters();
-  document.getElementById('bestsellers').scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById('catalog')?.scrollIntoView({behavior:'smooth', block:'start'});
 });
 
 document.getElementById('sort-select').addEventListener('change', e => {
@@ -2148,7 +2556,7 @@ async function bootstrap(){
   startCountdown();
   setupBackToTop();
   setupFooterAccordion();
-  initHeroStlPreview();
+  setupCustomUpload();
 }
 bootstrap();
 </script>
