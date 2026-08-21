@@ -1135,8 +1135,10 @@ function renderCustomOrderRow(row, isNew){
         <p><strong>${escapeHtml(row.customer_name)}</strong> · ${escapeHtml(row.customer_email)}${row.customer_phone ? ' · ' + escapeHtml(row.customer_phone) : ''}</p>
         <p>📍 ${escapeHtml(row.customer_address || '—')}</p>
         <p>${escapeHtml(row.material || '—')} · ${escapeHtml(row.color_name || '—')} · dimensiune din STL · <strong>${price}</strong></p>
+        <p style="font-size:12.5px;color:var(--text-600);">Plată: <strong>${escapeHtml(row.payment_method || '—')}</strong> · ${escapeHtml(row.payment_status || '—')} · Total ${row.total != null ? fmtPrice(row.total) : price}${row.shipping_fee != null ? ` (livrare ${fmtPrice(row.shipping_fee)})` : ''}${row.cod_fee ? ` · ramburs ${fmtPrice(row.cod_fee)}` : ''}</p>
         <div class="product-tags">
           <span class="tag">${escapeHtml(row.status || 'new')}</span>
+          <span class="tag">${escapeHtml(row.payment_status || 'pending')}</span>
           <span class="tag">${escapeHtml(date)}</span>
           <span class="tag">${files.length} fișier${files.length === 1 ? '' : 'e'}</span>
         </div>

@@ -43,7 +43,10 @@
       baseFee: Number(row.base_fee),
       markupPercent: Number(row.markup_percent),
       minPrice: Number(row.min_price),
-      roundUpTo: Number(row.round_up_to)
+      roundUpTo: Number(row.round_up_to),
+      shipping_flat: row.shipping_flat != null ? Number(row.shipping_flat) : undefined,
+      free_shipping_over: row.free_shipping_over != null ? Number(row.free_shipping_over) : undefined,
+      cod_fee: row.cod_fee != null ? Number(row.cod_fee) : undefined
     };
   }
 
