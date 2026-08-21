@@ -100,6 +100,15 @@
   .tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;background:#EDF2FF;color:var(--blue-700);}
   .tag.deal{background:#FFF0E8;color:#C44F00;}
   .row-actions{display:flex;gap:8px;flex-shrink:0;}
+  .btn-edit{background:#EDF2FF;color:var(--blue-700);}
+  .btn-edit:hover{background:#DCE6FF;}
+  .review-queue{display:flex;flex-direction:column;}
+  .review-item{padding:16px 22px;border-bottom:1px solid var(--border);}
+  .review-item:last-child{border-bottom:none;}
+  .review-item h4{font-size:14px;margin-bottom:6px;}
+  .review-item p{font-size:13px;color:var(--text-600);line-height:1.5;}
+  .review-meta{font-size:12px;color:var(--text-600);margin-bottom:8px;}
+  .review-actions{display:flex;gap:8px;margin-top:10px;}
   .count-badge{font-size:12px;font-weight:600;background:#EDEFF3;padding:4px 10px;border-radius:999px;color:var(--text-600);}
 
   .toast-stack{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:10px;pointer-events:none;}
@@ -113,6 +122,35 @@
 
   .loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
+
+  .pricing-panel{margin-bottom:24px;}
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  @media(max-width:760px){.pricing-grid{grid-template-columns:1fr 1fr;}}
+  @media(max-width:480px){.pricing-grid{grid-template-columns:1fr;}}
+
+  .formula-box{
+    margin-top:16px;padding:14px 16px;border-radius:12px;
+    background:#F0F4FF;border:1px solid #D6E0FF;font-size:13px;line-height:1.55;color:#334155;
+  }
+  .formula-box code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:#fff;padding:2px 6px;border-radius:6px;}
+
+  .estimate-box{
+    margin-top:14px;padding:16px;border-radius:12px;background:#F8FAFC;border:1px solid var(--border);
+    display:none;
+  }
+  .estimate-box.visible{display:block;}
+  .estimate-box h3{font-size:14px;margin-bottom:10px;}
+  .estimate-rows{display:grid;gap:8px;font-size:13px;}
+  .estimate-row{display:flex;justify-content:space-between;gap:12px;color:var(--text-600);}
+  .estimate-row strong{color:var(--text-900);}
+  .estimate-row.total{border-top:1px solid var(--border);padding-top:10px;margin-top:4px;font-size:15px;font-weight:700;color:var(--text-900);}
+  .estimate-row.total strong{color:var(--orange-500);font-size:17px;}
+  .estimate-source{font-size:11.5px;color:var(--text-600);margin-top:10px;}
+  .estimate-error{font-size:13px;color:var(--red);margin-top:8px;display:none;}
+  .estimate-error.visible{display:block;}
+
+  .price-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;align-items:center;}
+  .price-actions .check{margin:0;font-size:13px;}
 </style>
 </head>
 <body>
@@ -135,17 +173,105 @@
       Dacă adăugarea sau ștergerea eșuează, rulează <code>supabase/admin-policies.sql</code> în SQL Editor.
     </div>
 
+    <section class="panel pricing-panel">
+      <div class="panel-head">
+        <div>
+          <h2>Formula de preț (Bambu Studio)</h2>
+          <p>Salvată în baza de date — folosită pe admin și magazin.</p>
+        </div>
+        <button type="button" class="btn btn-ghost" id="save-pricing-btn">Salvează formula</button>
+      </div>
+      <div class="panel-body">
+        <div class="pricing-grid">
+          <div>
+            <label for="rate_per_hour">Tarif timp print (lei / oră)</label>
+            <input type="number" id="rate_per_hour" min="0" step="0.01" value="8">
+          </div>
+          <div>
+            <label for="rate_per_gram_pla">Tarif PLA (lei / gram)</label>
+            <input type="number" id="rate_per_gram_pla" min="0" step="0.001" value="0.12">
+          </div>
+          <div>
+            <label for="rate_per_gram_petg">Tarif PETG (lei / gram)</label>
+            <input type="number" id="rate_per_gram_petg" min="0" step="0.001" value="0.15">
+          </div>
+          <div>
+            <label for="rate_per_gram_tpu">Tarif TPU (lei / gram)</label>
+            <input type="number" id="rate_per_gram_tpu" min="0" step="0.001" value="0.22">
+          </div>
+          <div>
+            <label for="rate_per_gram_abs">Tarif ABS (lei / gram)</label>
+            <input type="number" id="rate_per_gram_abs" min="0" step="0.001" value="0.18">
+          </div>
+          <div>
+            <label for="drying_fee">Taxă uscare (PETG / TPU / ABS)</label>
+            <input type="number" id="drying_fee" min="0" step="0.01" value="12">
+          </div>
+          <div>
+            <label for="base_fee">Taxă fixă (lei)</label>
+            <input type="number" id="base_fee" min="0" step="0.01" value="15">
+          </div>
+          <div>
+            <label for="markup_percent">Adaos profit (%)</label>
+            <input type="number" id="markup_percent" min="0" step="1" value="25">
+          </div>
+          <div>
+            <label for="min_price">Preț minim (lei)</label>
+            <input type="number" id="min_price" min="0" step="0.01" value="19.99">
+          </div>
+          <div>
+            <label for="round_up_to">Rotunjire sus la (lei)</label>
+            <input type="number" id="round_up_to" min="0" step="0.01" value="0.99">
+            <p class="hint">Ex: 0.99 → 23.40 devine 23.99</p>
+          </div>
+        </div>
+        <div class="formula-box">
+          <strong>Formula:</strong>
+          <code>preț = (taxă fixă + ore × tarif/oră + grame × tarif/material + uscare*) × (1 + adaos%)</code>.
+          * Uscarea se aplică doar pentru PETG, TPU și ABS.
+        </div>
+      </div>
+    </section>
+
     <div class="layout">
       <section class="panel">
         <div class="panel-head">
           <div>
-            <h2>Adaugă produs</h2>
-            <p>Salvează în tabelul <code>3dmodels</code> și încarcă fișierul STL.</p>
+            <h2 id="form-title">Adaugă produs</h2>
+            <p>Încarcă STL + export Bambu Studio pentru calcul automat de preț.</p>
           </div>
+          <button type="button" class="btn btn-ghost" id="cancel-edit-btn" hidden>Anulează editarea</button>
         </div>
         <div class="panel-body">
           <form id="add-form">
             <div class="form-grid">
+              <div class="full">
+                <label for="bambu_file">Export Bambu Studio (G-code sau 3MF sliced)</label>
+                <input type="file" id="bambu_file" accept=".gcode,.3mf,application/octet-stream">
+                <p class="hint">În Bambu Studio: slice modelul → Export G-code sau salvează 3MF sliced. Citim timpul de print și filamentul (g) automat.</p>
+              </div>
+              <div>
+                <label for="calc_material">Material pentru calcul preț</label>
+                <select id="calc_material">
+                  <option value="PLA">PLA</option>
+                  <option value="PETG">PETG</option>
+                  <option value="TPU">TPU</option>
+                  <option value="ABS">ABS</option>
+                </select>
+                <p class="hint">Se detectează automat din Bambu dacă e posibil.</p>
+              </div>
+              <div class="full">
+                <p class="estimate-error" id="estimate-error"></p>
+                <div class="estimate-box" id="estimate-box">
+                  <h3>Estimare din Bambu Studio</h3>
+                  <div class="estimate-rows" id="estimate-rows"></div>
+                  <p class="estimate-source" id="estimate-source"></p>
+                  <div class="price-actions">
+                    <label class="check"><input type="checkbox" id="auto_price" checked> Aplică prețul calculat automat</label>
+                    <button type="button" class="btn btn-ghost" id="apply-price-btn">Aplică acum în formular</button>
+                  </div>
+                </div>
+              </div>
               <div>
                 <label for="slug">Slug (ID magazin) *</label>
                 <input type="text" id="slug" name="slug" required pattern="[a-z0-9-]+" placeholder="ex: vaza-geometrica">
@@ -166,37 +292,15 @@
               <div>
                 <label for="price">Preț (lei) *</label>
                 <input type="number" id="price" name="price" required min="0" step="0.01" value="29.99">
+                <p class="hint" id="price-hint">Se completează automat când încarci exportul Bambu.</p>
               </div>
               <div>
                 <label for="old_price">Preț vechi (lei)</label>
                 <input type="number" id="old_price" name="old_price" min="0" step="0.01" placeholder="Opțional">
               </div>
               <div>
-                <label for="rating">Rating</label>
-                <input type="number" id="rating" name="rating" min="1" max="5" step="0.1" value="4.5">
-              </div>
-              <div>
-                <label for="reviews">Recenzii</label>
-                <input type="number" id="reviews" name="reviews" min="0" step="1" value="0">
-              </div>
-              <div>
                 <label for="badge">Badge</label>
                 <input type="text" id="badge" name="badge" placeholder="ex: Nou, Eco">
-              </div>
-              <div>
-                <label for="shape">Formă fallback 3D</label>
-                <select id="shape" name="shape">
-                  <option value="stand">Stand</option>
-                  <option value="vase">Vază</option>
-                  <option value="planter">Ghiveci</option>
-                  <option value="figure">Figurină</option>
-                  <option value="lamp">Lampă</option>
-                  <option value="organizer">Organizator</option>
-                  <option value="ring">Inel / bijuterii</option>
-                  <option value="chess">Șah</option>
-                  <option value="keychain">Breloc</option>
-                  <option value="castle">Castel</option>
-                </select>
               </div>
               <div>
                 <label for="material">Material</label>
@@ -237,7 +341,7 @@
               <div class="full">
                 <label for="stl_file">Fișier STL</label>
                 <input type="file" id="stl_file" name="stl_file" accept=".stl,model/stl">
-                <p class="hint">Se încarcă în bucket-ul <code>stl-files</code>. Dacă lipsește, magazinul folosește forma 3D fallback.</p>
+                <p class="hint">Se încarcă în bucket-ul <code>stl-files</code>. Dimensiunile se completează automat din STL.</p>
               </div>
               <div class="full">
                 <span class="checks">
@@ -271,11 +375,30 @@
         </div>
       </section>
     </div>
+
+    <section class="panel" style="margin-top:24px;">
+      <div class="panel-head">
+        <div>
+          <h2>Recenzii în așteptare</h2>
+          <p>Aprobă sau respinge recenziile trimise de clienți pe magazin.</p>
+        </div>
+        <span class="count-badge" id="review-count">0</span>
+      </div>
+      <div id="review-wrap">
+        <div class="list-empty" id="review-empty">
+          <div class="emo">⭐</div>
+          <p>Se încarcă recenziile...</p>
+        </div>
+        <div class="review-queue" id="review-queue" hidden></div>
+      </div>
+    </section>
   </div>
 </main>
 
 <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="bambu-pricing.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://tilfngrtldwevtiilxpq.supabase.co';
@@ -299,6 +422,178 @@ CATEGORIES.forEach(cat => {
   opt.textContent = cat;
   categorySelect.appendChild(opt);
 });
+
+let lastEstimate = null;
+let editingProductId = null;
+let editingStlPath = null;
+
+function readPricingSettingsFromForm(){
+  return {
+    ratePerHour: Number(document.getElementById('rate_per_hour').value),
+    ratePerGramPla: Number(document.getElementById('rate_per_gram_pla').value),
+    ratePerGramPetg: Number(document.getElementById('rate_per_gram_petg').value),
+    ratePerGramTpu: Number(document.getElementById('rate_per_gram_tpu').value),
+    ratePerGramAbs: Number(document.getElementById('rate_per_gram_abs').value),
+    dryingFee: Number(document.getElementById('drying_fee').value),
+    baseFee: Number(document.getElementById('base_fee').value),
+    markupPercent: Number(document.getElementById('markup_percent').value),
+    minPrice: Number(document.getElementById('min_price').value),
+    roundUpTo: Number(document.getElementById('round_up_to').value)
+  };
+}
+
+function fillPricingSettingsForm(settings){
+  const cfg = { ...BambuPricing.DEFAULT_SETTINGS, ...settings };
+  document.getElementById('rate_per_hour').value = cfg.ratePerHour;
+  document.getElementById('rate_per_gram_pla').value = cfg.ratePerGramPla;
+  document.getElementById('rate_per_gram_petg').value = cfg.ratePerGramPetg;
+  document.getElementById('rate_per_gram_tpu').value = cfg.ratePerGramTpu;
+  document.getElementById('rate_per_gram_abs').value = cfg.ratePerGramAbs;
+  document.getElementById('drying_fee').value = cfg.dryingFee;
+  document.getElementById('base_fee').value = cfg.baseFee;
+  document.getElementById('markup_percent').value = cfg.markupPercent;
+  document.getElementById('min_price').value = cfg.minPrice;
+  document.getElementById('round_up_to').value = cfg.roundUpTo;
+}
+
+function getCalcMaterial(){
+  return document.getElementById('calc_material').value;
+}
+
+function renderEstimateBreakdown(estimate, breakdown){
+  const box = document.getElementById('estimate-box');
+  const rows = document.getElementById('estimate-rows');
+  const sourceEl = document.getElementById('estimate-source');
+
+  rows.innerHTML = BambuPricing.renderBreakdownRows(breakdown);
+  sourceEl.textContent = `Sursă date: ${estimate.source}${estimate.printHours == null ? ' · timp lipsă' : ''}${estimate.filamentGrams == null ? ' · filament lipsă' : ''}${estimate.detectedMaterial ? ' · material detectat: ' + estimate.detectedMaterial : ''}`;
+  box.classList.add('visible');
+}
+
+function applyEstimateToForm(breakdown){
+  if(breakdown.printHours > 0){
+    document.getElementById('print_time').value = breakdown.printHours.toFixed(2);
+  }
+  if(breakdown.filamentGrams > 0){
+    document.getElementById('weight').value = Math.round(breakdown.filamentGrams);
+  }
+  document.getElementById('price').value = breakdown.total.toFixed(2);
+  document.getElementById('price-hint').textContent = 'Preț calculat din exportul Bambu Studio.';
+}
+
+function recalculateFromLastEstimate(){
+  if(!lastEstimate) return;
+  const settings = readPricingSettingsFromForm();
+  const breakdown = BambuPricing.calculatePrice(
+    lastEstimate.printHours || 0,
+    lastEstimate.filamentGrams || 0,
+    settings,
+    getCalcMaterial()
+  );
+  renderEstimateBreakdown(lastEstimate, breakdown);
+  if(document.getElementById('auto_price').checked){
+    applyEstimateToForm(breakdown);
+  }
+}
+
+function showEstimateError(msg){
+  const el = document.getElementById('estimate-error');
+  el.textContent = msg;
+  el.classList.add('visible');
+  document.getElementById('estimate-box').classList.remove('visible');
+}
+
+function clearEstimateError(){
+  const el = document.getElementById('estimate-error');
+  el.textContent = '';
+  el.classList.remove('visible');
+}
+
+async function handleBambuFile(file){
+  clearEstimateError();
+  lastEstimate = null;
+  if(!file){
+    document.getElementById('estimate-box').classList.remove('visible');
+    return;
+  }
+
+  try{
+    const estimate = await BambuPricing.parseBambuFile(file);
+    lastEstimate = estimate;
+    if(estimate.detectedMaterial){
+      document.getElementById('calc_material').value = estimate.detectedMaterial;
+    }
+    recalculateFromLastEstimate();
+    showToast('Date Bambu Studio citite cu succes');
+  }catch(err){
+    showEstimateError(err.message || 'Nu am putut citi fișierul Bambu.');
+    showToast(err.message || 'Eroare la citirea fișierului Bambu', true);
+  }
+}
+
+document.getElementById('save-pricing-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('save-pricing-btn');
+  btn.disabled = true;
+  try{
+    await BambuPricing.saveSettingsToDb(supabaseClient, readPricingSettingsFromForm());
+    recalculateFromLastEstimate();
+    showToast('Formula de preț salvată');
+  }catch(err){
+    showToast(err.message || 'Eroare la salvarea formulei', true);
+  }finally{
+    btn.disabled = false;
+  }
+});
+
+[
+  'rate_per_hour','rate_per_gram_pla','rate_per_gram_petg','rate_per_gram_tpu','rate_per_gram_abs',
+  'drying_fee','base_fee','markup_percent','min_price','round_up_to'
+].forEach(id => {
+  document.getElementById(id).addEventListener('input', recalculateFromLastEstimate);
+});
+
+document.getElementById('calc_material').addEventListener('change', recalculateFromLastEstimate);
+
+document.getElementById('auto_price').addEventListener('change', () => {
+  if(document.getElementById('auto_price').checked && lastEstimate){
+    recalculateFromLastEstimate();
+  }
+});
+
+document.getElementById('apply-price-btn').addEventListener('click', () => {
+  if(!lastEstimate) return;
+  const breakdown = BambuPricing.calculatePrice(
+    lastEstimate.printHours || 0,
+    lastEstimate.filamentGrams || 0,
+    readPricingSettingsFromForm(),
+    getCalcMaterial()
+  );
+  applyEstimateToForm(breakdown);
+  showToast('Preț și detalii aplicate în formular');
+});
+
+document.getElementById('bambu_file').addEventListener('change', e => {
+  handleBambuFile(e.target.files[0] || null);
+});
+
+document.getElementById('stl_file').addEventListener('change', e => {
+  handleAdminStlFile(e.target.files[0] || null);
+});
+
+document.getElementById('cancel-edit-btn').addEventListener('click', resetProductForm);
+
+async function initPricingSettings(){
+  try{
+    const settings = await BambuPricing.loadSettingsFromDb(supabaseClient);
+    fillPricingSettingsForm(settings);
+  }catch(err){
+    console.error('pricing_settings load failed:', err);
+    fillPricingSettingsForm(BambuPricing.DEFAULT_SETTINGS);
+    showToast('Nu am putut încărca formula din baza de date — rulează supabase/pricing-settings.sql', true);
+  }
+}
+
+initPricingSettings();
 
 document.getElementById('name').addEventListener('input', e => {
   const slugInput = document.getElementById('slug');
@@ -355,9 +650,196 @@ function renderProductRow(row){
         <div class="product-tags">${tags.join('') || '<span class="tag">Fără etichete</span>'}</div>
       </div>
       <div class="row-actions">
+        <button type="button" class="btn btn-edit btn-edit-product" data-id="${row.id}">Editează</button>
         <button type="button" class="btn btn-danger btn-delete" data-id="${row.id}" data-stl="${escapeHtml(row.stl_path || '')}" data-name="${escapeHtml(row.name)}">Șterge</button>
       </div>
     </article>`;
+}
+
+function fillDimsFromBoundingBox(bbox){
+  if(!bbox || !bbox.dimsCm) return;
+  document.getElementById('dim_l').value = bbox.dimsCm[0].toFixed(1);
+  document.getElementById('dim_w').value = bbox.dimsCm[1].toFixed(1);
+  document.getElementById('dim_h').value = bbox.dimsCm[2].toFixed(1);
+}
+
+async function handleAdminStlFile(file){
+  if(!file) return;
+  try{
+    const bbox = await BambuPricing.readStlBoundingBox(file);
+    fillDimsFromBoundingBox(bbox);
+    const validation = BambuPricing.validateFitsPrintBed(bbox);
+    showToast(validation.message, !validation.fits);
+  }catch(err){
+    showToast(err.message || 'Nu am putut citi fișierul STL', true);
+  }
+}
+
+function resetProductForm(){
+  editingProductId = null;
+  editingStlPath = null;
+  document.getElementById('add-form').reset();
+  document.getElementById('slug').dataset.manual = '';
+  document.getElementById('slug').readOnly = false;
+  document.getElementById('emoji').value = '📦';
+  document.getElementById('material').value = 'PLA mat';
+  document.getElementById('finish').value = 'Natural';
+  document.getElementById('grad').value = 'linear-gradient(135deg,#E4E8EF,#CDD4E0)';
+  document.getElementById('auto_price').checked = true;
+  document.getElementById('bambu_file').value = '';
+  document.getElementById('stl_file').value = '';
+  lastEstimate = null;
+  document.getElementById('estimate-box').classList.remove('visible');
+  clearEstimateError();
+  document.getElementById('price-hint').textContent = 'Se completează automat când încarci exportul Bambu.';
+  document.getElementById('form-title').textContent = 'Adaugă produs';
+  document.getElementById('submit-btn').textContent = 'Adaugă produs';
+  document.getElementById('cancel-edit-btn').hidden = true;
+}
+
+function fillProductForm(row){
+  editingProductId = row.id;
+  editingStlPath = row.stl_path || null;
+  document.getElementById('slug').value = row.slug || '';
+  document.getElementById('slug').readOnly = true;
+  document.getElementById('slug').dataset.manual = '1';
+  document.getElementById('name').value = row.name || '';
+  document.getElementById('category').value = row.category || CATEGORIES[0];
+  document.getElementById('emoji').value = row.emoji || '📦';
+  document.getElementById('price').value = row.price ?? '';
+  document.getElementById('old_price').value = row.old_price ?? '';
+  document.getElementById('badge').value = row.badge || '';
+  document.getElementById('material').value = row.material || 'PLA mat';
+  const dims = Array.isArray(row.dims) ? row.dims : [10, 10, 10];
+  document.getElementById('dim_l').value = dims[0] ?? 10;
+  document.getElementById('dim_w').value = dims[1] ?? 10;
+  document.getElementById('dim_h').value = dims[2] ?? 10;
+  document.getElementById('weight').value = row.weight ?? 100;
+  document.getElementById('print_time').value = row.print_time ?? 3;
+  document.getElementById('infill').value = row.infill ?? 20;
+  document.getElementById('finish').value = row.finish || 'Natural';
+  document.getElementById('grad').value = row.grad || 'linear-gradient(135deg,#E4E8EF,#CDD4E0)';
+  document.getElementById('description').value = row.description || '';
+  document.getElementById('is_bestseller').checked = !!row.is_bestseller;
+  document.getElementById('is_new_arrival').checked = !!row.is_new_arrival;
+  document.getElementById('is_deal').checked = !!row.is_deal;
+  document.getElementById('bambu_file').value = '';
+  document.getElementById('stl_file').value = '';
+  lastEstimate = null;
+  document.getElementById('estimate-box').classList.remove('visible');
+  clearEstimateError();
+  document.getElementById('form-title').textContent = 'Editează produs';
+  document.getElementById('submit-btn').textContent = 'Salvează modificările';
+  document.getElementById('cancel-edit-btn').hidden = false;
+  document.getElementById('add-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function loadProductForEdit(id){
+  const { data, error } = await supabaseClient
+    .from('3dmodels')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if(error) throw error;
+  fillProductForm(data);
+}
+
+function buildProductPayload(slug, stlPath){
+  const oldPriceVal = document.getElementById('old_price').value;
+  const badgeVal = document.getElementById('badge').value.trim();
+  return {
+    slug,
+    name: document.getElementById('name').value.trim(),
+    category: document.getElementById('category').value,
+    price: Number(document.getElementById('price').value),
+    old_price: oldPriceVal ? Number(oldPriceVal) : null,
+    badge: badgeVal || null,
+    emoji: document.getElementById('emoji').value.trim() || '📦',
+    grad: document.getElementById('grad').value.trim(),
+    material: document.getElementById('material').value.trim(),
+    dims: [
+      Number(document.getElementById('dim_l').value),
+      Number(document.getElementById('dim_w').value),
+      Number(document.getElementById('dim_h').value)
+    ],
+    weight: Number(document.getElementById('weight').value),
+    print_time: Number(document.getElementById('print_time').value),
+    infill: Number(document.getElementById('infill').value),
+    finish: document.getElementById('finish').value.trim(),
+    description: document.getElementById('description').value.trim(),
+    stl_path: stlPath,
+    is_bestseller: document.getElementById('is_bestseller').checked,
+    is_new_arrival: document.getElementById('is_new_arrival').checked,
+    is_deal: document.getElementById('is_deal').checked
+  };
+}
+
+async function updateProductRatingFromReviews(slug){
+  const { data, error } = await supabaseClient
+    .from('product_reviews')
+    .select('rating')
+    .eq('product_slug', slug)
+    .eq('status', 'approved');
+  if(error) throw error;
+  const rows = data || [];
+  const count = rows.length;
+  const avg = count ? rows.reduce((sum, row) => sum + Number(row.rating), 0) / count : 0;
+  const { error: updateError } = await supabaseClient
+    .from('3dmodels')
+    .update({ rating: count ? +avg.toFixed(1) : 0, reviews: count })
+    .eq('slug', slug);
+  if(updateError) throw updateError;
+}
+
+function renderReviewItem(review){
+  return `
+    <article class="review-item" data-id="${review.id}">
+      <div class="review-meta">
+        <strong>${escapeHtml(review.author_name)}</strong>
+        · ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+        · ${escapeHtml(review.product_slug)}
+        · ${new Date(review.created_at).toLocaleString('ro-RO')}
+      </div>
+      <p>${escapeHtml(review.comment)}</p>
+      <div class="review-actions">
+        <button type="button" class="btn btn-primary btn-approve-review" data-id="${review.id}" data-slug="${escapeHtml(review.product_slug)}">Aprobă</button>
+        <button type="button" class="btn btn-danger btn-reject-review" data-id="${review.id}">Respinge</button>
+      </div>
+    </article>`;
+}
+
+async function loadPendingReviews(){
+  const queue = document.getElementById('review-queue');
+  const empty = document.getElementById('review-empty');
+  const countEl = document.getElementById('review-count');
+
+  const { data, error } = await supabaseClient
+    .from('product_reviews')
+    .select('*')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+
+  if(error){
+    empty.hidden = false;
+    queue.hidden = true;
+    empty.innerHTML = `<div class="emo">⚠️</div><p>Nu am putut încărca recenziile:<br>${escapeHtml(error.message)}</p>`;
+    countEl.textContent = 'Eroare';
+    return;
+  }
+
+  const rows = data || [];
+  countEl.textContent = rows.length + (rows.length === 1 ? ' recenzie' : ' recenzii');
+
+  if(!rows.length){
+    empty.hidden = false;
+    queue.hidden = true;
+    empty.innerHTML = '<div class="emo">✅</div><p>Nu există recenzii în așteptare.</p>';
+    return;
+  }
+
+  empty.hidden = true;
+  queue.hidden = false;
+  queue.innerHTML = rows.map(renderReviewItem).join('');
 }
 
 async function loadProducts(){
@@ -416,67 +898,55 @@ document.getElementById('add-form').addEventListener('submit', async e => {
   try{
     const slug = document.getElementById('slug').value.trim().toLowerCase();
     const stlFile = document.getElementById('stl_file').files[0];
-    let stlPath = null;
+    let stlPath = editingStlPath;
 
     if(stlFile){
+      const bbox = await BambuPricing.readStlBoundingBox(stlFile);
+      const validation = BambuPricing.validateFitsPrintBed(bbox);
+      if(!validation.fits) throw new Error(validation.message);
       stlPath = await uploadStl(stlFile, slug);
     }
 
-    const oldPriceVal = document.getElementById('old_price').value;
-    const badgeVal = document.getElementById('badge').value.trim();
+    const payload = buildProductPayload(slug, stlPath);
 
-    const payload = {
-      slug,
-      name: document.getElementById('name').value.trim(),
-      category: document.getElementById('category').value,
-      price: Number(document.getElementById('price').value),
-      old_price: oldPriceVal ? Number(oldPriceVal) : null,
-      rating: Number(document.getElementById('rating').value),
-      reviews: Number(document.getElementById('reviews').value),
-      badge: badgeVal || null,
-      emoji: document.getElementById('emoji').value.trim() || '📦',
-      grad: document.getElementById('grad').value.trim(),
-      shape: document.getElementById('shape').value,
-      material: document.getElementById('material').value.trim(),
-      dims: [
-        Number(document.getElementById('dim_l').value),
-        Number(document.getElementById('dim_w').value),
-        Number(document.getElementById('dim_h').value)
-      ],
-      weight: Number(document.getElementById('weight').value),
-      print_time: Number(document.getElementById('print_time').value),
-      infill: Number(document.getElementById('infill').value),
-      finish: document.getElementById('finish').value.trim(),
-      description: document.getElementById('description').value.trim(),
-      stl_path: stlPath,
-      is_bestseller: document.getElementById('is_bestseller').checked,
-      is_new_arrival: document.getElementById('is_new_arrival').checked,
-      is_deal: document.getElementById('is_deal').checked
-    };
-
-    const { error } = await supabaseClient.from('3dmodels').insert(payload);
-    if(error){
-      if(stlPath) await deleteStl(stlPath);
-      throw error;
+    if(editingProductId){
+      const { error } = await supabaseClient
+        .from('3dmodels')
+        .update(payload)
+        .eq('id', editingProductId);
+      if(error) throw error;
+      showToast('Produs actualizat cu succes');
+    }else{
+      const { error } = await supabaseClient.from('3dmodels').insert(payload);
+      if(error){
+        if(stlPath && stlPath !== editingStlPath) await deleteStl(stlPath);
+        throw error;
+      }
+      showToast('Produs adăugat cu succes');
     }
 
-    showToast('Produs adăugat cu succes');
-    e.target.reset();
-    document.getElementById('slug').dataset.manual = '';
-    document.getElementById('emoji').value = '📦';
-    document.getElementById('material').value = 'PLA mat';
-    document.getElementById('finish').value = 'Natural';
-    document.getElementById('grad').value = 'linear-gradient(135deg,#E4E8EF,#CDD4E0)';
+    resetProductForm();
     await loadProducts();
   }catch(err){
-    showToast(err.message || 'Eroare la adăugare', true);
+    showToast(err.message || 'Eroare la salvare', true);
   }finally{
     btn.disabled = false;
-    btn.textContent = 'Adaugă produs';
+    btn.textContent = editingProductId ? 'Salvează modificările' : 'Adaugă produs';
   }
 });
 
 document.getElementById('product-list').addEventListener('click', async e => {
+  const editBtn = e.target.closest('.btn-edit-product');
+  if(editBtn){
+    try{
+      await loadProductForEdit(editBtn.dataset.id);
+      showToast('Produs încărcat în formular');
+    }catch(err){
+      showToast(err.message || 'Nu am putut încărca produsul', true);
+    }
+    return;
+  }
+
   const btn = e.target.closest('.btn-delete');
   if(!btn) return;
 
@@ -504,10 +974,35 @@ document.getElementById('product-list').addEventListener('click', async e => {
 
 document.getElementById('refresh-btn').addEventListener('click', () => {
   loadProducts();
+  loadPendingReviews();
   showToast('Listă reîncărcată');
 });
 
+document.getElementById('review-queue').addEventListener('click', async e => {
+  const approveBtn = e.target.closest('.btn-approve-review');
+  const rejectBtn = e.target.closest('.btn-reject-review');
+  const btn = approveBtn || rejectBtn;
+  if(!btn) return;
+
+  btn.disabled = true;
+  try{
+    const status = approveBtn ? 'approved' : 'rejected';
+    const { error } = await supabaseClient
+      .from('product_reviews')
+      .update({ status })
+      .eq('id', btn.dataset.id);
+    if(error) throw error;
+    if(approveBtn) await updateProductRatingFromReviews(approveBtn.dataset.slug);
+    showToast(approveBtn ? 'Recenzie aprobată' : 'Recenzie respinsă');
+    await loadPendingReviews();
+  }catch(err){
+    showToast(err.message || 'Eroare la moderarea recenziei', true);
+    btn.disabled = false;
+  }
+});
+
 loadProducts();
+loadPendingReviews();
 </script>
 </body>
 </html>

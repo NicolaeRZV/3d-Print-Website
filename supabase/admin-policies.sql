@@ -16,6 +16,14 @@ create policy "Public delete 3dmodels"
   to anon, authenticated
   using (true);
 
+drop policy if exists "Public update 3dmodels" on public."3dmodels";
+create policy "Public update 3dmodels"
+  on public."3dmodels"
+  for update
+  to anon, authenticated
+  using (true)
+  with check (true);
+
 drop policy if exists "Public upload STL files" on storage.objects;
 create policy "Public upload STL files"
   on storage.objects

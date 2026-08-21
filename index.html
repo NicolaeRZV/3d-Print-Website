@@ -304,6 +304,33 @@
     padding:14px 24px;border-radius:11px;font-size:14.5px;font-weight:600;white-space:nowrap;
   }
 
+  /* ===== Custom upload & contact ===== */
+  .custom-panel,.contact-panel{
+    background:var(--white);border:1px solid var(--border);border-radius:20px;
+    padding:28px;box-shadow:var(--shadow-md);
+  }
+  .custom-grid,.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+  .custom-form-grid{display:grid;gap:14px;}
+  .custom-form-grid label{font-size:12px;font-weight:600;color:var(--text-600);display:block;margin-bottom:6px;}
+  .custom-form-grid input,.custom-form-grid select,.custom-form-grid textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;
+  }
+  .custom-price-box{margin-top:4px;padding:18px;border-radius:14px;background:#F0F4FF;border:1px solid #D6E0FF;}
+  .custom-price{font-size:28px;font-weight:800;color:var(--orange-500);font-family:'Poppins',sans-serif;}
+  .custom-status{font-size:13px;color:var(--text-600);margin-top:8px;line-height:1.5;}
+  .custom-status.error{color:var(--red);}
+  .custom-status.ok{color:var(--green);}
+  .custom-preview{
+    min-height:280px;border:1px dashed var(--border);border-radius:14px;background:#F8FAFC;
+    display:flex;align-items:center;justify-content:center;color:var(--text-600);font-size:14px;
+    position:relative;overflow:hidden;text-align:center;padding:20px;
+  }
+  .custom-preview canvas{display:block;width:100%!important;height:100%!important;}
+  .review-form{margin-top:24px;padding-top:24px;border-top:1px solid var(--border);}
+  .review-form-grid{display:grid;gap:12px;max-width:560px;}
+  .review-pending-note{font-size:13px;color:var(--text-600);margin-top:8px;}
+  @media(max-width:900px){.custom-grid,.contact-grid{grid-template-columns:1fr;}}
+
   /* ===== Trust strip ===== */
   .trust{background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
   .trust .container{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:28px 24px;}
@@ -691,18 +718,49 @@
   </div>
 </section>
 
-<!-- ===== Mid banner ===== -->
+<!-- ===== Custom print ===== -->
 <section class="section" id="custom">
   <div class="container">
-    <div class="midbanner">
-      <div>
-        <h2>
-          Ai un design? Îl printăm noi.
-          <span class="coming-soon-badge">În curând</span>
-        </h2>
-        <p>Încarcă propriul fișier STL și îl printăm în materialul, culoarea și mărimea aleasă de tine. Funcția va fi disponibilă în curând.</p>
+    <div class="custom-panel">
+      <div class="section-head" style="margin-bottom:20px;">
+        <div>
+          <h2>Ai un design? Îl printăm noi.</h2>
+          <p class="sub">Încarcă STL + export Bambu Studio, alege materialul și vezi prețul calculat automat.</p>
+        </div>
       </div>
-      <span class="btn-coming-soon" aria-disabled="true">Coming Soon</span>
+      <div class="custom-grid">
+        <div>
+          <div class="custom-preview" id="custom-preview">Previzualizarea 3D apare aici după ce încarci STL-ul.</div>
+          <p class="custom-status" id="custom-bed-status"></p>
+        </div>
+        <form id="custom-upload-form" class="custom-form-grid">
+          <div>
+            <label for="custom-stl">Fișier STL *</label>
+            <input type="file" id="custom-stl" accept=".stl,model/stl" required>
+            <p class="custom-status">Modelul trebuie să încapă pe platforma Bambu Lab 256×256×256 mm.</p>
+          </div>
+          <div>
+            <label for="custom-bambu">Export Bambu Studio (G-code sau 3MF sliced) *</label>
+            <input type="file" id="custom-bambu" accept=".gcode,.3mf,application/octet-stream" required>
+          </div>
+          <div>
+            <label for="custom-material">Material *</label>
+            <select id="custom-material" required>
+              <option value="PLA">PLA</option>
+              <option value="PETG">PETG</option>
+              <option value="TPU">TPU</option>
+              <option value="ABS">ABS</option>
+            </select>
+          </div>
+          <div class="custom-price-box" id="custom-price-box" hidden>
+            <p style="font-size:13px;color:var(--text-600);margin-bottom:6px;">Preț estimat</p>
+            <div class="custom-price" id="custom-price">—</div>
+            <p class="custom-status">Calculat cu aceeași formulă ca în admin. Detaliile costurilor nu sunt afișate public.</p>
+          </div>
+          <p class="custom-status error" id="custom-error"></p>
+          <button type="submit" class="btn btn-primary" id="custom-add-btn" style="padding:14px 20px;border-radius:11px;background:var(--orange-500);color:#fff;font-weight:700;" disabled>Adaugă în coș</button>
+        </form>
+      </div>
     </div>
   </div>
 </section>
