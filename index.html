@@ -644,7 +644,7 @@
     <div class="topstrip-links">
       <a href="#upload">Încarcă model</a>
       <a href="#catalog">Magazin</a>
-      <a href="#">RO · Lei</a>
+      <span>RO · Lei</span>
     </div>
   </div>
 </div>
@@ -652,7 +652,7 @@
 <!-- ===== Header ===== -->
 <header class="header">
   <div class="container">
-    <a href="#" class="logo" id="logo-link" aria-label="artblu - pagina principală">
+    <a href="index.html" class="logo" id="logo-link" aria-label="artblu - pagina principală">
       <svg class="logo-mark" width="30" height="22" viewBox="0 0 30 22" aria-hidden="true">
         <rect x="0" y="16" width="14" height="4" rx="2"/>
         <rect x="0" y="9" width="22" height="4" rx="2"/>
@@ -937,7 +937,7 @@
     <div class="trust-item"><span class="emo">📤</span><div><h4>Încarcă orice model</h4><p>STL, OBJ sau 3MF</p></div></div>
     <div class="trust-item"><span class="emo">🖨️</span><div><h4>Printat în 48h</h4><p>La comandă, de fiecare dată</p></div></div>
     <div class="trust-item"><span class="emo">🔒</span><div><h4>Plată securizată</h4><p>Confirmare înainte de print</p></div></div>
-    <div class="trust-item"><span class="emo">↩️</span><div><h4>Retur în 30 zile</h4><p>Dacă nu e pe gustul tău</p></div></div>
+    <div class="trust-item"><span class="emo">↩️</span><div><h4>Retur clar</h4><p>14 zile la colecție · personalizat pe caz</p></div></div>
   </div>
 </section>
 
@@ -945,12 +945,12 @@
 <section class="newsletter">
   <div class="container">
     <div>
-      <h3>Primești 10% reducere la prima comandă</h3>
-      <p>Designuri noi și restocări, de două ori pe lună. Fără spam.</p>
+      <h3>Rămâi la curent</h3>
+      <p>Modele noi și oferte — te anunțăm când newsletterul e gata.</p>
     </div>
     <form id="newsletter-form">
       <input type="email" required placeholder="tu@email.com" aria-label="Adresă de email">
-      <button type="submit">Abonează-te</button>
+      <button type="submit">Anunță-mă</button>
     </form>
   </div>
 </section>
@@ -1032,19 +1032,19 @@
       <details open>
         <summary>Despre artblu <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
         <ul>
-          <li><a href="#">Povestea noastră</a></li>
-          <li><a href="#">Materiale & calitate</a></li>
-          <li><a href="#">Sustenabilitate</a></li>
-          <li><a href="#">Cariere</a></li>
+          <li><a href="despre.html">Povestea noastră</a></li>
+          <li><a href="despre.html#materiale">Materiale &amp; calitate</a></li>
+          <li><a href="termeni.html">Termeni și condiții</a></li>
+          <li><a href="confidentialitate.html">Confidențialitate</a></li>
         </ul>
       </details>
       <details open>
         <summary>Relații clienți <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
         <ul>
-          <li><a href="#">Centru de ajutor</a></li>
-          <li><a href="#custom-print">Livrare: 25 lei · gratis peste 250 lei</a></li>
-          <li><a href="#">Retur & rambursare</a></li>
-          <li><a href="#">Contactează-ne</a></li>
+          <li><a href="ajutor.html">Centru de ajutor</a></li>
+          <li><a href="ajutor.html#livrare">Livrare: 25 lei · gratis peste 250 lei</a></li>
+          <li><a href="retur.html">Retur &amp; rambursare</a></li>
+          <li><a href="contact.html">Contactează-ne</a></li>
         </ul>
       </details>
       <details open>
@@ -1057,14 +1057,11 @@
         </ul>
       </details>
       <details open>
-        <summary>Conectează-te <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
+        <summary>Cont <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
         <ul>
           <li><a href="login.html">Autentificare</a></li>
+          <li><a href="login.html?register=1">Creează cont</a></li>
           <li><a href="account.html">Contul meu</a></li>
-          <li><a href="#">Instagram</a></li>
-          <li><a href="#">TikTok</a></li>
-          <li><a href="#">Pinterest</a></li>
-          <li><a href="#">Facebook</a></li>
         </ul>
       </details>
     </div>
@@ -1568,6 +1565,15 @@ function openCheckoutModal(){
   refreshCheckoutSummary();
   modal.hidden = false;
   requestAnimationFrame(() => modal.classList.add('open'));
+  if(typeof getCurrentUser === 'function'){
+    getCurrentUser().then(user => {
+      if(!user) return;
+      const nameEl = document.getElementById('checkout-name');
+      const emailEl = document.getElementById('checkout-email');
+      if(nameEl && !nameEl.value && user.user_metadata?.full_name) nameEl.value = user.user_metadata.full_name;
+      if(emailEl && !emailEl.value && user.email) emailEl.value = user.email;
+    }).catch(() => {});
+  }
   document.getElementById('checkout-name').focus();
 }
 
@@ -1616,8 +1622,10 @@ async function placeOrder(customer){
   const subtotal = getCartSubtotal();
   const f = fulfillmentFor(subtotal, paymentMethod);
   const orderId = crypto.randomUUID();
+  const user = typeof getCurrentUser === 'function' ? await getCurrentUser() : null;
   const order = {
     id: orderId,
+    user_id: user?.id || null,
     customer_name: customer.name,
     customer_email: customer.email,
     customer_phone: customer.phone || null,
@@ -2886,7 +2894,7 @@ document.getElementById('checkout-form').addEventListener('submit', async e => {
 document.getElementById('newsletter-form').addEventListener('submit', e => {
   e.preventDefault();
   e.target.reset();
-  showToast('Verifică-ți emailul — reducerea de 10% e pe drum 🎉');
+  showToast('Mulțumim! Te anunțăm când newsletterul este activ.');
 });
 
 document.getElementById('logo-link').addEventListener('click', e => {

@@ -36,9 +36,10 @@
     -webkit-font-smoothing:antialiased;
     min-height:100dvh;
   }
-  h1,h2,h3{font-family:'Poppins',system-ui,sans-serif;margin:0;letter-spacing:-0.02em;}
+  h1,h2,h3,h4{font-family:'Poppins',system-ui,sans-serif;margin:0;letter-spacing:-0.02em;}
   a{color:inherit;text-decoration:none;}
-  button{font-family:inherit;cursor:pointer;border:none;background:none;}
+  button,input{font-family:inherit;}
+  button{cursor:pointer;border:none;background:none;}
 
   .auth-header{
     background:var(--navy-900);
@@ -86,15 +87,24 @@
   .profile-info h2{font-size:18px;margin-bottom:4px;}
   .profile-info p{font-size:13.5px;color:#B9C2D2;}
 
-  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
   .info-card{
     background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
-    padding:20px;box-shadow:var(--shadow-sm);
+    padding:20px;box-shadow:var(--shadow-sm);margin-bottom:16px;
   }
   .info-card h3{font-size:15px;margin-bottom:6px;}
-  .info-card p{font-size:13px;color:var(--text-600);line-height:1.55;}
+  .info-card > p{font-size:13px;color:var(--text-600);line-height:1.55;}
 
-  .prints-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+  .field{margin-top:12px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--text-600);margin-bottom:6px;}
+  .field input{
+    width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;
+  }
+  .field input:focus{outline:2px solid var(--blue-600);outline-offset:1px;border-color:var(--blue-600);}
+  .form-msg{font-size:13px;margin-top:8px;min-height:18px;}
+  .form-msg.ok{color:var(--green);}
+  .form-msg.err{color:var(--red);}
+
+  .prints-list,.orders-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
   .print-row{
     display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
     padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#F8FAFC;
@@ -105,9 +115,11 @@
     flex-shrink:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
     padding:4px 8px;border-radius:999px;background:#EEF2FF;color:var(--blue-600);
   }
+  .print-status.paid{background:#E8F8F1;color:var(--green);}
+  .print-status.cod{background:#FFF4E5;color:#C56A00;}
   .print-empty{font-size:13px;color:var(--text-600);padding:8px 0;}
 
-  .actions{display:flex;flex-wrap:wrap;gap:12px;}
+  .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;}
   .btn{
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
     padding:13px 22px;border-radius:10px;font-size:14px;font-weight:600;
@@ -119,6 +131,7 @@
   .btn-ghost:hover{background:#F8FAFC;}
   .btn-danger{background:#FEE2E5;color:var(--red);}
   .btn-danger:hover{background:#FECDD3;}
+  .btn-small{padding:10px 14px;font-size:13px;}
 
   .loading-screen{
     min-height:50vh;display:flex;align-items:center;justify-content:center;
@@ -126,7 +139,6 @@
   }
 
   @media (max-width:560px){
-    .cards{grid-template-columns:1fr;}
     .profile-card{flex-direction:column;text-align:center;padding:22px 20px;}
     .page-head h1{font-size:24px;}
     .actions{flex-direction:column;}
@@ -159,16 +171,33 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="auth.js"></script>
 <script>
-const SUPABASE_URL = 'https://tilfngrtldwevtiilxpq.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_A3fpQb9LjJb8XySpIJyJeg_gcjPOs3m';
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = window.artbluAuth;
 const content = document.getElementById('account-content');
+
+function fmtLei(n) {
+  if (n == null || n === '') return '—';
+  return Number(n).toFixed(2).replace('.', ',') + ' lei';
+}
 
 function getInitials(name, email) {
   const source = name || email || '?';
   const parts = source.trim().split(/\s+/);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
   return source.slice(0, 2).toUpperCase();
+}
+
+function statusClass(paymentStatus) {
+  if (paymentStatus === 'paid') return 'paid';
+  if (paymentStatus === 'unpaid_cod') return 'cod';
+  return '';
+}
+
+function statusLabel(row) {
+  const pay = row.payment_status || '';
+  if (pay === 'paid') return 'plătit';
+  if (pay === 'unpaid_cod') return 'ramburs';
+  if (pay === 'pending') return 'în așteptare';
+  return row.status || 'new';
 }
 
 function renderAccount(user) {
@@ -182,37 +211,40 @@ function renderAccount(user) {
   content.innerHTML = `
     <div class="page-head">
       <h1>Contul meu</h1>
-      <p>Gestionează profilul și cererile tale de print personalizat.</p>
+      <p>Profil, comenzi din magazin și printuri personalizate.</p>
     </div>
 
     <div class="profile-card">
       <div class="avatar" aria-hidden="true">${initials}</div>
       <div class="profile-info">
-        <h2>${escapeHtml(name)}</h2>
+        <h2 id="profile-name">${escapeHtml(name)}</h2>
         <p>${escapeHtml(email)}</p>
       </div>
     </div>
 
-    <div class="info-card" style="margin-bottom:20px;" id="prints-card">
-      <h3>Modelele mele încărcate</h3>
-      <p>Cererile de print din STL / OBJ / 3MF pe care le-ai trimis.</p>
+    <div class="info-card">
+      <h3>Profil</h3>
+      <p>Membru din <strong>${joined}</strong>. Poți actualiza numele afișat.</p>
+      <div class="field">
+        <label for="profile-fullname">Nume complet</label>
+        <input id="profile-fullname" type="text" value="${escapeHtml(user.user_metadata?.full_name || '')}" autocomplete="name" placeholder="Ion Popescu">
+      </div>
+      <p class="form-msg" id="profile-msg"></p>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost btn-small" id="save-profile-btn">Salvează profilul</button>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>Comenzi magazin</h3>
+      <p>Produse din colecție plasate cu acest cont / email.</p>
+      <div class="orders-list" id="orders-list"><p class="print-empty">Se încarcă…</p></div>
+    </div>
+
+    <div class="info-card">
+      <h3>Printuri personalizate</h3>
+      <p>Cererile STL / OBJ / 3MF pe care le-ai trimis.</p>
       <div class="prints-list" id="prints-list"><p class="print-empty">Se încarcă…</p></div>
-    </div>
-
-    <div class="cards">
-      <div class="info-card">
-        <h3>Comenzi magazin</h3>
-        <p>Istoricul comenzilor din colecție va apărea aici în curând. Poți comanda și ca vizitator.</p>
-      </div>
-      <div class="info-card">
-        <h3>Print personalizat</h3>
-        <p>Încarcă un fișier 3D pe pagina principală, alege materialul și culoarea, apoi trimite cererea.</p>
-      </div>
-    </div>
-
-    <div class="info-card" style="margin-bottom:20px;">
-      <h3>Detalii cont</h3>
-      <p style="margin-top:8px;">Membru din: <strong>${joined}</strong></p>
     </div>
 
     <div class="actions">
@@ -231,7 +263,63 @@ function renderAccount(user) {
     }
   });
 
+  document.getElementById('save-profile-btn').addEventListener('click', async () => {
+    const msg = document.getElementById('profile-msg');
+    const fullName = document.getElementById('profile-fullname').value.trim();
+    msg.className = 'form-msg';
+    msg.textContent = '';
+    try {
+      const updated = await updateProfile(fullName);
+      document.getElementById('profile-name').textContent = getDisplayName(updated);
+      msg.className = 'form-msg ok';
+      msg.textContent = 'Profil actualizat.';
+    } catch (err) {
+      msg.className = 'form-msg err';
+      msg.textContent = err.message || 'Nu am putut salva.';
+    }
+  });
+
+  loadStoreOrders(user);
   loadCustomPrints(user);
+}
+
+async function loadStoreOrders(user) {
+  const list = document.getElementById('orders-list');
+  if (!list) return;
+  try {
+    const emailFilter = (user.email || '').replace(/"/g, '');
+    const { data, error } = await db
+      .from('orders')
+      .select('id, created_at, items, subtotal, shipping_fee, cod_fee, total, status, payment_method, payment_status')
+      .or(`user_id.eq.${user.id},customer_email.eq."${emailFilter}"`)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (error) throw error;
+    if (!data || !data.length) {
+      list.innerHTML = '<p class="print-empty">Nicio comandă din magazin încă. <a href="index.html#catalog">Vezi colecția →</a></p>';
+      return;
+    }
+    list.innerHTML = data.map(row => {
+      const date = new Date(row.created_at).toLocaleDateString('ro-RO');
+      const items = Array.isArray(row.items) ? row.items : [];
+      const label = items.length
+        ? (items.length === 1 ? items[0].name : `${items.length} produse`)
+        : 'Comandă';
+      const total = row.total != null ? row.total : row.subtotal;
+      const pay = row.payment_method === 'ramburs' ? 'Ramburs' : 'Card';
+      return `
+        <article class="print-row">
+          <div>
+            <h4>${escapeHtml(label)}</h4>
+            <p>${fmtLei(total)} · ${pay}<br>${date} · ID ${escapeHtml(String(row.id).slice(0, 8))}…</p>
+          </div>
+          <span class="print-status ${statusClass(row.payment_status)}">${escapeHtml(statusLabel(row))}</span>
+        </article>`;
+    }).join('');
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = '<p class="print-empty">Nu am putut încărca comenzile. Rulează supabase/auth-orders.sql dacă lipsește coloana user_id.</p>';
+  }
 }
 
 async function loadCustomPrints(user) {
@@ -239,9 +327,9 @@ async function loadCustomPrints(user) {
   if (!list) return;
   try {
     const emailFilter = (user.email || '').replace(/"/g, '');
-    const { data, error } = await supabaseClient
+    const { data, error } = await db
       .from('custom_prints')
-      .select('id, created_at, file_name, files, material, color_name, size_key, estimated_price, status, customer_address')
+      .select('id, created_at, file_name, files, material, color_name, estimated_price, total, status, payment_method, payment_status, customer_address')
       .or(`user_id.eq.${user.id},customer_email.eq."${emailFilter}"`)
       .order('created_at', { ascending: false })
       .limit(20);
@@ -252,22 +340,21 @@ async function loadCustomPrints(user) {
     }
     list.innerHTML = data.map(row => {
       const date = new Date(row.created_at).toLocaleDateString('ro-RO');
-      const price = row.estimated_price != null
-        ? Number(row.estimated_price).toFixed(2).replace('.', ',') + ' lei'
-        : '—';
+      const price = row.total != null ? row.total : row.estimated_price;
       const files = Array.isArray(row.files) && row.files.length
         ? row.files
         : (row.file_name ? row.file_name.split(', ') : ['Model 3D']);
       const fileLabel = Array.isArray(files) && files[0]?.name
         ? (files.length > 1 ? `${files.length} modele` : files[0].name)
         : (typeof files[0] === 'string' ? (files.length > 1 ? `${files.length} modele` : files[0]) : 'Model 3D');
+      const pay = row.payment_method === 'ramburs' ? 'Ramburs' : (row.payment_method === 'card' ? 'Card' : '');
       return `
         <article class="print-row">
           <div>
             <h4>${escapeHtml(fileLabel)}</h4>
-            <p>${escapeHtml(row.material || '—')} · ${escapeHtml(row.color_name || '—')} · din STL · ${price}<br>${escapeHtml(row.customer_address || '')}<br>${date}</p>
+            <p>${escapeHtml(row.material || '—')} · ${escapeHtml(row.color_name || '—')} · ${fmtLei(price)}${pay ? ' · ' + pay : ''}<br>${escapeHtml(row.customer_address || '')}<br>${date}</p>
           </div>
-          <span class="print-status">${escapeHtml(row.status || 'new')}</span>
+          <span class="print-status ${statusClass(row.payment_status)}">${escapeHtml(statusLabel(row))}</span>
         </article>`;
     }).join('');
   } catch (err) {
@@ -276,13 +363,19 @@ async function loadCustomPrints(user) {
   }
 }
 
-getCurrentUser().then(user => {
-  if (!user) {
+(async function boot() {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+    renderAccount(user);
+  } catch (err) {
+    console.error(err);
     window.location.href = 'login.html';
-    return;
   }
-  renderAccount(user);
-});
+})();
 </script>
 </body>
 </html>
