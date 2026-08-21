@@ -151,6 +151,53 @@
 
   .price-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;align-items:center;}
   .price-actions .check{margin:0;font-size:13px;}
+
+  .order-row{
+    display:grid;grid-template-columns:minmax(160px,220px) 1fr;gap:16px;align-items:start;
+    padding:18px 22px;border-bottom:1px solid var(--border);
+  }
+  .order-row:last-child{border-bottom:none;}
+  .order-row.is-new{background:#FFF8F0;animation:orderFlash 1.2s ease;}
+  @keyframes orderFlash{
+    0%{box-shadow:inset 4px 0 0 var(--orange-500);}
+    100%{box-shadow:inset 4px 0 0 transparent;}
+  }
+  .order-previews{display:flex;flex-direction:column;gap:10px;}
+  .order-preview-card{
+    border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#F4F6F9;
+  }
+  .order-preview-view{
+    position:relative;width:100%;aspect-ratio:1/1;min-height:140px;
+    background:linear-gradient(135deg,#E4E8EF,#CFD5E0);
+  }
+  .order-preview-view canvas{display:block;width:100% !important;height:100% !important;}
+  .order-preview-fallback{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:13px;color:var(--text-600);padding:12px;text-align:center;
+  }
+  .order-preview-meta{padding:8px 10px;font-size:12px;display:flex;justify-content:space-between;gap:8px;align-items:center;background:#fff;border-top:1px solid var(--border);}
+  .order-preview-meta a{color:var(--blue-600);font-weight:600;}
+  .order-meta h3{font-size:16px;margin-bottom:6px;}
+  .order-meta p{font-size:13px;color:var(--text-600);line-height:1.5;margin:0 0 6px;}
+  .popup-banner{
+    display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    margin-bottom:16px;padding:14px 16px;border-radius:12px;
+    background:linear-gradient(135deg,#FFF1E8,#FFE2D1);border:1px solid #FFD0B0;color:#8A4A1C;
+    font-size:14px;font-weight:600;
+  }
+  .popup-banner.show{display:flex;}
+  .popup-banner button{background:var(--orange-500);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer;}
+  .bambu-order-box{
+    margin-top:12px;padding:12px;border-radius:12px;background:#F8FAFC;border:1px solid var(--border);
+  }
+  .bambu-order-box label{margin-bottom:6px;}
+  .bambu-order-box input[type="file"]{font-size:13px;}
+  .bambu-order-stats{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;}
+  .bambu-order-stats .tag{background:#E8F8F0;color:#0F7A4B;}
+  .bambu-order-msg{font-size:12.5px;color:var(--text-600);min-height:18px;margin-top:6px;}
+  .bambu-order-msg.error{color:var(--red);}
+  .bambu-order-msg.ok{color:var(--green);font-weight:600;}
+  @media(max-width:700px){.order-row{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -170,8 +217,30 @@
 <main>
   <div class="container">
     <div class="alert alert-warn" id="policy-hint">
-      Dacă adăugarea sau ștergerea eșuează, rulează <code>supabase/admin-policies.sql</code> în SQL Editor.
+      Dacă adăugarea sau ștergerea eșuează, rulează <code>supabase/admin-policies.sql</code> și <code>supabase/custom-prints.sql</code> în SQL Editor.
     </div>
+
+    <div class="popup-banner" id="new-order-banner">
+      <span id="new-order-banner-text">Comandă nouă de print personalizat</span>
+      <button type="button" id="new-order-banner-btn">Vezi cererea</button>
+    </div>
+
+    <section class="panel" id="custom-orders-panel" style="margin-bottom:24px;">
+      <div class="panel-head">
+        <div>
+          <h2>Comenzi print personalizat</h2>
+          <p>Apar automat când un client trimite o comandă · cu previzualizare 3D</p>
+        </div>
+        <span class="count-badge" id="custom-count">0</span>
+      </div>
+      <div id="custom-wrap">
+        <div class="list-empty" id="custom-empty">
+          <div class="emo">📤</div>
+          <p>Se încarcă cererile...</p>
+        </div>
+        <div class="product-list" id="custom-list" hidden></div>
+      </div>
+    </section>
 
     <section class="panel pricing-panel">
       <div class="panel-head">
@@ -375,28 +444,13 @@
         </div>
       </section>
     </div>
-
-    <section class="panel" style="margin-top:20px;">
-      <div class="panel-head">
-        <div>
-          <h2>Cererile de print personalizat</h2>
-          <p>Modele încărcate de clienți · tabel <code>custom_prints</code></p>
-        </div>
-        <span class="count-badge" id="custom-count">0</span>
-      </div>
-      <div id="custom-wrap">
-        <div class="list-empty" id="custom-empty">
-          <div class="emo">📤</div>
-          <p>Se încarcă cererile...</p>
-        </div>
-        <div class="product-list" id="custom-list" hidden></div>
-      </div>
-    </section>
   </div>
 </main>
 
 <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="bambu-pricing.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -978,10 +1032,161 @@ document.getElementById('refresh-btn').addEventListener('click', () => {
   showToast('Listă reîncărcată');
 });
 
-async function loadCustomPrints(){
+function getCustomFiles(row){
+  if(Array.isArray(row.files) && row.files.length) return row.files;
+  if(row.stl_path){
+    return [{ path: row.stl_path, name: row.file_name || row.stl_path, size: null }];
+  }
+  return [];
+}
+
+function publicStlUrl(path){
+  if(!path) return null;
+  if(/^https?:\/\//i.test(path)) return path;
+  return `${SUPABASE_URL}/storage/v1/object/public/${STL_BUCKET}/${String(path).replace(/^\/+/, '')}`;
+}
+
+function fitAdminObject(object, targetSize){
+  const box = new THREE.Box3().setFromObject(object);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  object.position.sub(center);
+  const maxDim = Math.max(size.x, size.y, size.z);
+  if(maxDim > 0) object.scale.setScalar(targetSize / maxDim);
+}
+
+function renderAdminStlPreview(container, url, colorHex){
+  if(!container || !url || typeof THREE === 'undefined' || typeof THREE.STLLoader === 'undefined'){
+    if(container) container.innerHTML = '<div class="order-preview-fallback">Previzualizare indisponibilă</div>';
+    return;
+  }
+  container.innerHTML = '<div class="order-preview-fallback">Se încarcă modelul…</div>';
+  new THREE.STLLoader().load(url, geometry => {
+    geometry.computeVertexNormals();
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    camera.position.set(0, 0.2, 5.2);
+    const material = new THREE.MeshStandardMaterial({
+      color: colorHex || '#F2F1ED',
+      flatShading: true,
+      roughness: 0.55,
+      metalness: 0.04
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    fitAdminObject(mesh, 2.2);
+    mesh.rotation.x = -0.35;
+    mesh.rotation.y = 0.7;
+    scene.add(mesh);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.15));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+    dir.position.set(3, 4, 5);
+    scene.add(dir);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    container.innerHTML = '';
+    container.appendChild(renderer.domElement);
+    const w = container.clientWidth || 180;
+    const h = container.clientHeight || 180;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.render(scene, camera);
+    geometry.dispose();
+    material.dispose();
+    renderer.dispose();
+  }, undefined, () => {
+    container.innerHTML = '<div class="order-preview-fallback">Nu am putut încărca STL</div>';
+  });
+}
+
+function renderCustomOrderRow(row, isNew){
+  const date = new Date(row.created_at).toLocaleString('ro-RO');
+  const price = row.estimated_price != null ? fmtPrice(row.estimated_price) : '—';
+  const files = getCustomFiles(row);
+  const hasBambu = row.print_hours != null || row.filament_grams != null;
+  const previews = files.map((f, i) => {
+    const url = publicStlUrl(f.path);
+    const ext = String(f.name || f.path || '').split('.').pop()?.toLowerCase();
+    const isStl = ext === 'stl';
+    return `
+      <div class="order-preview-card">
+        <div class="order-preview-view" data-preview-url="${isStl && url ? escapeHtml(url) : ''}" data-color="${escapeHtml(row.color_hex || '#F2F1ED')}">
+          ${isStl ? '' : `<div class="order-preview-fallback">${escapeHtml((ext || 'file').toUpperCase())}</div>`}
+        </div>
+        <div class="order-preview-meta">
+          <span>${escapeHtml(f.name || f.path || ('Fișier ' + (i + 1)))}</span>
+          ${url ? `<a href="${url}" target="_blank" rel="noopener">Descarcă</a>` : ''}
+        </div>
+      </div>`;
+  }).join('') || '<div class="order-preview-fallback">Fără model</div>';
+
+  const bambuStats = hasBambu ? `
+    <div class="bambu-order-stats">
+      ${row.print_hours != null ? `<span class="tag">⏱ ${Number(row.print_hours).toFixed(2)} h</span>` : ''}
+      ${row.filament_grams != null ? `<span class="tag">🧵 ${Number(row.filament_grams).toFixed(1)} g</span>` : ''}
+      ${row.bambu_source ? `<span class="tag">${escapeHtml(row.bambu_source)}</span>` : ''}
+    </div>` : '<p style="font-size:12.5px;color:var(--text-600);margin:8px 0 0;">Încă fără date Bambu — slice în Studio, apoi încarcă exportul.</p>';
+
+  return `
+    <article class="order-row ${isNew ? 'is-new' : ''}" data-id="${row.id}" id="order-${row.id}">
+      <div class="order-previews">${previews}</div>
+      <div class="order-meta">
+        <h3>${escapeHtml(files.length > 1 ? files.length + ' modele' : (files[0]?.name || row.file_name || 'Model'))}</h3>
+        <p><strong>${escapeHtml(row.customer_name)}</strong> · ${escapeHtml(row.customer_email)}${row.customer_phone ? ' · ' + escapeHtml(row.customer_phone) : ''}</p>
+        <p>📍 ${escapeHtml(row.customer_address || '—')}</p>
+        <p>${escapeHtml(row.material || '—')} · ${escapeHtml(row.color_name || '—')} · dimensiune din STL · <strong>${price}</strong></p>
+        <div class="product-tags">
+          <span class="tag">${escapeHtml(row.status || 'new')}</span>
+          <span class="tag">${escapeHtml(date)}</span>
+          <span class="tag">${files.length} fișier${files.length === 1 ? '' : 'e'}</span>
+        </div>
+        ${row.notes ? `<p style="margin-top:8px;">${escapeHtml(row.notes)}</p>` : ''}
+        ${bambuStats}
+        <div class="bambu-order-box">
+          <label for="bambu-${row.id}">Export Bambu Studio (G-code / 3MF sliced)</label>
+          <input type="file" id="bambu-${row.id}" class="bambu-order-input" data-id="${row.id}" data-material="${escapeHtml(row.material || 'PLA')}" accept=".gcode,.3mf,application/octet-stream">
+          <p class="hint" style="margin:6px 0 0;">Deschide STL-ul în Bambu → Slice → Export G-code sau salvează 3MF sliced. Citim automat timpul și gramele.</p>
+          <p class="bambu-order-msg" id="bambu-msg-${row.id}"></p>
+        </div>
+      </div>
+    </article>`;
+}
+
+function initCustomOrderPreviews(root){
+  (root || document).querySelectorAll('.order-preview-view[data-preview-url]').forEach(el => {
+    const url = el.dataset.previewUrl;
+    if(!url || el.dataset.loaded) return;
+    el.dataset.loaded = '1';
+    renderAdminStlPreview(el, url, el.dataset.color);
+  });
+}
+
+let knownCustomIds = new Set();
+let latestNewOrderId = null;
+
+function showNewOrderPopup(row){
+  latestNewOrderId = row.id;
+  const banner = document.getElementById('new-order-banner');
+  const text = document.getElementById('new-order-banner-text');
+  const files = getCustomFiles(row);
+  text.textContent = `Comandă nouă: ${row.customer_name} · ${files.length} model${files.length === 1 ? '' : 'e'} · ${row.file_name || files[0]?.name || 'STL'}`;
+  banner.classList.add('show');
+  showToast('Comandă nouă de print personalizat!');
+}
+
+document.getElementById('new-order-banner-btn')?.addEventListener('click', () => {
+  document.getElementById('new-order-banner')?.classList.remove('show');
+  const el = latestNewOrderId ? document.getElementById('order-' + latestNewOrderId) : null;
+  (el || document.getElementById('custom-orders-panel'))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+async function loadCustomPrints(opts){
+  const highlightId = opts?.highlightId || null;
   const list = document.getElementById('custom-list');
   const empty = document.getElementById('custom-empty');
   const countEl = document.getElementById('custom-count');
+  if(!list || !empty || !countEl) return;
+
   const { data, error } = await supabaseClient
     .from('custom_prints')
     .select('*')
@@ -1002,36 +1207,121 @@ async function loadCustomPrints(){
     empty.hidden = false;
     list.hidden = true;
     empty.innerHTML = '<div class="emo">📭</div><p>Nicio cerere de print personalizat încă.</p>';
+    knownCustomIds = new Set();
     return;
   }
 
   empty.hidden = true;
   list.hidden = false;
-  list.innerHTML = rows.map(row => {
-    const date = new Date(row.created_at).toLocaleString('ro-RO');
-    const price = row.estimated_price != null ? fmtPrice(row.estimated_price) : '—';
-    const stlUrl = row.stl_path
-      ? `${SUPABASE_URL}/storage/v1/object/public/${STL_BUCKET}/${row.stl_path}`
-      : '#';
-    return `
-      <article class="product-row">
-        <div class="product-emoji" style="background:linear-gradient(135deg,#D9E6FB,#B9D0F6)">📤</div>
-        <div class="product-meta">
-          <h3>${escapeHtml(row.file_name || row.stl_path || 'Model')}</h3>
-          <p><strong>${escapeHtml(row.customer_name)}</strong> · ${escapeHtml(row.customer_email)} · ${escapeHtml(row.material || '—')} · ${escapeHtml(row.color_name || '—')} · ${escapeHtml(row.size_key || '—')} · ${price}</p>
-          <div class="product-tags">
-            <span class="tag">${escapeHtml(row.status || 'new')}</span>
-            <span class="tag">${escapeHtml(date)}</span>
-            ${row.stl_path ? `<a class="tag" href="${stlUrl}" target="_blank" rel="noopener">Descarcă fișier</a>` : ''}
-          </div>
-          ${row.notes ? `<p style="margin-top:6px;">${escapeHtml(row.notes)}</p>` : ''}
-        </div>
-      </article>`;
-  }).join('');
+  list.innerHTML = rows.map(row => renderCustomOrderRow(row, row.id === highlightId)).join('');
+  knownCustomIds = new Set(rows.map(r => r.id));
+  initCustomOrderPreviews(list);
+  bindBambuOrderInputs(list);
+  if(highlightId){
+    const el = document.getElementById('order-' + highlightId);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+let pricingSettingsCache = null;
+
+async function getPricingSettings(){
+  if(pricingSettingsCache) return pricingSettingsCache;
+  try{
+    pricingSettingsCache = await BambuPricing.loadSettingsFromDb(supabaseClient);
+  }catch(_){
+    pricingSettingsCache = { ...BambuPricing.DEFAULT_SETTINGS };
+  }
+  return pricingSettingsCache;
+}
+
+function setBambuMsg(id, text, kind){
+  const el = document.getElementById('bambu-msg-' + id);
+  if(!el) return;
+  el.textContent = text || '';
+  el.className = 'bambu-order-msg' + (kind ? ' ' + kind : '');
+}
+
+async function applyBambuExportToOrder(orderId, file, materialHint){
+  setBambuMsg(orderId, 'Citire export Bambu…');
+  const parsed = await BambuPricing.parseBambuFile(file);
+  const settings = await getPricingSettings();
+  const material = parsed.detectedMaterial || BambuPricing.normalizeMaterial(materialHint);
+  const breakdown = BambuPricing.calculatePrice(
+    parsed.printHours || 0,
+    parsed.filamentGrams || 0,
+    settings,
+    material
+  );
+  const patch = {
+    print_hours: parsed.printHours,
+    filament_grams: parsed.filamentGrams,
+    bambu_source: parsed.source || file.name,
+    estimated_price: breakdown.total,
+    status: 'quoted'
+  };
+  const { error } = await supabaseClient.from('custom_prints').update(patch).eq('id', orderId);
+  if(error) throw error;
+  setBambuMsg(orderId, `Salvat: ${BambuPricing.formatHours(parsed.printHours || 0)} · ${(parsed.filamentGrams || 0).toFixed(1)} g · ${fmtPrice(breakdown.total)}`, 'ok');
+  showToast('Date Bambu aplicate pe comandă');
+  await loadCustomPrints({ highlightId: orderId });
+}
+
+function bindBambuOrderInputs(root){
+  (root || document).querySelectorAll('.bambu-order-input').forEach(input => {
+    if(input.dataset.bound) return;
+    input.dataset.bound = '1';
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      const orderId = input.dataset.id;
+      if(!file || !orderId) return;
+      try{
+        await applyBambuExportToOrder(orderId, file, input.dataset.material);
+      }catch(err){
+        console.error(err);
+        setBambuMsg(orderId, err.message || 'Nu am putut citi exportul Bambu.', 'error');
+        showToast(err.message || 'Eroare Bambu', true);
+      }finally{
+        input.value = '';
+      }
+    });
+  });
+}
+
+function setupCustomPrintsRealtime(){
+  supabaseClient
+    .channel('admin-custom-prints')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'custom_prints' }, payload => {
+      const row = payload.new;
+      if(!row?.id || knownCustomIds.has(row.id)) return;
+      knownCustomIds.add(row.id);
+      showNewOrderPopup(row);
+      loadCustomPrints({ highlightId: row.id });
+    })
+    .subscribe(status => {
+      if(status === 'SUBSCRIBED') return;
+      // Fallback polling if realtime is unavailable
+    });
+
+  setInterval(async () => {
+    const { data } = await supabaseClient
+      .from('custom_prints')
+      .select('id, created_at, customer_name, file_name, files, stl_path')
+      .order('created_at', { ascending: false })
+      .limit(5);
+    if(!data?.length) return;
+    const fresh = data.filter(r => !knownCustomIds.has(r.id));
+    if(!fresh.length) return;
+    fresh.reverse().forEach(row => {
+      knownCustomIds.add(row.id);
+      showNewOrderPopup(row);
+    });
+    loadCustomPrints({ highlightId: fresh[fresh.length - 1].id });
+  }, 12000);
 }
 
 loadProducts();
-loadCustomPrints();
+loadCustomPrints().then(() => setupCustomPrintsRealtime());
 </script>
 </body>
 </html>

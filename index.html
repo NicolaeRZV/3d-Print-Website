@@ -337,12 +337,23 @@
   .upload-status.error{color:var(--red);}
   .upload-status.ok{color:var(--green);font-weight:600;}
   .upload-file-chip{
-    display:none;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;
+    display:none;flex-direction:column;gap:8px;padding:12px;border-radius:12px;
     background:#EEF2FF;border:1px solid #D6DFFF;margin-bottom:14px;font-size:13px;
   }
   .upload-file-chip.visible{display:flex;}
-  .upload-file-chip strong{font-weight:600;word-break:break-all;}
-  .upload-file-chip button{margin-left:auto;color:var(--blue-600);font-weight:600;font-size:12.5px;}
+  .upload-file-list{display:flex;flex-direction:column;gap:6px;width:100%;}
+  .upload-file-row{
+    display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;
+    background:var(--white);border:1px solid #D6DFFF;cursor:pointer;
+  }
+  .upload-file-row.active{border-color:var(--blue-600);box-shadow:0 0 0 1px var(--blue-600);}
+  .upload-file-row strong{font-weight:600;word-break:break-all;flex:1;font-size:12.5px;}
+  .upload-file-row .meta{font-size:11.5px;color:var(--text-600);white-space:nowrap;}
+  .upload-file-row .rm{
+    margin-left:auto;color:var(--red);font-weight:600;font-size:12px;padding:4px 6px;
+  }
+  .upload-file-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .upload-file-actions button{color:var(--blue-600);font-weight:600;font-size:12.5px;}
 
   .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px;}
   .step{
@@ -686,7 +697,7 @@
       <h1>Încarcă STL-ul.<br>Noi îl printăm.</h1>
       <p>Trage fișierul 3D aici, alege materialul și culoarea, iar noi îl printăm strat cu strat — personalizat, la comandă.</p>
       <div class="hero-ctas">
-        <button type="button" class="btn btn-primary" id="hero-pick-btn">Alege fișierul 3D</button>
+        <button type="button" class="btn btn-primary" id="hero-pick-btn">Alege fișierele 3D</button>
         <a href="#catalog" class="btn btn-ghost">Vezi colecția gata</a>
       </div>
       <div class="hero-meta">
@@ -697,20 +708,20 @@
     </div>
 
     <div class="hero-stage" id="hero-stage">
-      <input type="file" id="custom-file-input" accept=".stl,.obj,.3mf,model/stl,model/obj,application/sla" aria-label="Încarcă fișier 3D">
-      <div class="hero-drop" id="hero-drop" role="button" tabindex="0" aria-label="Zonă de încărcare model 3D">
+      <input type="file" id="custom-file-input" accept=".stl,.obj,.3mf,model/stl,model/obj,application/sla" multiple aria-label="Încarcă fișiere 3D">
+      <div class="hero-drop" id="hero-drop" role="button" tabindex="0" aria-label="Zonă de încărcare modele 3D">
         <div class="hero-drop-icon" aria-hidden="true">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
         </div>
-        <h2>Trage modelul aici</h2>
-        <p>sau click pentru a selecta din calculator</p>
-        <span class="formats">Max. 50 MB · STL recomandat pentru previzualizare</span>
+        <h2>Trage modelele aici</h2>
+        <p>sau click pentru a selecta unul sau mai multe fișiere</p>
+        <span class="formats">Max. 50 MB / fișier · STL recomandat pentru previzualizare</span>
       </div>
       <div class="hero-preview" id="hero-preview">
         <div class="hero-preview-canvas" id="custom-stl-wrap"></div>
         <div class="hero-preview-bar">
           <span><strong id="custom-file-name">model.stl</strong></span>
-          <button type="button" id="custom-clear-btn">Schimbă fișierul</button>
+          <button type="button" id="custom-add-more-btn">+ Adaugă fișiere</button>
         </div>
       </div>
     </div>
@@ -723,12 +734,14 @@
     <div class="upload-grid">
       <form class="upload-panel" id="custom-print-form">
         <div class="upload-file-chip" id="custom-file-chip">
-          <span>📦</span>
-          <strong id="custom-file-chip-name">—</strong>
-          <button type="button" id="custom-file-chip-clear">Elimină</button>
+          <div class="upload-file-list" id="custom-file-list"></div>
+          <div class="upload-file-actions">
+            <button type="button" id="custom-file-chip-add">+ Adaugă fișiere</button>
+            <button type="button" id="custom-file-chip-clear">Elimină tot</button>
+          </div>
         </div>
         <h2>Configurează printul</h2>
-        <p class="sub">Completează opțiunile și datele de contact. Te contactăm cu confirmarea și prețul final înainte de printare.</p>
+        <p class="sub">Poți încărca mai multe modele în aceeași comandă. Completează opțiunile și adresa de livrare.</p>
 
         <div class="upload-fields">
           <div class="upload-field">
@@ -742,28 +755,28 @@
             </select>
           </div>
           <div class="upload-field">
-            <label>Mărime print</label>
-            <div class="upload-sizes" id="custom-sizes" role="group" aria-label="Mărime print"></div>
+            <label>Dimensiune</label>
+            <p style="margin:0;font-size:13px;color:var(--text-600);line-height:1.45;padding-top:8px;">Printăm la mărimea din STL (fără scalare).</p>
           </div>
           <div class="upload-field full">
             <label>Culoare filament: <span id="custom-color-name">Alb</span></label>
             <div class="upload-swatches" id="custom-swatches" role="group" aria-label="Culoare filament"></div>
           </div>
           <div class="upload-field">
-            <label for="custom-name">Nume</label>
+            <label for="custom-name">Nume *</label>
             <input id="custom-name" name="name" type="text" required autocomplete="name" placeholder="Ion Popescu">
           </div>
           <div class="upload-field">
-            <label for="custom-email">Email</label>
+            <label for="custom-email">Email *</label>
             <input id="custom-email" name="email" type="email" required autocomplete="email" placeholder="ion@email.ro">
           </div>
           <div class="upload-field">
-            <label for="custom-phone">Telefon</label>
-            <input id="custom-phone" name="phone" type="tel" autocomplete="tel" placeholder="07xx xxx xxx">
+            <label for="custom-phone">Telefon *</label>
+            <input id="custom-phone" name="phone" type="tel" required autocomplete="tel" placeholder="07xx xxx xxx">
           </div>
-          <div class="upload-field">
-            <label for="custom-address">Adresă livrare (opțional)</label>
-            <input id="custom-address" name="address" type="text" autocomplete="street-address" placeholder="Stradă, oraș, județ">
+          <div class="upload-field full">
+            <label for="custom-address">Adresă livrare *</label>
+            <textarea id="custom-address" name="address" required autocomplete="street-address" placeholder="Stradă, număr, oraș, județ, cod poștal"></textarea>
           </div>
           <div class="upload-field full">
             <label for="custom-notes">Note / detalii</label>
@@ -773,15 +786,16 @@
 
         <div class="upload-estimate">
           <div>
-            <div class="label">Estimare orientativă</div>
-            <div class="price" id="custom-price">59,99 lei</div>
+            <div class="label" id="custom-price-label">Preț exact (P2S · PLA · supports)</div>
+            <div class="price" id="custom-price">—</div>
           </div>
-          <span class="hint">Prețul final depinde de volum, suporturi și timp de print. Confirmăm înainte de producție.</span>
+          <p class="hint" id="custom-price-hint">Încarcă un STL — calculăm timpul și gramele pe serverul de slice (Bambu P2S).</p>
+          <div id="custom-price-details" style="display:none;width:100%;font-size:12.5px;color:var(--text-600);line-height:1.5;"></div>
         </div>
 
         <div class="upload-actions">
           <button type="submit" class="btn btn-primary" id="custom-submit">Trimite cererea de print</button>
-          <button type="button" class="btn btn-secondary" id="custom-pick-again">Alt fișier</button>
+          <button type="button" class="btn btn-secondary" id="custom-pick-again">Adaugă fișiere</button>
         </div>
         <p class="upload-status" id="custom-status" aria-live="polite"></p>
       </form>
@@ -796,13 +810,13 @@
         <div class="steps">
           <div class="step">
             <div class="step-num">1</div>
-            <h3>Încarcă modelul</h3>
-            <p>Adaugi STL, OBJ sau 3MF. Pentru STL vezi imediat previzualizarea 3D pe care o poți roti.</p>
+            <h3>Încarcă modelele</h3>
+            <p>Adaugi unul sau mai multe STL, OBJ sau 3MF. Pentru STL vezi imediat previzualizarea 3D.</p>
           </div>
           <div class="step">
             <div class="step-num">2</div>
             <h3>Alege finisajul</h3>
-            <p>Material, culoare și mărime — cu estimare de preț pe loc, înainte să trimiți cererea.</p>
+            <p>Material și culoare. Prețul exact apare imediat după slice (P2S, supports on).</p>
           </div>
           <div class="step">
             <div class="step-num">3</div>
@@ -1092,13 +1106,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="bambu-pricing.js"></script>
 <script src="auth.js"></script>
 <script>
 /* ================= SUPABASE ================= */
 const SUPABASE_URL = 'https://tilfngrtldwevtiilxpq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_A3fpQb9LjJb8XySpIJyJeg_gcjPOs3m';
 const STL_BUCKET = 'stl-files';
-const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1519356166361317468/Ilh0PQe-o14uePV9lorCGHEBM86kpYsM5TVmLuJ3gHSc5pZ1w3lcFKOkMeyeKIy18FV1'; // paste your Discord webhook URL here
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1519356166361317468/Ilh0PQe-o14uePV9lorCGHEBM86kpYsM5TVmLuJ3gHSc5pZ1w3lcFKOkMeyeKIy18FV1';
+// Home OMV slice API via Tailscale Funnel — see slice-api/README.md
+const SLICE_API_URL = 'https://nas.taileecf41.ts.net';
+const SLICE_API_KEY = 'artblu_slice_7f3k9mQ2pL8wR4nX6vB1cD5hJ0sT'; // must match slice-api/.env on the NAS exactly
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function getStlPublicUrl(path){
@@ -1571,10 +1589,15 @@ function setupFooterAccordion(){
 let scene, camera, renderer, currentGroup = null, currentMaterial = null;
 let isDragging = false, dragStartX = 0, dragStartY = 0, rafId = null, threeReady = false;
 let heroScene, heroCamera, heroRenderer, heroGroup, heroMaterial, heroRafId = null;
-let customFile = null, customObjectUrl = null, customColorIdx = 0, customSize = 'mediu';
+let customFiles = [];
+let customActiveIdx = 0;
+let customObjectUrl = null, customColorIdx = 0;
 let isDraggingCustom = false, customDragX = 0, customDragY = 0;
+let pricingSettings = null;
+let customQuoteBusy = false;
 const CUSTOM_BASE_PRICE = 59.99;
 const CUSTOM_MAX_BYTES = 50 * 1024 * 1024;
+const CUSTOM_MAX_FILES = 20;
 const ALLOWED_MODEL_EXT = ['stl', 'obj', '3mf'];
 const stlGeometryCache = new Map();
 const cardPreviewObserver = typeof IntersectionObserver !== 'undefined'
@@ -1684,12 +1707,14 @@ function disposeCustomPreview(){
 }
 
 function clearCustomFile(){
-  customFile = null;
+  customFiles = [];
+  customActiveIdx = 0;
   if(customObjectUrl){ URL.revokeObjectURL(customObjectUrl); customObjectUrl = null; }
   disposeCustomPreview();
   const input = document.getElementById('custom-file-input');
   if(input) input.value = '';
   setCustomUiHasFile(false);
+  renderCustomFileList();
   setCustomStatus('');
   updateCustomPrice();
 }
@@ -2100,22 +2125,176 @@ function formatBytes(n){
   return (n / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-function estimateCustomPrice(){
+async function loadPricingSettings(){
+  if(pricingSettings) return pricingSettings;
+  if(typeof BambuPricing === 'undefined'){
+    pricingSettings = {};
+    return pricingSettings;
+  }
+  try{
+    pricingSettings = await BambuPricing.loadSettingsFromDb(supabaseClient);
+  }catch(_){
+    pricingSettings = { ...BambuPricing.DEFAULT_SETTINGS };
+  }
+  return pricingSettings;
+}
+
+function sliceApiConfigured(){
+  return !!(SLICE_API_URL && SLICE_API_KEY && !SLICE_API_URL.includes('YOUR-'));
+}
+
+function roughFallbackPrice(){
   const matOpt = document.getElementById('custom-material')?.selectedOptions?.[0];
   const matMult = matOpt ? Number(matOpt.dataset.mult || 1) : 1;
-  const sizeMult = SIZES.find(s => s.key === customSize)?.priceMult || 1;
-  let sizeBoost = 1;
-  if(customFile){
-    const mb = customFile.size / (1024 * 1024);
+  if(!customFiles.length) return +(CUSTOM_BASE_PRICE * matMult).toFixed(2);
+  let total = 0;
+  customFiles.forEach(entry => {
+    const mb = entry.file.size / (1024 * 1024);
+    let sizeBoost = 1;
     if(mb > 8) sizeBoost = 1.35;
     else if(mb > 3) sizeBoost = 1.15;
-  }
-  return +(CUSTOM_BASE_PRICE * matMult * sizeMult * sizeBoost).toFixed(2);
+    total += CUSTOM_BASE_PRICE * matMult * sizeBoost;
+  });
+  return +total.toFixed(2);
+}
+
+function getExactQuoteTotals(){
+  const stlEntries = customFiles.filter(e => getFileExt(e.file.name) === 'stl');
+  if(!stlEntries.length) return null;
+  if(stlEntries.some(e => !e.quote || e.quote.error)) return null;
+  let hours = 0;
+  let grams = 0;
+  let total = 0;
+  stlEntries.forEach(e => {
+    hours += Number(e.quote.printHours) || 0;
+    grams += Number(e.quote.filamentGrams) || 0;
+    total += Number(e.quote.total) || 0;
+  });
+  return { hours, grams, total: +total.toFixed(2), count: stlEntries.length };
 }
 
 function updateCustomPrice(){
-  const el = document.getElementById('custom-price');
-  if(el) el.textContent = fmt(estimateCustomPrice());
+  const priceEl = document.getElementById('custom-price');
+  const labelEl = document.getElementById('custom-price-label');
+  const hintEl = document.getElementById('custom-price-hint');
+  const detailsEl = document.getElementById('custom-price-details');
+  if(!priceEl) return;
+
+  if(customQuoteBusy){
+    labelEl.textContent = 'Se calculează prețul exact…';
+    priceEl.textContent = '…';
+    hintEl.textContent = 'Slice pe Bambu P2S (PLA · supports on). Poate dura câteva secunde.';
+    detailsEl.style.display = 'none';
+    return;
+  }
+
+  const exact = getExactQuoteTotals();
+  if(exact){
+    labelEl.textContent = 'Preț exact (P2S · PLA · supports)';
+    priceEl.textContent = fmt(exact.total);
+    hintEl.textContent = 'Calculat din timp + filament după slice. Dimensiune = STL original.';
+    detailsEl.style.display = 'block';
+    detailsEl.innerHTML = `⏱ ${typeof BambuPricing !== 'undefined' ? BambuPricing.formatHours(exact.hours) : exact.hours.toFixed(2) + ' h'} · 🧵 ${exact.grams.toFixed(1)} g` +
+      (exact.count > 1 ? ` · ${exact.count} modele` : '');
+    return;
+  }
+
+  if(customFiles.some(e => e.quote && e.quote.error)){
+    labelEl.textContent = 'Estimare orientativă';
+    priceEl.textContent = fmt(roughFallbackPrice());
+    hintEl.textContent = 'Slice API indisponibil sau a eșuat — preț aproximativ. Verifică SLICE_API_URL.';
+    detailsEl.style.display = 'none';
+    return;
+  }
+
+  if(!customFiles.length){
+    labelEl.textContent = 'Preț exact (P2S · PLA · supports)';
+    priceEl.textContent = '—';
+    hintEl.textContent = sliceApiConfigured()
+      ? 'Încarcă un STL — calculăm timpul și gramele pe serverul de slice.'
+      : 'Configurează SLICE_API_URL + SLICE_API_KEY în index.html (vezi slice-api/README.md).';
+    detailsEl.style.display = 'none';
+    return;
+  }
+
+  labelEl.textContent = 'Estimare orientativă';
+  priceEl.textContent = fmt(roughFallbackPrice());
+  hintEl.textContent = 'Doar fișierele STL primesc preț exact. OBJ/3MF rămân orientative.';
+  detailsEl.style.display = 'none';
+}
+
+async function requestSliceEstimate(file, material){
+  if(!sliceApiConfigured()){
+    throw new Error('Slice API neconfigurat (SLICE_API_URL / SLICE_API_KEY)');
+  }
+  const body = new FormData();
+  body.append('file', file, file.name);
+  body.append('material', material || 'PLA');
+  const res = await fetch(`${SLICE_API_URL.replace(/\/$/, '')}/estimate`, {
+    method: 'POST',
+    headers: { 'X-API-Key': SLICE_API_KEY },
+    body
+  });
+  const data = await res.json().catch(() => ({}));
+  if(!res.ok) throw new Error(data.detail || data.message || `Slice API error ${res.status}`);
+  return data;
+}
+
+async function requoteAllCustomFiles(){
+  const material = document.getElementById('custom-material')?.value || 'PLA';
+  const stlEntries = customFiles.filter(e => getFileExt(e.file.name) === 'stl');
+  if(!stlEntries.length){
+    updateCustomPrice();
+    return;
+  }
+  if(!sliceApiConfigured()){
+    stlEntries.forEach(e => { e.quote = { error: 'not-configured' }; });
+    updateCustomPrice();
+    setCustomStatus('Preț exact necesită slice-api pe OMV. Vezi slice-api/README.md.', 'error');
+    return;
+  }
+
+  customQuoteBusy = true;
+  updateCustomPrice();
+  setCustomStatus(`Calculăm prețul exact pentru ${stlEntries.length} STL…`);
+  await loadPricingSettings();
+
+  try{
+    for(let i = 0; i < stlEntries.length; i++){
+      const entry = stlEntries[i];
+      setCustomStatus(`Slice ${i + 1}/${stlEntries.length}: ${entry.file.name}`);
+      try{
+        const est = await requestSliceEstimate(entry.file, material);
+        const breakdown = BambuPricing.calculatePrice(
+          est.printHours || 0,
+          est.filamentGrams || 0,
+          pricingSettings,
+          est.material || material
+        );
+        entry.quote = {
+          printHours: breakdown.printHours,
+          filamentGrams: breakdown.filamentGrams,
+          total: breakdown.total,
+          source: est.source || 'slice-api',
+          printer: est.printer,
+          preset: est.preset
+        };
+      }catch(err){
+        console.error(err);
+        entry.quote = { error: err.message || 'slice failed' };
+      }
+    }
+    const exact = getExactQuoteTotals();
+    if(exact){
+      setCustomStatus(`Preț exact: ${fmt(exact.total)} · ${BambuPricing.formatHours(exact.hours)} · ${exact.grams.toFixed(1)} g`, 'ok');
+    } else {
+      const firstErr = stlEntries.find(e => e.quote?.error)?.quote?.error;
+      setCustomStatus(firstErr || 'Nu am putut calcula prețul exact.', 'error');
+    }
+  }finally{
+    customQuoteBusy = false;
+    updateCustomPrice();
+  }
 }
 
 function setCustomStatus(msg, kind){
@@ -2135,18 +2314,37 @@ function renderCustomSwatches(){
   if(nameEl) nameEl.textContent = COLORS[customColorIdx].name;
 }
 
-function renderCustomSizes(){
-  const row = document.getElementById('custom-sizes');
-  if(!row) return;
-  row.innerHTML = SIZES.map(s =>
-    `<button type="button" class="upload-size ${s.key===customSize?'active':''}" data-key="${s.key}">${s.label} <small>×${s.priceMult}</small></button>`
-  ).join('');
-}
-
 function setCustomUiHasFile(has){
   document.getElementById('hero-drop')?.classList.toggle('has-file', has);
   document.getElementById('hero-preview')?.classList.toggle('active', has);
   document.getElementById('custom-file-chip')?.classList.toggle('visible', has);
+}
+
+function renderCustomFileList(){
+  const list = document.getElementById('custom-file-list');
+  const nameEl = document.getElementById('custom-file-name');
+  if(!list) return;
+  if(!customFiles.length){
+    list.innerHTML = '';
+    if(nameEl) nameEl.textContent = 'model.stl';
+    return;
+  }
+  if(customActiveIdx >= customFiles.length) customActiveIdx = customFiles.length - 1;
+  const active = customFiles[customActiveIdx];
+  if(nameEl) nameEl.textContent = `${active.file.name} (${customActiveIdx + 1}/${customFiles.length})`;
+  list.innerHTML = customFiles.map((entry, i) => `
+    <div class="upload-file-row ${i===customActiveIdx?'active':''}" data-idx="${i}" role="button" tabindex="0">
+      <strong>${escapeHtml(entry.file.name)}</strong>
+      <span class="meta">${formatBytes(entry.file.size)}</span>
+      <button type="button" class="rm" data-rm="${i}" aria-label="Elimină ${escapeHtml(entry.file.name)}">✕</button>
+    </div>`).join('');
+}
+
+async function setActiveCustomFile(idx){
+  if(idx < 0 || idx >= customFiles.length) return;
+  customActiveIdx = idx;
+  renderCustomFileList();
+  await loadCustomFilePreview(customFiles[idx].file);
 }
 
 async function loadCustomFilePreview(file){
@@ -2154,7 +2352,7 @@ async function loadCustomFilePreview(file){
   if(ext !== 'stl'){
     if(customObjectUrl){ URL.revokeObjectURL(customObjectUrl); customObjectUrl = null; }
     disposeCustomPreview();
-    setCustomStatus('Previzualizarea 3D e disponibilă pentru STL. Fișierul va fi totuși trimis pentru print.', '');
+    setCustomStatus(`Previzualizare 3D doar pentru STL. „${file.name}” va fi totuși inclus în comandă.`, '');
     return;
   }
   if(typeof THREE === 'undefined' || typeof THREE.STLLoader === 'undefined'){
@@ -2166,31 +2364,62 @@ async function loadCustomFilePreview(file){
   try{
     const geometry = await loadStlGeometry(customObjectUrl);
     initCustomPreviewFromGeometry(geometry);
-    setCustomStatus('Poți roti modelul cu mouse-ul sau degetul.', 'ok');
+    setCustomStatus(`Previzualizare: ${file.name}. Poți roti modelul. Ai ${customFiles.length} fișier${customFiles.length===1?'':'e'} în comandă.`, 'ok');
   }catch(err){
     console.error(err);
     setCustomStatus('Nu am putut încărca previzualizarea STL. Verifică fișierul.', 'error');
   }
 }
 
-async function handleCustomFile(file){
-  if(!file) return;
-  const ext = getFileExt(file.name);
-  if(!ALLOWED_MODEL_EXT.includes(ext)){
-    setCustomStatus('Format neacceptat. Folosește STL, OBJ sau 3MF.', 'error');
+function removeCustomFileAt(idx){
+  if(idx < 0 || idx >= customFiles.length) return;
+  customFiles.splice(idx, 1);
+  if(!customFiles.length){
+    clearCustomFile();
     return;
   }
-  if(file.size > CUSTOM_MAX_BYTES){
-    setCustomStatus('Fișierul depășește 50 MB.', 'error');
-    return;
-  }
-  customFile = file;
-  document.getElementById('custom-file-name').textContent = file.name;
-  document.getElementById('custom-file-chip-name').textContent = `${file.name} · ${formatBytes(file.size)}`;
+  if(customActiveIdx >= customFiles.length) customActiveIdx = customFiles.length - 1;
+  else if(customActiveIdx > idx) customActiveIdx -= 1;
   setCustomUiHasFile(true);
   updateCustomPrice();
-  await loadCustomFilePreview(file);
+  setActiveCustomFile(customActiveIdx);
+  requoteAllCustomFiles();
+}
+
+async function handleCustomFiles(fileList){
+  const incoming = Array.from(fileList || []);
+  if(!incoming.length) return;
+  const errors = [];
+  for(const file of incoming){
+    if(customFiles.length >= CUSTOM_MAX_FILES){
+      errors.push(`Maxim ${CUSTOM_MAX_FILES} fișiere per comandă.`);
+      break;
+    }
+    const ext = getFileExt(file.name);
+    if(!ALLOWED_MODEL_EXT.includes(ext)){
+      errors.push(`${file.name}: format neacceptat`);
+      continue;
+    }
+    if(file.size > CUSTOM_MAX_BYTES){
+      errors.push(`${file.name}: depășește 50 MB`);
+      continue;
+    }
+    const dup = customFiles.some(e => e.file.name === file.name && e.file.size === file.size);
+    if(dup) continue;
+    customFiles.push({ id: crypto.randomUUID(), file, quote: null });
+  }
+  if(!customFiles.length){
+    setCustomStatus(errors[0] || 'Niciun fișier valid.', 'error');
+    return;
+  }
+  customActiveIdx = customFiles.length - 1;
+  setCustomUiHasFile(true);
+  renderCustomFileList();
+  updateCustomPrice();
+  await loadCustomFilePreview(customFiles[customActiveIdx].file);
+  if(errors.length) setCustomStatus(errors.join(' · '), 'error');
   document.getElementById('configure')?.scrollIntoView({behavior:'smooth', block:'start'});
+  await requoteAllCustomFiles();
 }
 
 function openCustomFilePicker(){
@@ -2209,6 +2438,7 @@ async function uploadCustomStl(file){
 }
 
 function buildDiscordCustomEmbed(payload, requestId){
+  const fileLines = (payload.files || []).map(f => `• ${f.name}`).join('\n') || payload.file_name || '—';
   return {
     username: 'artblu Print personalizat',
     embeds: [{
@@ -2218,11 +2448,13 @@ function buildDiscordCustomEmbed(payload, requestId){
         { name: 'Client', value: payload.customer_name, inline: true },
         { name: 'Email', value: payload.customer_email, inline: true },
         { name: 'Telefon', value: payload.customer_phone || '—', inline: true },
-        { name: 'Fișier', value: payload.file_name || payload.stl_path },
+        { name: 'Adresă', value: payload.customer_address || '—' },
+        { name: 'Fișiere', value: fileLines },
         { name: 'Material', value: payload.material || '—', inline: true },
         { name: 'Culoare', value: payload.color_name || '—', inline: true },
-        { name: 'Mărime', value: payload.size_key || '—', inline: true },
+        { name: 'Dimensiune', value: 'Din STL (fără scalare)', inline: true },
         { name: 'Estimare', value: fmt(payload.estimated_price || 0), inline: true },
+        { name: 'Timp / filament', value: `${payload.print_hours != null ? payload.print_hours + ' h' : '—'} / ${payload.filament_grams != null ? payload.filament_grams + ' g' : '—'}`, inline: true },
         { name: 'Note', value: payload.notes || '—' },
         { name: 'ID', value: requestId || '—', inline: true }
       ],
@@ -2242,52 +2474,79 @@ function sendDiscordCustomNotification(payload, requestId){
 async function submitCustomPrint(e){
   e.preventDefault();
   const submitBtn = document.getElementById('custom-submit');
-  if(!customFile){
-    setCustomStatus('Încarcă mai întâi un fișier 3D.', 'error');
+  const address = document.getElementById('custom-address').value.trim();
+  const phone = document.getElementById('custom-phone').value.trim();
+  if(!customFiles.length){
+    setCustomStatus('Încarcă cel puțin un fișier 3D.', 'error');
     openCustomFilePicker();
+    return;
+  }
+  if(!phone){
+    setCustomStatus('Telefonul este obligatoriu.', 'error');
+    document.getElementById('custom-phone')?.focus();
+    return;
+  }
+  if(!address){
+    setCustomStatus('Adresa de livrare este obligatorie.', 'error');
+    document.getElementById('custom-address')?.focus();
     return;
   }
   submitBtn.disabled = true;
   submitBtn.textContent = 'Se încarcă…';
-  setCustomStatus('Încărcăm modelul și trimitem cererea…');
+  setCustomStatus(`Încărcăm ${customFiles.length} fișier${customFiles.length===1?'':'e'}…`);
+  const uploadedPaths = [];
   try{
     const user = typeof getCurrentUser === 'function' ? await getCurrentUser() : null;
-    const stlPath = await uploadCustomStl(customFile);
+    const filesMeta = [];
+    for(let i = 0; i < customFiles.length; i++){
+      const entry = customFiles[i];
+      setCustomStatus(`Încărcăm ${i + 1}/${customFiles.length}: ${entry.file.name}`);
+      const path = await uploadCustomStl(entry.file);
+      uploadedPaths.push(path);
+      filesMeta.push({ path, name: entry.file.name, size: entry.file.size });
+    }
     const color = COLORS[customColorIdx];
     const requestId = crypto.randomUUID();
+    const exact = getExactQuoteTotals();
+    const estimatedPrice = exact ? exact.total : roughFallbackPrice();
     const payload = {
       id: requestId,
       user_id: user?.id || null,
       customer_name: document.getElementById('custom-name').value.trim(),
       customer_email: document.getElementById('custom-email').value.trim(),
-      customer_phone: document.getElementById('custom-phone').value.trim() || null,
-      customer_address: document.getElementById('custom-address').value.trim() || null,
-      stl_path: stlPath,
-      file_name: customFile.name,
+      customer_phone: phone,
+      customer_address: address,
+      stl_path: filesMeta[0].path,
+      file_name: filesMeta.map(f => f.name).join(', '),
+      files: filesMeta,
       material: document.getElementById('custom-material').value,
       color_name: color.name,
       color_hex: color.hex,
-      size_key: customSize,
+      size_key: 'stl',
       notes: document.getElementById('custom-notes').value.trim() || null,
-      estimated_price: estimateCustomPrice(),
-      status: 'new'
+      estimated_price: estimatedPrice,
+      print_hours: exact ? exact.hours : null,
+      filament_grams: exact ? exact.grams : null,
+      bambu_source: exact ? 'slice-api-p2s' : null,
+      status: exact ? 'quoted' : 'new'
     };
     const { error } = await supabaseClient.from('custom_prints').insert(payload);
     if(error) throw error;
     sendDiscordCustomNotification(payload, requestId);
-    setCustomStatus(`Cererea a fost trimisă! ID: ${requestId.slice(0, 8)}… Te contactăm pe email.`, 'ok');
+    setCustomStatus(`Cererea a fost trimisă! ${filesMeta.length} model${filesMeta.length===1?'':'e'} · ID: ${requestId.slice(0, 8)}…`, 'ok');
     showToast('Cererea de print personalizat a fost trimisă!');
     e.target.reset();
     clearCustomFile();
     customColorIdx = 0;
-    customSize = 'mediu';
     renderCustomSwatches();
-    renderCustomSizes();
     updateCustomPrice();
     if(user?.email) document.getElementById('custom-email').value = user.email;
     if(user?.user_metadata?.full_name) document.getElementById('custom-name').value = user.user_metadata.full_name;
   }catch(err){
     console.error('Custom print failed:', err);
+    for(const path of uploadedPaths){
+      try{ await supabaseClient.storage.from(STL_BUCKET).remove([path]); }catch(_){}
+    }
     setCustomStatus(err.message || 'Nu am putut trimite cererea. Verifică conexiunea și încearcă din nou.', 'error');
   }finally{
     submitBtn.disabled = false;
@@ -2297,8 +2556,8 @@ async function submitCustomPrint(e){
 
 function setupCustomUpload(){
   renderCustomSwatches();
-  renderCustomSizes();
   updateCustomPrice();
+  renderCustomFileList();
 
   const drop = document.getElementById('hero-drop');
   const input = document.getElementById('custom-file-input');
@@ -2306,8 +2565,20 @@ function setupCustomUpload(){
 
   document.getElementById('hero-pick-btn')?.addEventListener('click', openCustomFilePicker);
   document.getElementById('custom-pick-again')?.addEventListener('click', openCustomFilePicker);
-  document.getElementById('custom-clear-btn')?.addEventListener('click', clearCustomFile);
+  document.getElementById('custom-add-more-btn')?.addEventListener('click', openCustomFilePicker);
+  document.getElementById('custom-file-chip-add')?.addEventListener('click', openCustomFilePicker);
   document.getElementById('custom-file-chip-clear')?.addEventListener('click', clearCustomFile);
+
+  document.getElementById('custom-file-list')?.addEventListener('click', e => {
+    const rm = e.target.closest('[data-rm]');
+    if(rm){
+      e.stopPropagation();
+      removeCustomFileAt(parseInt(rm.dataset.rm, 10));
+      return;
+    }
+    const row = e.target.closest('.upload-file-row');
+    if(row) setActiveCustomFile(parseInt(row.dataset.idx, 10));
+  });
 
   drop?.addEventListener('click', openCustomFilePicker);
   drop?.addEventListener('keydown', e => {
@@ -2315,8 +2586,8 @@ function setupCustomUpload(){
   });
 
   input?.addEventListener('change', () => {
-    const file = input.files?.[0];
-    if(file) handleCustomFile(file);
+    if(input.files?.length) handleCustomFiles(input.files);
+    input.value = '';
   });
 
   ['dragenter','dragover'].forEach(evt => {
@@ -2332,8 +2603,7 @@ function setupCustomUpload(){
     });
   });
   stage?.addEventListener('drop', e => {
-    const file = e.dataTransfer?.files?.[0];
-    if(file) handleCustomFile(file);
+    if(e.dataTransfer?.files?.length) handleCustomFiles(e.dataTransfer.files);
   });
 
   document.getElementById('custom-swatches')?.addEventListener('click', e => {
@@ -2344,16 +2614,15 @@ function setupCustomUpload(){
     if(heroMaterial) heroMaterial.color.set(COLORS[customColorIdx].hex);
   });
 
-  document.getElementById('custom-sizes')?.addEventListener('click', e => {
-    const btn = e.target.closest('.upload-size');
-    if(!btn) return;
-    customSize = btn.dataset.key;
-    renderCustomSizes();
+  document.getElementById('custom-material')?.addEventListener('change', () => {
+    customFiles.forEach(e => { e.quote = null; });
     updateCustomPrice();
+    requoteAllCustomFiles();
   });
-
-  document.getElementById('custom-material')?.addEventListener('change', updateCustomPrice);
   document.getElementById('custom-print-form')?.addEventListener('submit', submitCustomPrint);
+
+  loadPricingSettings();
+  updateCustomPrice();
 
   if(typeof getCurrentUser === 'function'){
     getCurrentUser().then(user => {

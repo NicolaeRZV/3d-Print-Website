@@ -1,0 +1,20 @@
+services:
+  slice-api:
+    build: .
+    container_name: artblu-slice-api
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    env_file:
+      - .env
+    environment:
+      ORCA_BIN: /opt/orca/squashfs-root/AppRun
+      PROFILES_DIR: /profiles
+      REFRESH_PROFILES: "1"
+      MAX_UPLOAD_MB: "50"
+      SLICE_TIMEOUT_SEC: "300"
+    volumes:
+      - artblu_profiles:/profiles
+
+volumes:
+  artblu_profiles:

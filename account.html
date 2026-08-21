@@ -241,7 +241,7 @@ async function loadCustomPrints(user) {
     const emailFilter = (user.email || '').replace(/"/g, '');
     const { data, error } = await supabaseClient
       .from('custom_prints')
-      .select('id, created_at, file_name, material, color_name, size_key, estimated_price, status')
+      .select('id, created_at, file_name, files, material, color_name, size_key, estimated_price, status, customer_address')
       .or(`user_id.eq.${user.id},customer_email.eq."${emailFilter}"`)
       .order('created_at', { ascending: false })
       .limit(20);
@@ -255,11 +255,17 @@ async function loadCustomPrints(user) {
       const price = row.estimated_price != null
         ? Number(row.estimated_price).toFixed(2).replace('.', ',') + ' lei'
         : '—';
+      const files = Array.isArray(row.files) && row.files.length
+        ? row.files
+        : (row.file_name ? row.file_name.split(', ') : ['Model 3D']);
+      const fileLabel = Array.isArray(files) && files[0]?.name
+        ? (files.length > 1 ? `${files.length} modele` : files[0].name)
+        : (typeof files[0] === 'string' ? (files.length > 1 ? `${files.length} modele` : files[0]) : 'Model 3D');
       return `
         <article class="print-row">
           <div>
-            <h4>${escapeHtml(row.file_name || 'Model 3D')}</h4>
-            <p>${escapeHtml(row.material || '—')} · ${escapeHtml(row.color_name || '—')} · ${escapeHtml(row.size_key || '—')} · ${price}<br>${date}</p>
+            <h4>${escapeHtml(fileLabel)}</h4>
+            <p>${escapeHtml(row.material || '—')} · ${escapeHtml(row.color_name || '—')} · din STL · ${price}<br>${escapeHtml(row.customer_address || '')}<br>${date}</p>
           </div>
           <span class="print-status">${escapeHtml(row.status || 'new')}</span>
         </article>`;
