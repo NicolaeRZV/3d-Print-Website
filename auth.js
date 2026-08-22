@@ -2,6 +2,10 @@
   const SUPABASE_URL = 'https://tilfngrtldwevtiilxpq.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_A3fpQb9LjJb8XySpIJyJeg_gcjPOs3m';
 
+  // Live shop URL — email links always use this (not localhost).
+  // Change if you use a custom domain later.
+  const SITE_URL = 'https://nicolaerzv.github.io/3d-Print-Website';
+
   const authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       persistSession: true,
@@ -12,11 +16,21 @@
   });
 
   function siteOrigin() {
+    if (SITE_URL) return SITE_URL.replace(/\/$/, '');
     let base = window.location.origin;
     const path = window.location.pathname;
     if (path.endsWith('.html')) base += path.replace(/\/[^/]+$/, '');
     else if (path !== '/') base += path.replace(/\/$/, '');
     return base;
+  }
+
+  function authCallbackUrl() {
+    return `${siteOrigin()}/auth-callback.html`;
+  }
+
+  function authPageUrl(query) {
+    const base = siteOrigin();
+    return query ? `${base}/login.html?${query}` : `${base}/login.html`;
   }
 
   function getDisplayName(user) {
@@ -28,7 +42,7 @@
     const msg = String(err?.message || err || '').toLowerCase();
     if (msg.includes('invalid login credentials')) return 'Email sau parolă greșită.';
     if (msg.includes('email not confirmed')) return 'Confirmă mai întâi emailul (verifică inbox / spam), apoi autentifică-te.';
-    if (msg.includes('user already registered')) return 'Există deja un cont cu acest email. Autentifică-te sau resetează parola.';
+    if (msg.includes('user already registered')) return 'Există deja un cont cu acest email. Autentifică-te sau retrimite emailul de confirmare.';
     if (msg.includes('password should be at least')) return 'Parola trebuie să aibă minim 6 caractere.';
     if (msg.includes('unable to validate email')) return 'Adresa de email nu este validă.';
     if (msg.includes('signup is disabled')) return 'Înregistrările sunt dezactivate momentan.';
@@ -53,13 +67,14 @@
     if (error) {
       const e = new Error(mapAuthError(error));
       e.cause = error;
+      e.code = error.message || '';
       throw e;
     }
     return data.user;
   }
 
   async function signUp(email, password, fullName) {
-    const redirectTo = `${siteOrigin()}/login.html?confirmed=1`;
+    const redirectTo = authCallbackUrl();
     const { data, error } = await authClient.auth.signUp({
       email,
       password,
@@ -73,15 +88,30 @@
       e.cause = error;
       throw e;
     }
-    // Supabase can return a fake user with empty identities when email already exists
     if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-      throw new Error('Există deja un cont cu acest email. Autentifică-te sau resetează parola.');
+      const dup = new Error('Există deja un cont cu acest email. Autentifică-te sau retrimite emailul de confirmare.');
+      dup.code = 'already_registered';
+      throw dup;
     }
     return data;
   }
 
+  async function resendConfirmation(email) {
+    const redirectTo = authCallbackUrl();
+    const { error } = await authClient.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: redirectTo }
+    });
+    if (error) {
+      const e = new Error(mapAuthError(error));
+      e.cause = error;
+      throw e;
+    }
+  }
+
   async function resetPassword(email) {
-    const redirectTo = `${siteOrigin()}/login.html?reset=1`;
+    const redirectTo = authCallbackUrl();
     const { error } = await authClient.auth.resetPasswordForEmail(email, { redirectTo });
     if (error) {
       const e = new Error(mapAuthError(error));
@@ -155,6 +185,7 @@
   }
 
   window.artbluAuth = authClient;
+  window.artbluSiteUrl = SITE_URL;
   window.getDisplayName = getDisplayName;
   window.getCurrentUser = getCurrentUser;
   window.getSession = getSession;
@@ -162,9 +193,12 @@
   window.signUp = signUp;
   window.signOut = signOut;
   window.resetPassword = resetPassword;
+  window.resendConfirmation = resendConfirmation;
   window.updatePassword = updatePassword;
   window.updateProfile = updateProfile;
   window.mapAuthError = mapAuthError;
   window.escapeHtml = escapeHtml;
   window.artbluSiteOrigin = siteOrigin;
+  window.artbluAuthPageUrl = authPageUrl;
+  window.artbluAuthCallbackUrl = authCallbackUrl;
 })();

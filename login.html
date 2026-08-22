@@ -180,6 +180,7 @@
       <p class="form-success" id="form-success"></p>
       <button type="submit" class="submit" id="submit-btn">Autentifică-te</button>
       <button type="button" class="auth-footer" id="forgot-btn" style="padding:0;border:none;background:none;color:var(--blue-600);font-weight:600;cursor:pointer;">Ai uitat parola?</button>
+      <button type="button" class="auth-footer" id="resend-btn" style="padding:0;border:none;background:none;color:var(--blue-600);font-weight:600;cursor:pointer;display:none;">Retrimite email de confirmare</button>
     </form>
 
     <div class="auth-footer">
@@ -191,7 +192,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="auth.js"></script>
 <script>
-let mode = 'login'; // login | register | forgot | recover
+let mode = 'login'; // login | register | forgot | recover | resend
 
 const tabLogin = document.getElementById('tab-login');
 const tabRegister = document.getElementById('tab-register');
@@ -206,6 +207,7 @@ const form = document.getElementById('login-form');
 const errorEl = document.getElementById('form-error');
 const successEl = document.getElementById('form-success');
 const forgotBtn = document.getElementById('forgot-btn');
+const resendBtn = document.getElementById('resend-btn');
 const tabs = document.querySelector('.tabs');
 
 function setMode(next) {
@@ -214,17 +216,18 @@ function setMode(next) {
   const isRegister = mode === 'register';
   const isForgot = mode === 'forgot';
   const isRecover = mode === 'recover';
+  const isResend = mode === 'resend';
 
-  tabs.style.display = (isForgot || isRecover) ? 'none' : 'flex';
+  tabs.style.display = (isForgot || isRecover || isResend) ? 'none' : 'flex';
   tabLogin.classList.toggle('active', isLogin);
   tabRegister.classList.toggle('active', isRegister);
   tabLogin.setAttribute('aria-selected', isLogin);
   tabRegister.setAttribute('aria-selected', isRegister);
 
   nameField.hidden = !isRegister;
-  passwordField.hidden = isForgot;
+  passwordField.hidden = isForgot || isResend;
   password2Field.hidden = !(isRegister || isRecover);
-  passwordInput.required = !isForgot;
+  passwordInput.required = !isForgot && !isResend;
   password2Input.required = isRegister || isRecover;
   passwordInput.autocomplete = isLogin ? 'current-password' : 'new-password';
 
@@ -233,19 +236,30 @@ function setMode(next) {
     submitBtn.textContent = 'Autentifică-te';
     forgotBtn.style.display = 'block';
     forgotBtn.textContent = 'Ai uitat parola?';
+    resendBtn.style.display = 'block';
+    resendBtn.textContent = 'Retrimite email de confirmare';
   } else if (isRegister) {
     pageTitle.textContent = 'Creează cont';
     submitBtn.textContent = 'Creează cont';
     forgotBtn.style.display = 'none';
+    resendBtn.style.display = 'none';
   } else if (isForgot) {
     pageTitle.textContent = 'Resetare parolă';
     submitBtn.textContent = 'Trimite linkul';
     forgotBtn.style.display = 'block';
     forgotBtn.textContent = '← Înapoi la autentificare';
+    resendBtn.style.display = 'none';
+  } else if (isResend) {
+    pageTitle.textContent = 'Confirmare email';
+    submitBtn.textContent = 'Retrimite emailul';
+    forgotBtn.style.display = 'block';
+    forgotBtn.textContent = '← Înapoi la autentificare';
+    resendBtn.style.display = 'none';
   } else {
     pageTitle.textContent = 'Parolă nouă';
     submitBtn.textContent = 'Salvează parola';
     forgotBtn.style.display = 'none';
+    resendBtn.style.display = 'none';
   }
 
   errorEl.textContent = '';
@@ -259,39 +273,55 @@ function setMode(next) {
 tabLogin.addEventListener('click', () => setMode('login'));
 tabRegister.addEventListener('click', () => setMode('register'));
 forgotBtn.addEventListener('click', () => {
-  if (mode === 'forgot') setMode('login');
+  if (mode === 'forgot' || mode === 'resend') setMode('login');
   else setMode('forgot');
 });
+resendBtn.addEventListener('click', () => setMode('resend'));
+
+function hashParams() {
+  const raw = window.location.hash.replace(/^#/, '');
+  if (!raw) return new URLSearchParams();
+  if (raw.includes('=')) return new URLSearchParams(raw);
+  return new URLSearchParams();
+}
 
 async function boot() {
   const params = new URLSearchParams(window.location.search);
-  if (params.get('confirmed') === '1') {
-    successEl.textContent = 'Email confirmat! Te poți autentifica acum.';
-    successEl.classList.add('show');
-    successEl.dataset.keep = '1';
-  }
-  if (params.get('register') === '1' || window.location.hash === '#register') {
-    setMode('register');
-  }
+  const hash = hashParams();
+  const authType = hash.get('type') || params.get('type') || '';
 
-  // Password recovery lands with type=recovery in the URL hash/query (handled by detectSessionInUrl)
-  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-  if (hash.get('type') === 'recovery' || params.get('type') === 'recovery' || params.get('reset') === '1') {
-    // Wait briefly for session from recovery link
-    await new Promise(r => setTimeout(r, 400));
-    const session = await getSession();
+  // Let Supabase parse tokens from the URL hash first
+  await new Promise(r => setTimeout(r, 500));
+  const session = await getSession();
+
+  if (authType === 'recovery' || params.get('reset') === '1') {
     if (session) {
       setMode('recover');
       successEl.textContent = 'Alege o parolă nouă pentru contul tău.';
       successEl.classList.add('show');
       successEl.dataset.keep = '1';
+      window.history.replaceState({}, '', window.location.pathname + window.location.search);
+      return;
     }
   }
 
-  const user = await getCurrentUser();
-  if (user && mode !== 'recover') {
-    window.location.href = 'account.html';
+  if (authType === 'signup' || authType === 'email' || params.get('confirmed') === '1') {
+    if (session) {
+      successEl.textContent = 'Email confirmat! Te redirecționăm…';
+      successEl.classList.add('show');
+      window.history.replaceState({}, '', artbluAuthPageUrl('confirmed=1'));
+      setTimeout(() => { window.location.href = 'account.html'; }, 900);
+      return;
+    }
+    successEl.textContent = 'Email confirmat! Te poți autentifica acum.';
+    successEl.classList.add('show');
+    successEl.dataset.keep = '1';
   }
+
+  if (params.get('register') === '1' || window.location.hash === '#register') setMode('register');
+
+  const user = await getCurrentUser();
+  if (user && mode !== 'recover') window.location.href = 'account.html';
 }
 boot();
 
@@ -308,9 +338,19 @@ form.addEventListener('submit', async e => {
 
   try {
     if (mode === 'login') {
-      await signIn(email, password);
-      window.location.href = 'account.html';
-      return;
+      try {
+        await signIn(email, password);
+        window.location.href = 'account.html';
+        return;
+      } catch (loginErr) {
+        const raw = String(loginErr.cause?.message || loginErr.message || '').toLowerCase();
+        if (raw.includes('email not confirmed')) {
+          errorEl.textContent = loginErr.message + ' Poți retrimite emailul mai jos.';
+          setMode('resend');
+          return;
+        }
+        throw loginErr;
+      }
     }
 
     if (mode === 'forgot') {
@@ -318,6 +358,15 @@ form.addEventListener('submit', async e => {
       await resetPassword(email);
       successEl.textContent = 'Dacă există un cont cu acest email, vei primi un link de resetare. Verifică și folderul spam.';
       successEl.classList.add('show');
+      return;
+    }
+
+    if (mode === 'resend') {
+      if (!email) throw new Error('Introdu emailul contului.');
+      await resendConfirmation(email);
+      successEl.textContent = 'Email de confirmare retrimis. Verifică inbox și spam, apoi autentifică-te.';
+      successEl.classList.add('show');
+      setMode('login');
       return;
     }
 
@@ -348,6 +397,9 @@ form.addEventListener('submit', async e => {
     setMode('login');
   } catch (err) {
     errorEl.textContent = err.message || 'A apărut o eroare. Încearcă din nou.';
+    if (err.code === 'already_registered') {
+      setMode('resend');
+    }
   } finally {
     submitBtn.disabled = false;
   }

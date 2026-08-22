@@ -1,39 +1,125 @@
-# Auth setup (Supabase)
+# Fix auth emails (localhost + Supabase branding)
 
-Account signup/login uses Supabase Auth (email + password).
+**The link `http://localhost:3000/?code=...` means Supabase Site URL is still localhost.**  
+Our website code cannot override this — you must change it in the Supabase Dashboard.
 
-## Dashboard → Authentication → URL Configuration
+Old emails will **always** point to localhost. After fixing Supabase, request a **new** confirmation email.
 
-Set:
+---
 
-- **Site URL**: your live shop URL (e.g. `https://yoursite.com` or GitHub Pages URL)
-- **Redirect URLs** (add all that apply):
-  - `http://localhost:.../login.html` (if you test locally)
-  - `https://YOUR-DOMAIN/login.html`
-  - `https://YOUR-DOMAIN/login.html?confirmed=1`
-  - `https://YOUR-DOMAIN/login.html?reset=1`
+## Step 1 — Site URL (fixes localhost links)
 
-Without these, confirmation / password-reset links fail or land on the wrong page.
+1. Go to https://supabase.com/dashboard  
+2. Open project **tilfngrtldwevtiilxpq**  
+3. **Authentication** → **URL Configuration**  
+4. Set **Site URL** exactly to:
 
-## Email confirmation
+```
+https://nicolaerzv.github.io/3d-Print-Website
+```
 
-Your project currently has **confirm email = ON** (`mailer_autoconfirm: false`).
+5. Click **Save**
 
-That means after signup the user must click the email link before login works. To skip confirmation while testing:
+If Site URL stays `http://localhost:3000`, every email link will keep opening localhost.
 
-Authentication → Providers → Email → disable **Confirm email**.
+---
 
-## SQL for account order history
+## Step 2 — Redirect URLs (allowlist)
 
-Run in SQL Editor:
+Same page, **Redirect URLs** — add these lines (keep existing ones only if you use them locally):
 
-1. `supabase/auth-orders.sql` — adds `orders.user_id` + select policy so the account page can list store orders
+```
+https://nicolaerzv.github.io/3d-Print-Website/auth-callback.html
+https://nicolaerzv.github.io/3d-Print-Website/login.html
+https://nicolaerzv.github.io/3d-Print-Website/**
+```
 
-Custom prints already store `user_id` when the customer is logged in.
+Click **Save**.
 
-## What works on the site
+Without `auth-callback.html` in this list, Supabase ignores our redirect and falls back to Site URL.
 
-- Login / register (`login.html`)
-- Forgot password + set new password from email link
-- Account page: profile name, store orders, custom prints, logout
-- Logged-in checkout / custom form prefill + `user_id` on new orders
+---
+
+## Step 3 — Deploy site code
+
+Push to GitHub so Pages has:
+
+- `auth.js` (SITE_URL + redirect to `auth-callback.html`)
+- `auth-callback.html` (handles `?code=` from email)
+
+---
+
+## Step 4 — New confirmation email
+
+1. Open https://nicolaerzv.github.io/3d-Print-Website/login.html  
+2. Click **Retrimite email de confirmare**  
+3. Enter your email  
+4. Open the **new** email (ignore old ones)
+
+The new link should look like:
+
+```
+https://nicolaerzv.github.io/3d-Print-Website/auth-callback.html?code=...
+```
+
+Not localhost.
+
+---
+
+## Step 5 — Rename emails (artblu instead of Supabase)
+
+### Quick (subject + body text)
+
+**Authentication** → **Email Templates**
+
+**Confirm signup** — Subject:
+```
+Confirmă contul tău artblu
+```
+
+Body (keep the link variable):
+```html
+<h2>Bine ai venit la artblu!</h2>
+<p>Apasă linkul de mai jos pentru a confirma emailul:</p>
+<p><a href="{{ .ConfirmationURL }}">Confirmă contul</a></p>
+<p>Dacă nu ai creat cont, ignoră acest email.</p>
+```
+
+**Reset password** — Subject:
+```
+Resetează parola artblu
+```
+
+Body:
+```html
+<h2>Resetare parolă artblu</h2>
+<p><a href="{{ .ConfirmationURL }}">Alege o parolă nouă</a></p>
+```
+
+### Project name (sender label in some clients)
+
+**Project Settings** → **General** → **Project name** → `artblu`
+
+### Full custom sender (optional)
+
+**Authentication** → **SMTP Settings** → enable custom SMTP (e.g. your domain email).  
+Until then, emails may still show Supabase’s sending infrastructure, but subject/body will say artblu.
+
+---
+
+## Stuck unconfirmed account
+
+Dashboard → **Authentication** → **Users** → your email → either:
+
+- **Confirm user** (instant fix), or  
+- **Delete user** → register again after Steps 1–4
+
+---
+
+## Checklist
+
+- [ ] Site URL = `https://nicolaerzv.github.io/3d-Print-Website` (NOT localhost)  
+- [ ] Redirect URLs include `auth-callback.html`  
+- [ ] Latest code deployed to GitHub Pages  
+- [ ] Requested **new** confirmation email (old links are useless)  
+- [ ] Email templates updated to artblu wording  

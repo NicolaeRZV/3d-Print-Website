@@ -1139,6 +1139,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function () {
+  const p = new URLSearchParams(window.location.search);
+  const h = window.location.hash || '';
+  if (p.has('code') || h.includes('access_token') || h.includes('type=recovery')) {
+    window.location.replace('auth-callback.html' + window.location.search + window.location.hash);
+  }
+})();
+</script>
 <script src="bambu-pricing.js"></script>
 <script src="shipping.js"></script>
 <script src="auth.js"></script>
