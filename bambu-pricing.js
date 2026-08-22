@@ -47,6 +47,8 @@
       shipping_flat: row.shipping_flat != null ? Number(row.shipping_flat) : undefined,
       free_shipping_over: row.free_shipping_over != null ? Number(row.free_shipping_over) : undefined,
       cod_fee: row.cod_fee != null ? Number(row.cod_fee) : undefined,
+      shipping_free: row.shipping_free === true,
+      payments_enabled: row.payments_enabled !== false,
       filamentCatalog: row.filament_catalog || null
     };
   }
@@ -65,6 +67,11 @@
       markup_percent: cfg.markupPercent,
       min_price: cfg.minPrice,
       round_up_to: cfg.roundUpTo,
+      shipping_free: !!(cfg.shipping_free ?? cfg.shippingFree),
+      payments_enabled: (cfg.payments_enabled ?? cfg.paymentsEnabled) !== false,
+      shipping_flat: Number(cfg.shipping_flat ?? cfg.shippingFlat ?? 25),
+      free_shipping_over: Number(cfg.free_shipping_over ?? cfg.freeShippingOver ?? 250),
+      cod_fee: Number(cfg.cod_fee ?? cfg.codFee ?? 8),
       updated_at: new Date().toISOString()
     };
     if (cfg.filamentCatalog != null) row.filament_catalog = cfg.filamentCatalog;

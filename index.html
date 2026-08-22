@@ -439,9 +439,28 @@
   .catalog-intro a{font-size:13.5px;font-weight:600;color:var(--blue-600);}
   .catalog-intro a:hover{text-decoration:underline;}
 
+  .ready-models{
+    background:var(--bg);border-top:1px solid var(--border);padding:36px 0 44px;
+  }
+  .ready-models .section-head{margin-bottom:14px;}
+  .ready-models .section-head h2{font-size:18px;}
+  .ready-models .section-head .sub{font-size:13px;}
+  .ready-models-track{
+    display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;
+    scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  }
+  .ready-models-track::-webkit-scrollbar{height:5px;}
+  .ready-models-track::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  .ready-models-track .card{
+    flex:0 0 200px;scroll-snap-align:start;margin:0;
+  }
+  .ready-models-track .card .card-thumb{aspect-ratio:1/1;}
+  .ready-models-empty{display:none;padding:18px 0;font-size:13.5px;color:var(--text-600);}
+  .searchbar select{display:none;}
+
   /* ===== Trust strip ===== */
   .trust{background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
-  .trust .container{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:28px 24px;}
+  .trust .container{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:28px 24px;justify-items:center;}
   .trust-item{display:flex;align-items:center;gap:12px;}
   .trust-item .emo{font-size:24px;}
   .trust-item h4{font-size:13.5px;}
@@ -534,6 +553,17 @@
   .pay-option input{margin-top:3px;}
   .pay-option strong{display:block;font-size:13.5px;}
   .pay-option span{display:block;font-size:12px;color:var(--text-600);margin-top:2px;}
+  .payments-wip{
+    display:none;margin:0 0 14px;padding:14px 16px;border-radius:12px;
+    background:#FFF7E6;border:1px solid #F8E296;color:#5C4A00;font-size:13.5px;line-height:1.55;
+  }
+  .payments-wip.visible{display:block;}
+  .payments-wip strong{color:#161B22;}
+  .payments-wip a{
+    color:#2553F2;font-weight:700;text-decoration:underline;
+    pointer-events:auto;position:relative;z-index:1;
+  }
+  .pay-options.is-disabled{opacity:.45;pointer-events:none;}
   .checkout-summary{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:8px;}
   .checkout-summary .row{display:flex;justify-content:space-between;gap:10px;margin:4px 0;color:var(--text-600);}
   .checkout-summary .row.total{color:var(--text-900);font-weight:700;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
@@ -707,7 +737,7 @@
     <span>🖨️ Încarcă STL-ul tău — îl printăm în 48h</span>
     <div class="topstrip-links">
       <a href="#upload">Încarcă model</a>
-      <a href="#catalog">Magazin</a>
+      <a href="#ready-models">Modele gata</a>
       <span>RO · Lei</span>
     </div>
   </div>
@@ -726,16 +756,10 @@
     </a>
 
     <form class="searchbar" id="search-form">
-      <select id="search-cat" aria-label="Categorie de căutare">
-        <option value="all">Toate categoriile</option>
-        <option>Casă & Decor</option>
-        <option>Birou</option>
-        <option>Jucării & Figurine</option>
-        <option>Accesorii Tech</option>
-        <option>Grădină</option>
-        <option>Cadouri</option>
+      <select id="search-cat" aria-label="Categorie de căutare" hidden>
+        <option value="all">Toate</option>
       </select>
-      <input id="search-input" type="text" placeholder="Caută în colecție sau încarcă propriul STL…" aria-label="Caută produse">
+      <input id="search-input" type="text" placeholder="Caută în modelele gata…" aria-label="Caută produse">
       <button type="submit" aria-label="Caută">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </button>
@@ -755,11 +779,6 @@
   </div>
 </header>
 
-<!-- ===== Category nav ===== -->
-<nav class="catnav" aria-label="Categorii">
-  <div class="container" id="pill-row"></div>
-</nav>
-
 <main id="continut">
 
 <!-- ===== Hero: upload-first ===== -->
@@ -771,7 +790,7 @@
       <p>Trage fișierul 3D aici, alege materialul și culoarea, iar noi îl printăm strat cu strat — personalizat, la comandă.</p>
       <div class="hero-ctas">
         <button type="button" class="btn btn-primary" id="hero-pick-btn">Alege fișierele 3D</button>
-        <a href="#catalog" class="btn btn-ghost">Vezi colecția gata</a>
+        <a href="#configure" class="btn btn-ghost">Configurează printul</a>
       </div>
       <div class="hero-meta">
         <span>✓ STL · OBJ · 3MF</span>
@@ -845,8 +864,13 @@
             <label for="custom-address">Adresă livrare *</label>
             <textarea id="custom-address" name="address" required autocomplete="street-address" placeholder="Stradă, număr, oraș, județ, cod poștal"></textarea>
           </div>
-          <div class="upload-field full">
+          <div class="upload-field full" id="custom-pay-field">
             <label>Metodă de plată *</label>
+            <div class="payments-wip" id="custom-payments-wip" role="status">
+              <strong>artblu este încă în lucru.</strong> Plățile nu sunt disponibile momentan.
+              Pentru comenzi sau întrebări, scrie-ne la
+              <a href="mailto:contact@artblu.ro">contact@artblu.ro</a>.
+            </div>
             <div class="pay-options" id="custom-pay-options">
               <label class="pay-option">
                 <input type="radio" name="custom-pay" value="card" checked>
@@ -937,91 +961,12 @@
 
 <div class="layer-divider" aria-hidden="true"><i style="width:24px"></i><i style="width:40px"></i><i style="width:60px"></i><i style="width:40px"></i><i style="width:24px"></i></div>
 
-<!-- ===== Catalog (secondary) ===== -->
-<section class="section" id="catalog" style="background:var(--bg);padding-bottom:12px;">
-  <div class="container">
-    <div class="catalog-intro">
-      <div>
-        <h2>Sau alege din colecție</h2>
-        <p>Modele gata de print, cu previzualizare 3D — dacă nu ai propriul fișier.</p>
-      </div>
-      <a href="#upload">Prefer să încarc STL →</a>
-    </div>
-  </div>
-</section>
-
-<!-- ===== Deals ===== -->
-<section class="section deals" style="padding-top:12px;">
-  <div class="container">
-    <div class="deal-banner">
-      <h2>🔥 Oferte pe Straturi</h2>
-      <span style="font-size:13px;color:#8A4A1C;">Se termină în</span>
-      <div class="countdown" id="countdown"><span>06</span><span>00</span><span>00</span></div>
-    </div>
-    <div class="deals-track" id="deals-track"></div>
-  </div>
-</section>
-
-<!-- ===== Shop by category ===== -->
-<section class="section">
-  <div class="container">
-    <div class="section-head">
-      <h2>Cumpără după categorie</h2>
-    </div>
-    <div class="cat-grid" id="cat-tiles"></div>
-  </div>
-</section>
-
-<!-- ===== Bestsellers ===== -->
-<section class="section" id="bestsellers" style="background:var(--white);">
-  <div class="container">
-    <div class="section-head">
-      <div><h2>Cele mai vândute</h2><p class="sub">Cele mai apreciate și recomandate produse</p></div>
-      <div class="head-right">
-        <div class="sort-row">
-          <label for="sort-select">Sortează:</label>
-          <select id="sort-select">
-            <option value="popularity">Popularitate</option>
-            <option value="price-asc">Preț: crescător</option>
-            <option value="price-desc">Preț: descrescător</option>
-            <option value="rating">Cele mai bine notate</option>
-          </select>
-        </div>
-        <a href="#catalog" class="view-all">Sus la colecție →</a>
-      </div>
-    </div>
-    <div class="grid" id="bestsellers-grid"></div>
-    <div class="empty-state" id="bestsellers-empty">
-      <div class="layerbar"><i class="filled"></i><i class="filled"></i><i></i></div>
-      <h3>Nu am găsit produse</h3>
-      <p>Încearcă un alt termen de căutare sau altă categorie.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ===== New arrivals ===== -->
-<section class="section" style="background:var(--white);">
-  <div class="container">
-    <div class="section-head">
-      <div><h2>Noutăți</h2><p class="sub">Proaspăt scoase de pe platforma de printare</p></div>
-      <a href="#upload" class="view-all">Încarcă modelul tău →</a>
-    </div>
-    <div class="grid" id="newarrivals-grid"></div>
-    <div class="empty-state" id="newarrivals-empty">
-      <div class="layerbar"><i class="filled"></i><i class="filled"></i><i></i></div>
-      <h3>Nu am găsit produse</h3>
-      <p>Încearcă un alt termen de căutare sau altă categorie.</p>
-    </div>
-  </div>
-</section>
-
 <!-- ===== Trust strip ===== -->
 <section class="trust">
   <div class="container">
     <div class="trust-item"><span class="emo">📤</span><div><h4>Încarcă orice model</h4><p>STL, OBJ sau 3MF</p></div></div>
     <div class="trust-item"><span class="emo">🖨️</span><div><h4>Printat în 48h</h4><p>La comandă, de fiecare dată</p></div></div>
     <div class="trust-item"><span class="emo">🔒</span><div><h4>Plată securizată</h4><p>Confirmare înainte de print</p></div></div>
-    <div class="trust-item"><span class="emo">↩️</span><div><h4>Retur clar</h4><p>14 zile la colecție · personalizat pe caz</p></div></div>
   </div>
 </section>
 
@@ -1039,12 +984,27 @@
   </div>
 </section>
 
+<!-- ===== Ready models (compact, bottom) ===== -->
+<section class="ready-models" id="ready-models">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Modele gata de print</h2>
+        <p class="sub">Colecție mică din upload-urile noastre — opțional, dacă nu ai propriul fișier.</p>
+      </div>
+      <a href="#upload" class="view-all">Încarcă STL-ul tău →</a>
+    </div>
+    <div class="ready-models-track" id="ready-models-track"></div>
+    <p class="ready-models-empty" id="ready-models-empty">Niciun model în colecție momentan. Încarcă fișierul tău mai sus.</p>
+  </div>
+</section>
+
 </main>
 
 <!-- ===== Product page ===== -->
 <main id="product-view" hidden>
   <div class="container">
-    <button class="pv-back" id="pv-back">← Înapoi la magazin</button>
+    <button class="pv-back" id="pv-back">← Înapoi</button>
     <nav class="breadcrumb" id="pv-breadcrumb" aria-label="Cale de navigare"></nav>
 
     <div class="pv-grid">
@@ -1118,6 +1078,7 @@
         <ul>
           <li><a href="despre.html">Povestea noastră</a></li>
           <li><a href="despre.html#materiale">Materiale &amp; calitate</a></li>
+          <li><a href="social.html">Social media</a></li>
           <li><a href="termeni.html">Termeni și condiții</a></li>
           <li><a href="confidentialitate.html">Confidențialitate</a></li>
         </ul>
@@ -1126,8 +1087,8 @@
         <summary>Relații clienți <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
         <ul>
           <li><a href="ajutor.html">Centru de ajutor</a></li>
-          <li><a href="ajutor.html#livrare">Livrare: 25 lei · gratis peste 250 lei</a></li>
-          <li><a href="retur.html">Retur &amp; rambursare</a></li>
+          <li><a href="ajutor.html#livrare" id="footer-shipping-link">Livrare</a></li>
+          <li><a href="retur.html">Politica fără retur</a></li>
           <li><a href="contact.html">Contactează-ne</a></li>
         </ul>
       </details>
@@ -1135,9 +1096,8 @@
         <summary>Magazin <svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg></summary>
         <ul>
           <li><a href="#upload">Încarcă modelul tău</a></li>
-          <li><a href="#catalog">Colecția gata</a></li>
-          <li><a href="#bestsellers">Cele mai vândute</a></li>
           <li><a href="#configure">Configurează printul</a></li>
+          <li><a href="#ready-models">Modele gata</a></li>
         </ul>
       </details>
       <details open>
@@ -1151,7 +1111,7 @@
     </div>
     <div class="footer-bottom">
       <span>© 2026 artblu. Toate drepturile rezervate.</span>
-      <span>Card (Stripe) · Ramburs · Livrare 25 lei (gratis peste 250 lei)</span>
+      <span id="footer-commerce-note">Card (Stripe) · Ramburs</span>
     </div>
   </div>
 </footer>
@@ -1198,8 +1158,13 @@
       <label for="checkout-address">Adresă livrare</label>
       <textarea id="checkout-address" name="address" required placeholder="Stradă, număr, oraș, județ, cod poștal"></textarea>
     </div>
-    <div class="checkout-field">
+    <div class="checkout-field" id="checkout-pay-field">
       <label>Metodă de plată</label>
+      <div class="payments-wip" id="checkout-payments-wip" role="status">
+        <strong>artblu este încă în lucru.</strong> Plățile nu sunt disponibile momentan.
+        Pentru comenzi sau întrebări, scrie-ne la
+        <a href="mailto:contact@artblu.ro">contact@artblu.ro</a>.
+      </div>
       <div class="pay-options" id="checkout-pay-options">
         <label class="pay-option">
           <input type="radio" name="checkout-pay" value="card" checked>
@@ -1525,39 +1490,10 @@ function cardHtml(p){
   </article>`;
 }
 
-/* ================= RENDER: PILLS, TILES, GRIDS ================= */
-function renderPills(){
-  const row = document.getElementById('pill-row');
-  const uploadPill = `<a class="pill" href="#upload" style="background:linear-gradient(135deg,var(--orange-500),var(--orange-600));color:#fff;"><span aria-hidden="true">📤</span> Încarcă STL</a>`;
-  row.innerHTML = uploadPill + categories.map(c =>
-    `<button class="pill ${c.name===currentCategory?'active':''}" data-cat="${c.name}">
-       <span aria-hidden="true">${c.emo}</span> ${c.label}
-     </button>`).join('');
-}
-
-function renderCatTiles(){
-  const counts = {};
-  products.forEach(p => counts[p.category] = (counts[p.category]||0)+1);
-  const tiles = categories.filter(c => c.name !== 'all');
-  document.getElementById('cat-tiles').innerHTML = tiles.map(c => `
-    <button class="cat-tile" data-cat="${c.name}">
-      <div class="emo" aria-hidden="true">${c.emo}</div>
-      <div class="name">${c.label}</div>
-      <div class="count">${counts[c.name]||0} produse</div>
-    </button>`).join('');
-}
-
-function renderDeals(){
-  document.getElementById('deals-track').innerHTML =
-    dealIds.map(id => cardHtml(findProduct(id))).join('');
-  initCardPreviews(document.getElementById('deals-track'));
-}
-
+/* ================= RENDER: READY MODELS ================= */
 function matches(p){
   const term = searchTerm.trim().toLowerCase();
-  const catOk = currentCategory === 'all' || p.category === currentCategory;
-  const termOk = !term || p.name.toLowerCase().includes(term) || p.category.toLowerCase().includes(term);
-  return catOk && termOk;
+  return !term || p.name.toLowerCase().includes(term) || String(p.category || '').toLowerCase().includes(term);
 }
 
 function sortList(list){
@@ -1565,18 +1501,23 @@ function sortList(list){
   if(sortKey === 'price-asc') arr.sort((a,b) => a.price - b.price);
   else if(sortKey === 'price-desc') arr.sort((a,b) => b.price - a.price);
   else if(sortKey === 'rating') arr.sort((a,b) => b.rating - a.rating);
+  else arr.sort((a,b) => (b.reviews || 0) - (a.reviews || 0));
   return arr;
 }
 
 function applyFilters(){
-  const best = sortList(bestsellersPool.filter(matches));
-  const newer = sortList(newArrivalsPool.filter(matches));
-  document.getElementById('bestsellers-grid').innerHTML = best.map(cardHtml).join('');
-  document.getElementById('newarrivals-grid').innerHTML = newer.map(cardHtml).join('');
-  document.getElementById('bestsellers-empty').style.display = best.length ? 'none' : 'block';
-  document.getElementById('newarrivals-empty').style.display = newer.length ? 'none' : 'block';
-  initCardPreviews();
+  const track = document.getElementById('ready-models-track');
+  const empty = document.getElementById('ready-models-empty');
+  if(!track) return;
+  const list = sortList(products.filter(matches)).slice(0, 12);
+  track.innerHTML = list.map(cardHtml).join('');
+  if(empty) empty.style.display = list.length ? 'none' : 'block';
+  initCardPreviews(track);
 }
+
+function renderPills(){}
+function renderCatTiles(){}
+function renderDeals(){}
 
 /* ================= CART ================= */
 function afterCartChange(){
@@ -1650,12 +1591,13 @@ function renderCart(){
   const subtotal = ids.reduce((sum,id) => sum + cart[id].unitPrice * cart[id].qty, 0);
   const shipCfg = window.ArtbluShipping
     ? window.ArtbluShipping.shippingFromSettings(pricingSettings)
-    : { freeShippingOver: 250, shippingFlat: 25 };
-  const threshold = shipCfg.freeShippingOver;
+    : { freeShippingOver: 250, shippingFlat: 25, shippingFree: false };
   let shipHtml;
-  if(subtotal < threshold){
-    const remaining = threshold - subtotal;
-    const pct = Math.min(100, (subtotal/threshold)*100);
+  if(shipCfg.shippingFree){
+    shipHtml = `<div class="ship-progress done">Livrare gratuită activă pe magazin.</div>`;
+  } else if(subtotal < shipCfg.freeShippingOver){
+    const remaining = shipCfg.freeShippingOver - subtotal;
+    const pct = Math.min(100, (subtotal / shipCfg.freeShippingOver) * 100);
     shipHtml = `<div class="ship-progress"><span>Mai ai nevoie de <b>${fmt(remaining)}</b> pentru livrare gratuită (livrare ${fmt(shipCfg.shippingFlat)})</span><div class="bar"><i style="width:${pct}%"></i></div></div>`;
   } else {
     shipHtml = `<div class="ship-progress done">Ai livrare gratuită la această comandă!</div>`;
@@ -1683,9 +1625,11 @@ function renderCart(){
     </div>`;
   }).join('');
   body.innerHTML = shipHtml + linesHtml;
+  const payOk = arePaymentsEnabled();
   foot.innerHTML = `
     <div class="subtotal-row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
-    <button class="btn-checkout" id="checkout-btn">Finalizează comanda</button>`;
+    ${payOk ? '' : `<p class="payments-wip visible" style="margin-bottom:10px;">${paymentsDisabledMessage()} · <a href="mailto:contact@artblu.ro">contact@artblu.ro</a></p>`}
+    <button class="btn-checkout" id="checkout-btn" ${payOk ? '' : 'disabled'}>${payOk ? 'Finalizează comanda' : 'Plăți indisponibile'}</button>`;
 }
 
 function getSelectedPayMethod(name){
@@ -1781,21 +1725,27 @@ function sendDiscordOrderNotification(order, orderId){
 }
 
 function openCheckoutModal(){
-  const modal = document.getElementById('checkout-modal');
-  document.getElementById('checkout-error').textContent = '';
-  refreshCheckoutSummary();
-  modal.hidden = false;
-  requestAnimationFrame(() => modal.classList.add('open'));
-  if(typeof getCurrentUser === 'function'){
-    getCurrentUser().then(user => {
-      if(!user) return;
-      const nameEl = document.getElementById('checkout-name');
-      const emailEl = document.getElementById('checkout-email');
-      if(nameEl && !nameEl.value && user.user_metadata?.full_name) nameEl.value = user.user_metadata.full_name;
-      if(emailEl && !emailEl.value && user.email) emailEl.value = user.email;
-    }).catch(() => {});
-  }
-  document.getElementById('checkout-name').focus();
+  loadPricingSettings(true).then(() => {
+    if(!arePaymentsEnabled()){
+      showToast(paymentsDisabledMessage(), true);
+      return;
+    }
+    const modal = document.getElementById('checkout-modal');
+    document.getElementById('checkout-error').textContent = '';
+    refreshCheckoutSummary();
+    modal.hidden = false;
+    requestAnimationFrame(() => modal.classList.add('open'));
+    if(typeof getCurrentUser === 'function'){
+      getCurrentUser().then(user => {
+        if(!user) return;
+        const nameEl = document.getElementById('checkout-name');
+        const emailEl = document.getElementById('checkout-email');
+        if(nameEl && !nameEl.value && user.user_metadata?.full_name) nameEl.value = user.user_metadata.full_name;
+        if(emailEl && !emailEl.value && user.email) emailEl.value = user.email;
+      }).catch(() => {});
+    }
+    document.getElementById('checkout-name')?.focus();
+  });
 }
 
 function closeCheckoutModal(){
@@ -1837,6 +1787,8 @@ function handleCheckoutReturn(){
 }
 
 async function placeOrder(customer){
+  await loadPricingSettings(true);
+  if(!arePaymentsEnabled()) throw new Error(paymentsDisabledMessage());
   const ids = Object.keys(cart);
   if(!ids.length) throw new Error('Coșul este gol.');
   const paymentMethod = customer.paymentMethod || 'card';
@@ -1907,8 +1859,9 @@ function closeDrawer(){
 
 /* ================= COUNTDOWN ================= */
 function startCountdown(){
-  const deadline = Date.now() + 6*60*60*1000;
   const el = document.getElementById('countdown');
+  if(!el) return;
+  const deadline = Date.now() + 6*60*60*1000;
   function tick(){
     const diff = Math.max(0, deadline - Date.now());
     const h = String(Math.floor(diff/3600000)).padStart(2,'0');
@@ -2368,18 +2321,16 @@ function populateProductView(p){
   pvQty = 1;
 
   document.getElementById('pv-breadcrumb').innerHTML =
-    `<a href="#" id="bc-home">Acasă</a> / <a href="#" id="bc-cat" data-cat="${p.category}">${p.category}</a> / <span>${p.name}</span>`;
+    `<a href="#" id="bc-home">Acasă</a> / <a href="#ready-models" id="bc-cat">Modele gata</a> / <span>${p.name}</span>`;
   document.getElementById('bc-home').addEventListener('click', e => { e.preventDefault(); closeProduct(); });
   document.getElementById('bc-cat').addEventListener('click', e => {
     e.preventDefault();
-    currentCategory = p.category;
     closeProduct();
-    renderPills();
     applyFilters();
-    document.getElementById('bestsellers').scrollIntoView({behavior:'smooth'});
+    document.getElementById('ready-models')?.scrollIntoView({behavior:'smooth'});
   });
 
-  document.getElementById('pv-cat').textContent = p.category;
+  document.getElementById('pv-cat').textContent = 'Model gata';
   document.getElementById('pv-title').textContent = p.name;
   document.getElementById('pv-rating').innerHTML =
     `${starsHtml(p.rating)}<span class="rating-count">${p.rating.toFixed(1)} (${p.reviews} recenzii)</span>`;
@@ -2520,10 +2471,65 @@ function formatBytes(n){
   return (n / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-async function loadPricingSettings(){
-  if(pricingSettings) return pricingSettings;
+function arePaymentsEnabled(){
+  if(window.ArtbluShipping?.paymentsEnabledFromSettings){
+    return window.ArtbluShipping.paymentsEnabledFromSettings(pricingSettings);
+  }
+  if(!pricingSettings) return true;
+  return pricingSettings.payments_enabled !== false && pricingSettings.paymentsEnabled !== false;
+}
+
+function paymentsDisabledMessage(){
+  return 'artblu este încă în lucru. Plățile nu sunt disponibile momentan. Contact: contact@artblu.ro';
+}
+
+function formatShippingFooterLabel(settings){
+  const shipApi = window.ArtbluShipping;
+  const cfg = shipApi
+    ? shipApi.shippingFromSettings(settings)
+    : { shippingFlat: 25, freeShippingOver: 250, shippingFree: false };
+  if(cfg.shippingFree) return 'Livrare gratuită';
+  const flat = typeof shipApi?.formatLei === 'function' ? shipApi.formatLei(cfg.shippingFlat) : (cfg.shippingFlat + ' lei');
+  const over = typeof shipApi?.formatLei === 'function' ? shipApi.formatLei(cfg.freeShippingOver) : (cfg.freeShippingOver + ' lei');
+  return `Livrare ${flat} (gratis peste ${over})`;
+}
+
+function updateFooterCommerceNote(){
+  const note = document.getElementById('footer-commerce-note');
+  const shipLink = document.getElementById('footer-shipping-link');
+  const shipLabel = formatShippingFooterLabel(pricingSettings);
+  if(note) note.textContent = `Card (Stripe) · Ramburs · ${shipLabel}`;
+  if(shipLink) shipLink.textContent = shipLabel;
+}
+
+function applyStorefrontCommerceUi(){
+  const enabled = arePaymentsEnabled();
+  document.querySelectorAll('#custom-payments-wip, #checkout-payments-wip').forEach(el => {
+    el.classList.toggle('visible', !enabled);
+  });
+  document.querySelectorAll('#custom-pay-options, #checkout-pay-options').forEach(el => {
+    el.classList.toggle('is-disabled', !enabled);
+  });
+  document.querySelectorAll('#custom-pay-options input, #checkout-pay-options input').forEach(inp => {
+    inp.disabled = !enabled;
+  });
+  if(!customQuoteBusy) setCustomSubmitBusy(false);
+  const checkoutSubmit = document.getElementById('checkout-submit');
+  if(checkoutSubmit){
+    checkoutSubmit.disabled = !enabled;
+    checkoutSubmit.textContent = enabled ? 'Continuă' : 'Plăți indisponibile';
+  }
+  updateFooterCommerceNote();
+  updateCustomPrice();
+  refreshCheckoutSummary();
+  renderCart();
+}
+
+async function loadPricingSettings(force){
+  if(pricingSettings && !force) return pricingSettings;
   if(typeof BambuPricing === 'undefined'){
     pricingSettings = {};
+    applyStorefrontCommerceUi();
     return pricingSettings;
   }
   try{
@@ -2532,6 +2538,7 @@ async function loadPricingSettings(){
     pricingSettings = { ...BambuPricing.DEFAULT_SETTINGS };
   }
   applyFilamentCatalogToUi();
+  applyStorefrontCommerceUi();
   return pricingSettings;
 }
 
@@ -2597,10 +2604,18 @@ function formatSliceElapsed(ms){
 function setCustomSubmitBusy(busy){
   const btn = document.getElementById('custom-submit');
   if(!btn) return;
-  btn.disabled = !!busy;
-  if(busy) btn.dataset.prevLabel = btn.dataset.prevLabel || btn.textContent;
-  btn.textContent = busy ? 'Se calculează prețul…' : (btn.dataset.prevLabel || 'Trimite cererea de print');
-  if(!busy) delete btn.dataset.prevLabel;
+  if(busy){
+    btn.dataset.prevLabel = btn.dataset.prevLabel || btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Se calculează prețul…';
+    return;
+  }
+  const payOk = arePaymentsEnabled();
+  btn.disabled = !payOk;
+  btn.textContent = payOk
+    ? (btn.dataset.prevLabel || 'Trimite cererea de print')
+    : 'Plăți indisponibile momentan';
+  delete btn.dataset.prevLabel;
 }
 
 function stopSliceElapsedTicker(){
@@ -2716,8 +2731,12 @@ function updateCustomPrice(){
   }
 
   const rough = roughFallbackPrice();
-  setCustomPriceRows(fmt(rough), '25 lei*', '—', '—', false);
-  hintEl.textContent = 'Estimare orientativă print. *Livrare 25 lei, gratuită peste 250 lei (la total print).';
+  const shipCfg = window.ArtbluShipping ? window.ArtbluShipping.shippingFromSettings(pricingSettings) : { shippingFlat: 25, freeShippingOver: 250, shippingFree: false };
+  const roughShip = shipCfg.shippingFree ? 'Gratuită*' : (fmt(shipCfg.shippingFlat) + '*');
+  setCustomPriceRows(fmt(rough), roughShip, '—', '—', false);
+  hintEl.textContent = shipCfg.shippingFree
+    ? 'Estimare orientativă print. *Livrare gratuită (setată în magazin).'
+    : `Estimare orientativă print. *Livrare ${fmt(shipCfg.shippingFlat)}, gratuită peste ${fmt(shipCfg.freeShippingOver)} (la total print).`;
   detailsEl.style.display = 'none';
 }
 
@@ -3045,6 +3064,12 @@ async function submitCustomPrint(e){
   const submitBtn = document.getElementById('custom-submit');
   const address = document.getElementById('custom-address').value.trim();
   const phone = document.getElementById('custom-phone').value.trim();
+  await loadPricingSettings(true);
+  if(!arePaymentsEnabled()){
+    setCustomStatus(paymentsDisabledMessage(), 'error');
+    applyStorefrontCommerceUi();
+    return;
+  }
   if(customQuoteBusy){
     setCustomStatus('Așteaptă să termine slice-ul — prețul încă se calculează.', 'slicing');
     return;
@@ -3258,44 +3283,17 @@ function handleGridClick(e){
   const card = e.target.closest('.card');
   if(card){ openProduct(card.dataset.id); }
 }
-['bestsellers-grid','newarrivals-grid','deals-track','related-grid'].forEach(id => {
-  document.getElementById(id).addEventListener('click', handleGridClick);
+['ready-models-track','related-grid'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', handleGridClick);
 });
 
-document.getElementById('pill-row').addEventListener('click', e => {
-  const btn = e.target.closest('button.pill');
-  if(!btn) return;
-  if(viewingProductId) closeProduct();
-  currentCategory = btn.dataset.cat;
-  renderPills();
-  applyFilters();
-  document.getElementById('catalog')?.scrollIntoView({behavior:'smooth', block:'start'});
-});
-
-document.getElementById('cat-tiles').addEventListener('click', e => {
-  const tile = e.target.closest('.cat-tile');
-  if(!tile) return;
-  if(viewingProductId) closeProduct();
-  currentCategory = tile.dataset.cat;
-  renderPills();
-  applyFilters();
-  document.getElementById('catalog')?.scrollIntoView({behavior:'smooth', block:'start'});
-});
-
-document.getElementById('search-form').addEventListener('submit', e => {
+document.getElementById('search-form')?.addEventListener('submit', e => {
   e.preventDefault();
   if(viewingProductId) closeProduct();
   searchTerm = document.getElementById('search-input').value;
-  const catVal = document.getElementById('search-cat').value;
-  currentCategory = catVal;
-  renderPills();
+  currentCategory = 'all';
   applyFilters();
-  document.getElementById('catalog')?.scrollIntoView({behavior:'smooth', block:'start'});
-});
-
-document.getElementById('sort-select').addEventListener('change', e => {
-  sortKey = e.target.value;
-  applyFilters();
+  document.getElementById('ready-models')?.scrollIntoView({behavior:'smooth', block:'start'});
 });
 
 document.getElementById('cart-open').addEventListener('click', openDrawer);
