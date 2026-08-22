@@ -70,7 +70,7 @@ where (files is null or files = '[]'::jsonb)
 
 alter table public.custom_prints enable row level security;
 
-grant insert, select, update on public.custom_prints to anon, authenticated;
+grant insert, select, update, delete on public.custom_prints to anon, authenticated;
 
 drop policy if exists "Public insert custom_prints" on public.custom_prints;
 create policy "Public insert custom_prints"
@@ -93,6 +93,13 @@ create policy "Public update custom_prints"
   to anon, authenticated
   using (true)
   with check (true);
+
+drop policy if exists "Public delete custom_prints" on public.custom_prints;
+create policy "Public delete custom_prints"
+  on public.custom_prints
+  for delete
+  to anon, authenticated
+  using (true);
 
 -- Needed for realtime popup in admin.html (safe if already added)
 do $$

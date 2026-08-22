@@ -347,12 +347,18 @@ async function loadCustomPrints(user) {
       const fileLabel = Array.isArray(files) && files[0]?.name
         ? (files.length > 1 ? `${files.length} modele` : files[0].name)
         : (typeof files[0] === 'string' ? (files.length > 1 ? `${files.length} modele` : files[0]) : 'Model 3D');
+      const finishBits = Array.isArray(files)
+        ? [...new Set(files.map(f => [f.material, f.color_name].filter(Boolean).join(' · ')).filter(Boolean))]
+        : [];
+      const finishLabel = finishBits.length
+        ? finishBits.join(' / ')
+        : `${row.material || '—'} · ${row.color_name || '—'}`;
       const pay = row.payment_method === 'ramburs' ? 'Ramburs' : (row.payment_method === 'card' ? 'Card' : '');
       return `
         <article class="print-row">
           <div>
             <h4>${escapeHtml(fileLabel)}</h4>
-            <p>${escapeHtml(row.material || '—')} · ${escapeHtml(row.color_name || '—')} · ${fmtLei(price)}${pay ? ' · ' + pay : ''}<br>${escapeHtml(row.customer_address || '')}<br>${date}</p>
+            <p>${escapeHtml(finishLabel)} · ${fmtLei(price)}${pay ? ' · ' + pay : ''}<br>${escapeHtml(row.customer_address || '')}<br>${date}</p>
           </div>
           <span class="print-status ${statusClass(row.payment_status)}">${escapeHtml(statusLabel(row))}</span>
         </article>`;

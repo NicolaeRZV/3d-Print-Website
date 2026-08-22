@@ -6,6 +6,13 @@
   // Change if you use a custom domain later.
   const SITE_URL = 'https://nicolaerzv.github.io/3d-Print-Website';
 
+  if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+    console.error('[artblu] Supabase SDK missing — load @supabase/supabase-js before auth.js');
+    window.artbluAuth = null;
+    window.artbluAuthInitError = 'Supabase SDK missing';
+    return;
+  }
+
   const authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       persistSession: true,
@@ -14,6 +21,8 @@
       flowType: 'pkce'
     }
   });
+
+  window.artbluAuth = authClient;
 
   function siteOrigin() {
     if (SITE_URL) return SITE_URL.replace(/\/$/, '');
@@ -184,7 +193,6 @@
     updateAuthHeader();
   }
 
-  window.artbluAuth = authClient;
   window.artbluSiteUrl = SITE_URL;
   window.getDisplayName = getDisplayName;
   window.getCurrentUser = getCurrentUser;

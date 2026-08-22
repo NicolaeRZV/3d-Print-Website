@@ -20,30 +20,84 @@
   <p id="msg">Un moment, te redirecționăm.</p>
   <p id="actions" hidden><a href="login.html">Înapoi la autentificare</a></p>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
 <script src="auth.js"></script>
 <script>
 (async function () {
   const title = document.getElementById('title');
   const msg = document.getElementById('msg');
   const actions = document.getElementById('actions');
-  const params = new URLSearchParams(window.location.search);
-  const hashRaw = window.location.hash.replace(/^#/, '');
-  const hash = hashRaw.includes('=') ? new URLSearchParams(hashRaw) : new URLSearchParams();
-  const authType = hash.get('type') || params.get('type') || '';
+
+  function fail(text) {
+    title.textContent = 'Link invalid sau expirat';
+    msg.className = 'err';
+    msg.textContent = text;
+    actions.hidden = false;
+  }
+
+  function mapErr(err) {
+    const raw = String(err?.message || err || '');
+    const m = raw.toLowerCase();
+    if (m.includes('artbluauth is not defined') || m.includes('supabase is not defined')) {
+      return 'Nu s-au încărcat scripturile de autentificare. Reîncarcă pagina sau verifică conexiunea. Dacă ești pe GitHub Pages, asigură-te că auth.js e publicat.';
+    }
+    if (m.includes('both auth code and code verifier') || m.includes('code verifier')) {
+      return 'Linkul trebuie deschis în același browser în care te-ai înregistrat (sau de unde ai cerut emailul). Cere un email nou din login și confirmă tot pe același dispozitiv.';
+    }
+    if (m.includes('expired') || m.includes('invalid') || m.includes('otp')) {
+      return 'Link expirat sau deja folosit. Din pagina de autentificare: Retrimite email de confirmare.';
+    }
+    return raw || 'Nu am putut finaliza autentificarea.';
+  }
 
   try {
-    const code = params.get('code');
-    if (code) {
-      const { error } = await artbluAuth.auth.exchangeCodeForSession(code);
-      if (error) throw error;
-    } else {
-      await new Promise(r => setTimeout(r, 800));
+    let client = window.artbluAuth;
+    if (!client) {
+      if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+        throw new Error('Biblioteca Supabase nu s-a încărcat (CDN). Reîncarcă pagina.');
+      }
+      client = window.supabase.createClient(
+        'https://tilfngrtldwevtiilxpq.supabase.co',
+        'sb_publishable_A3fpQb9LjJb8XySpIJyJeg_gcjPOs3m',
+        {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            flowType: 'pkce'
+          }
+        }
+      );
+      window.artbluAuth = client;
     }
 
-    const { data: { session }, error: sessionErr } = await artbluAuth.auth.getSession();
+    const params = new URLSearchParams(window.location.search);
+    const hashRaw = window.location.hash.replace(/^#/, '');
+    const hash = hashRaw.includes('=') ? new URLSearchParams(hashRaw) : new URLSearchParams();
+    const authType = hash.get('type') || params.get('type') || '';
+    const code = params.get('code');
+    const tokenHash = params.get('token_hash') || params.get('token');
+
+    if (code) {
+      const { error } = await client.auth.exchangeCodeForSession(code);
+      if (error) throw error;
+    } else if (tokenHash && authType) {
+      const { error } = await client.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: authType
+      });
+      if (error) throw error;
+    } else if (hash.get('access_token')) {
+      await new Promise(r => setTimeout(r, 400));
+    } else {
+      await new Promise(r => setTimeout(r, 600));
+    }
+
+    const { data: { session }, error: sessionErr } = await client.auth.getSession();
     if (sessionErr) throw sessionErr;
-    if (!session) throw new Error('Sesiune invalidă. Link expirat sau deja folosit.');
+    if (!session) {
+      throw new Error('Sesiune invalidă. Link expirat sau deja folosit — cere un email nou din autentificare.');
+    }
 
     window.history.replaceState({}, '', 'auth-callback.html');
 
@@ -54,10 +108,8 @@
 
     window.location.href = 'account.html';
   } catch (err) {
-    title.textContent = 'Link invalid sau expirat';
-    msg.className = 'err';
-    msg.textContent = (err.message || 'Nu am putut finaliza autentificarea.') + ' Cere un email nou din pagina de autentificare după ce Supabase Site URL e setat corect (vezi supabase/AUTH-SETUP.md).';
-    actions.hidden = false;
+    console.error(err);
+    fail(mapErr(err) + ' Verifică și Site URL în Supabase (AUTH-SETUP.md).');
   }
 })();
 </script>

@@ -100,10 +100,11 @@ Body:
 
 **Project Settings** → **General** → **Project name** → `artblu`
 
-### Full custom sender (optional)
+### Full custom sender (SMTP)
 
-**Authentication** → **SMTP Settings** → enable custom SMTP (e.g. your domain email).  
-Until then, emails may still show Supabase’s sending infrastructure, but subject/body will say artblu.
+See **`supabase/SMTP-SETUP.md`** for step-by-step (Resend, Brevo, SendGrid, hosting email).
+
+Quick path: **Authentication** → **Emails** → **SMTP Settings** → enable Custom SMTP.
 
 ---
 

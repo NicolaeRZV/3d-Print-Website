@@ -46,13 +46,14 @@
       roundUpTo: Number(row.round_up_to),
       shipping_flat: row.shipping_flat != null ? Number(row.shipping_flat) : undefined,
       free_shipping_over: row.free_shipping_over != null ? Number(row.free_shipping_over) : undefined,
-      cod_fee: row.cod_fee != null ? Number(row.cod_fee) : undefined
+      cod_fee: row.cod_fee != null ? Number(row.cod_fee) : undefined,
+      filamentCatalog: row.filament_catalog || null
     };
   }
 
   function mapSettingsToRow(settings) {
     const cfg = { ...DEFAULT_SETTINGS, ...settings };
-    return {
+    const row = {
       id: 1,
       rate_per_hour: cfg.ratePerHour,
       rate_per_gram_pla: cfg.ratePerGramPla,
@@ -66,6 +67,8 @@
       round_up_to: cfg.roundUpTo,
       updated_at: new Date().toISOString()
     };
+    if (cfg.filamentCatalog != null) row.filament_catalog = cfg.filamentCatalog;
+    return row;
   }
 
   async function loadSettingsFromDb(client) {

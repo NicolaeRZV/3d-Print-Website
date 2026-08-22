@@ -326,16 +326,66 @@
   .upload-size.active{border-color:var(--blue-600);background:#EEF2FF;color:var(--blue-600);}
   .upload-estimate{
     margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--bg);
-    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+    display:flex;flex-direction:column;gap:10px;position:relative;transition:box-shadow .2s,border-color .2s;
+    border:1px solid transparent;
   }
-  .upload-estimate .label{font-size:13px;color:var(--text-600);}
-  .upload-estimate .price{font-size:22px;font-weight:700;font-family:'Poppins',sans-serif;}
-  .upload-estimate .hint{font-size:12px;color:var(--text-600);width:100%;}
+  .upload-estimate.is-slicing{
+    border-color:#93C5FD;background:linear-gradient(180deg,#EFF6FF 0%,#F8FAFC 55%);
+    box-shadow:0 0 0 3px rgba(37,99,235,.12);
+  }
+  .estimate-breakdown{display:flex;flex-direction:column;gap:8px;width:100%;}
+  .estimate-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;}
+  .estimate-row .estimate-label{color:var(--text-600);}
+  .estimate-row .estimate-value{font-weight:600;color:var(--text-900);}
+  .estimate-row.estimate-total{
+    margin-top:4px;padding-top:10px;border-top:1px solid var(--border);
+    font-size:16px;font-weight:700;font-family:'Poppins',sans-serif;
+  }
+  .estimate-row.estimate-total .estimate-value{font-size:20px;color:var(--navy-900);}
+  .estimate-row.estimate-print .estimate-value{font-size:18px;font-weight:700;font-family:'Poppins',sans-serif;color:var(--blue-700);}
+  .upload-estimate .hint{font-size:12px;color:var(--text-600);width:100%;margin:0;line-height:1.5;}
+  .upload-estimate .price-meta{font-size:12.5px;color:var(--text-600);line-height:1.5;}
+  .slice-progress{
+    display:none;flex-direction:column;gap:10px;padding:12px 14px;border-radius:10px;
+    background:var(--white);border:1px solid #BFDBFE;
+  }
+  .slice-progress.visible{display:flex;}
+  .slice-progress-top{display:flex;align-items:center;gap:12px;}
+  .slice-spinner{
+    width:28px;height:28px;flex-shrink:0;border-radius:50%;
+    border:3px solid #DBEAFE;border-top-color:var(--blue-600);
+    animation:sliceSpin .75s linear infinite;
+  }
+  @keyframes sliceSpin{to{transform:rotate(360deg);}}
+  .slice-progress-copy{flex:1;min-width:0;}
+  .slice-progress-copy strong{
+    display:block;font-size:14px;font-weight:700;color:var(--blue-700);
+    font-family:'Poppins',sans-serif;
+  }
+  .slice-progress-copy span{display:block;font-size:12.5px;color:var(--text-600);margin-top:2px;word-break:break-all;}
+  .slice-progress-meta{font-size:11.5px;color:var(--text-600);white-space:nowrap;}
+  .slice-bar{
+    height:8px;border-radius:999px;background:#E2E8F0;overflow:hidden;
+  }
+  .slice-bar > i{
+    display:block;height:100%;width:8%;border-radius:999px;
+    background:linear-gradient(90deg,var(--blue-600),#60A5FA);
+    transition:width .35s ease;
+  }
+  .slice-bar.indeterminate > i{
+    width:36%;animation:sliceBarSlide 1.2s ease-in-out infinite;
+  }
+  @keyframes sliceBarSlide{
+    0%{transform:translateX(-120%);}
+    100%{transform:translateX(320%);}
+  }
+  .slice-progress-note{font-size:12px;color:var(--text-600);line-height:1.45;margin:0;}
   .upload-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
   .upload-actions .btn{flex:1;justify-content:center;min-width:140px;}
   .upload-status{font-size:13px;color:var(--text-600);min-height:20px;margin-top:10px;}
   .upload-status.error{color:var(--red);}
   .upload-status.ok{color:var(--green);font-weight:600;}
+  .upload-status.slicing{color:var(--blue-700);font-weight:600;}
   .upload-file-chip{
     display:none;flex-direction:column;gap:8px;padding:12px;border-radius:12px;
     background:#EEF2FF;border:1px solid #D6DFFF;margin-bottom:14px;font-size:13px;
@@ -347,8 +397,22 @@
     background:var(--white);border:1px solid #D6DFFF;cursor:pointer;
   }
   .upload-file-row.active{border-color:var(--blue-600);box-shadow:0 0 0 1px var(--blue-600);}
+  .upload-file-row.slicing{border-color:#93C5FD;background:#F8FBFF;}
   .upload-file-row strong{font-weight:600;word-break:break-all;flex:1;font-size:12.5px;}
   .upload-file-row .meta{font-size:11.5px;color:var(--text-600);white-space:nowrap;}
+  .upload-file-row .finish-chip{
+    display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+    color:var(--text-600);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .upload-file-row .finish-dot{
+    width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1px solid rgba(0,0,0,.12);
+  }
+  .upload-file-row .quote-badge{
+    font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;white-space:nowrap;
+  }
+  .upload-file-row .quote-badge.busy{background:#DBEAFE;color:var(--blue-700);}
+  .upload-file-row .quote-badge.ok{background:#DCFCE7;color:#15803D;}
+  .upload-file-row .quote-badge.err{background:#FEE2E5;color:var(--red);}
   .upload-file-row .rm{
     margin-left:auto;color:var(--red);font-weight:600;font-size:12px;padding:4px 6px;
   }
@@ -750,18 +814,12 @@
           </div>
         </div>
         <h2>Configurează printul</h2>
-        <p class="sub">Poți încărca mai multe modele în aceeași comandă. Completează opțiunile și adresa de livrare.</p>
+        <p class="sub">Selectează un fișier din listă, apoi alege materialul și culoarea <strong>pentru acel fișier</strong>. Poți combina materiale în aceeași comandă.</p>
 
         <div class="upload-fields">
           <div class="upload-field">
-            <label for="custom-material">Material</label>
-            <select id="custom-material" name="material">
-              <option value="PLA" data-mult="1">PLA — versatil</option>
-              <option value="PETG" data-mult="1.2">PETG — rezistent</option>
-              <option value="ABS" data-mult="1.3">ABS — durabil</option>
-              <option value="TPU" data-mult="1.4">TPU — flexibil</option>
-              <option value="Rășină" data-mult="1.8">Rășină — detalii fine</option>
-            </select>
+            <label for="custom-material">Material <span id="custom-finish-file-hint" style="font-weight:500;color:var(--text-600);"></span></label>
+            <select id="custom-material" name="material"></select>
           </div>
           <div class="upload-field">
             <label>Dimensiune</label>
@@ -769,7 +827,7 @@
           </div>
           <div class="upload-field full">
             <label>Culoare filament: <span id="custom-color-name">Alb</span></label>
-            <div class="upload-swatches" id="custom-swatches" role="group" aria-label="Culoare filament"></div>
+            <div class="upload-swatches" id="custom-swatches" role="group" aria-label="Culoare filament pentru fișierul selectat"></div>
           </div>
           <div class="upload-field">
             <label for="custom-name">Nume *</label>
@@ -806,13 +864,39 @@
           </div>
         </div>
 
-        <div class="upload-estimate">
-          <div>
-            <div class="label" id="custom-price-label">Preț exact (P2S · PLA · supports)</div>
-            <div class="price" id="custom-price">—</div>
+        <div class="upload-estimate" id="custom-estimate-box">
+          <div class="slice-progress" id="custom-slice-progress" aria-live="polite" hidden>
+            <div class="slice-progress-top">
+              <div class="slice-spinner" aria-hidden="true"></div>
+              <div class="slice-progress-copy">
+                <strong id="custom-slice-title">Se calculează prețul…</strong>
+                <span id="custom-slice-file">Pregătim slice pe Bambu P2S</span>
+              </div>
+              <div class="slice-progress-meta" id="custom-slice-meta">0%</div>
+            </div>
+            <div class="slice-bar indeterminate" id="custom-slice-bar"><i id="custom-slice-bar-fill"></i></div>
+            <p class="slice-progress-note" id="custom-slice-note">Poate dura 15–90 secunde pe model. Nu închide pagina — site-ul nu e blocat.</p>
+          </div>
+          <div class="estimate-breakdown">
+            <div class="estimate-row estimate-print">
+              <span class="estimate-label">Preț print</span>
+              <span class="estimate-value" id="custom-print-price">—</span>
+            </div>
+            <div class="estimate-row">
+              <span class="estimate-label">Livrare</span>
+              <span class="estimate-value" id="custom-shipping-price">—</span>
+            </div>
+            <div class="estimate-row" id="custom-cod-row" hidden>
+              <span class="estimate-label">Taxă ramburs</span>
+              <span class="estimate-value" id="custom-cod-price">—</span>
+            </div>
+            <div class="estimate-row estimate-total">
+              <span class="estimate-label">Total de plată</span>
+              <span class="estimate-value" id="custom-total-price">—</span>
+            </div>
           </div>
           <p class="hint" id="custom-price-hint">Încarcă un STL — calculăm timpul și gramele pe serverul de slice (Bambu P2S).</p>
-          <div id="custom-price-details" style="display:none;width:100%;font-size:12.5px;color:var(--text-600);line-height:1.5;"></div>
+          <div class="price-meta" id="custom-price-details" style="display:none;"></div>
         </div>
 
         <div class="upload-actions">
@@ -1149,6 +1233,7 @@
 })();
 </script>
 <script src="bambu-pricing.js"></script>
+<script src="filament-catalog.js"></script>
 <script src="shipping.js"></script>
 <script src="auth.js"></script>
 <script>
@@ -1232,21 +1317,148 @@ const categories = [
   {name:'Grădină', label:'Grădină', emo:'🌿'},
   {name:'Cadouri', label:'Cadouri', emo:'🎁'}
 ];
-const COLORS = [
-  {name:'Alb', hex:'#F2F1ED'},
-  {name:'Negru', hex:'#1C1C1E'},
-  {name:'Roșu', hex:'#D62839'},
-  {name:'Albastru', hex:'#2553F2'},
-  {name:'Verde', hex:'#2E8B57'},
-  {name:'Galben', hex:'#F4C430'},
-  {name:'Portocaliu', hex:'#FF7A1F'},
-  {name:'Gri', hex:'#8A8F99'}
-];
 const SIZES = [
   {key:'mic', label:'Mic', priceMult:0.8, dimMult:0.75},
   {key:'mediu', label:'Mediu', priceMult:1, dimMult:1},
   {key:'mare', label:'Mare', priceMult:1.3, dimMult:1.3}
 ];
+let catalogColors = [];
+
+function getFilamentCatalog(){
+  return pricingSettings?.filamentCatalog ? FilamentCatalog.normalizeCatalog(pricingSettings.filamentCatalog) : FilamentCatalog.normalizeCatalog(null);
+}
+
+function getEnabledFilaments(){
+  return FilamentCatalog.getEnabledFilaments(getFilamentCatalog());
+}
+
+function getActiveCustomFile(){
+  return customFiles[customActiveIdx] || null;
+}
+
+function getColorsForFilamentId(filamentId){
+  const filaments = getEnabledFilaments();
+  const f = filaments.find(x => x.id === filamentId) || filaments[0];
+  return f?.colors?.length ? f.colors : FilamentCatalog.allColorsFlat(getFilamentCatalog());
+}
+
+function ensureFileFinish(entry){
+  if(!entry) return;
+  const filaments = getEnabledFilaments();
+  if(!filaments.length){
+    entry.filamentId = null;
+    entry.colorId = null;
+    return;
+  }
+  if(!entry.filamentId || !filaments.some(f => f.id === entry.filamentId)) entry.filamentId = filaments[0].id;
+  const colors = getColorsForFilamentId(entry.filamentId);
+  if(!colors.length){
+    entry.colorId = null;
+    return;
+  }
+  if(!entry.colorId || !colors.some(c => c.id === entry.colorId)) entry.colorId = colors[0].id;
+}
+
+function getFileFilament(entry){
+  ensureFileFinish(entry);
+  const filaments = getEnabledFilaments();
+  return filaments.find(f => f.id === entry?.filamentId) || filaments[0] || null;
+}
+
+function getFileColor(entry){
+  ensureFileFinish(entry);
+  const colors = getColorsForFilamentId(entry?.filamentId);
+  return colors.find(c => c.id === entry?.colorId) || colors[0] || { id: 'default', name: 'Alb', hex: '#F2F1ED', type: 'solid' };
+}
+
+function getCustomFilament(){
+  return getFileFilament(getActiveCustomFile()) || getEnabledFilaments()[0] || null;
+}
+
+function getCustomFilamentColors(){
+  const entry = getActiveCustomFile();
+  if(entry) return getColorsForFilamentId(entry.filamentId);
+  return getColorsForFilamentId(getEnabledFilaments()[0]?.id);
+}
+
+function getSelectedCustomColor(){
+  const entry = getActiveCustomFile();
+  if(entry) return getFileColor(entry);
+  const colors = getCustomFilamentColors();
+  return colors[0] || { name: 'Alb', hex: '#F2F1ED', type: 'solid' };
+}
+
+function defaultFinishFromActive(){
+  const active = getActiveCustomFile();
+  if(active){
+    ensureFileFinish(active);
+    return { filamentId: active.filamentId, colorId: active.colorId };
+  }
+  const filaments = getEnabledFilaments();
+  const filamentId = filaments[0]?.id || null;
+  const colorId = getColorsForFilamentId(filamentId)[0]?.id || null;
+  return { filamentId, colorId };
+}
+
+function fileFinishLabel(entry){
+  const filament = getFileFilament(entry);
+  const color = getFileColor(entry);
+  const mat = filament ? (filament.name || filament.label || 'PLA') : 'PLA';
+  return mat + ' · ' + FilamentCatalog.formatColorLabel(color);
+}
+
+function summarizeOrderFinish(){
+  if(!customFiles.length) return { material: 'PLA', colorName: 'Alb', colorHex: '#F2F1ED', colorStyle: null };
+  const mats = [];
+  const cols = [];
+  customFiles.forEach(entry => {
+    const filament = getFileFilament(entry);
+    const color = getFileColor(entry);
+    const mat = filament ? (filament.label || filament.name) : 'PLA';
+    const col = FilamentCatalog.formatColorLabel(color);
+    if(!mats.includes(mat)) mats.push(mat);
+    if(!cols.includes(col)) cols.push(col);
+  });
+  const first = getFileColor(customFiles[0]);
+  return {
+    material: mats.length === 1 ? mats[0] : mats.join(' / '),
+    colorName: cols.length === 1 ? cols[0] : 'Multiple (' + cols.join(', ') + ')',
+    colorHex: FilamentCatalog.previewHex(first),
+    colorStyle: FilamentCatalog.colorStylePayload(first)
+  };
+}
+
+function refreshCatalogColors(){
+  catalogColors = FilamentCatalog.allColorsFlat(getFilamentCatalog());
+  if(selectedColorIdx >= catalogColors.length) selectedColorIdx = 0;
+}
+
+function renderCustomMaterialSelect(){
+  const sel = document.getElementById('custom-material');
+  const hint = document.getElementById('custom-finish-file-hint');
+  if(!sel) return;
+  const filaments = getEnabledFilaments();
+  const entry = getActiveCustomFile();
+  if(hint) hint.textContent = entry ? `· ${entry.file.name}` : '';
+  if(!filaments.length){
+    sel.innerHTML = '<option value="PLA">PLA</option>';
+    sel.disabled = !entry;
+    return;
+  }
+  if(entry) ensureFileFinish(entry);
+  const selectedId = entry?.filamentId || filaments[0].id;
+  sel.innerHTML = filaments.map(f => `<option value="${escapeHtml(f.sliceKey)}" data-filament-id="${escapeHtml(f.id)}" data-mult="${f.priceMult}" ${f.id === selectedId ? 'selected' : ''}>${escapeHtml(f.label || f.name)}</option>`).join('');
+  sel.disabled = !entry;
+}
+
+function applyColorToPreviewMaterial(material, color){
+  if(!material || !color) return;
+  material.color.set(FilamentCatalog.previewHex(color));
+}
+
+function swatchStyle(color){
+  return FilamentCatalog.swatchBackground(color);
+}
 
 /* ================= STATE ================= */
 let currentCategory = 'all';
@@ -1731,10 +1943,12 @@ let isDragging = false, dragStartX = 0, dragStartY = 0, rafId = null, threeReady
 let heroScene, heroCamera, heroRenderer, heroGroup, heroMaterial, heroRafId = null;
 let customFiles = [];
 let customActiveIdx = 0;
-let customObjectUrl = null, customColorIdx = 0;
+let customObjectUrl = null;
 let isDraggingCustom = false, customDragX = 0, customDragY = 0;
 let pricingSettings = null;
 let customQuoteBusy = false;
+let customSliceState = { current: 0, total: 0, fileName: '', startedAt: 0 };
+let customSliceTimerId = null;
 const CUSTOM_BASE_PRICE = 59.99;
 const CUSTOM_MAX_BYTES = 50 * 1024 * 1024;
 const CUSTOM_MAX_FILES = 20;
@@ -1751,13 +1965,47 @@ const cardPreviewObserver = typeof IntersectionObserver !== 'undefined'
     }, { rootMargin: '120px' })
   : null;
 
-function fitObjectToView(object, targetSize){
+function centerAndScaleObject(object, targetSize){
+  object.traverse(child => {
+    if(!child.isMesh || !child.geometry) return;
+    child.geometry.computeBoundingBox();
+    child.geometry.center();
+    child.position.set(0, 0, 0);
+  });
+  object.position.set(0, 0, 0);
+  object.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(object);
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+  if(maxDim > 0) object.scale.setScalar(targetSize / maxDim);
+}
+
+function fitCameraToObject(cam, object, padding){
+  if(!cam || !object) return;
+  const pad = padding != null ? padding : 1.08;
+  object.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(object);
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
-  object.position.sub(center);
-  const maxDim = Math.max(size.x, size.y, size.z);
-  if(maxDim > 0) object.scale.setScalar(targetSize / maxDim);
+  const halfW = size.x * 0.5;
+  const halfH = size.y * 0.5;
+  const halfD = size.z * 0.5;
+  if(halfW <= 0 && halfH <= 0 && halfD <= 0) return;
+  const fovRad = cam.fov * (Math.PI / 180);
+  const aspect = cam.aspect > 0 ? cam.aspect : 1;
+  const vFit = halfH / Math.tan(fovRad / 2);
+  const hFit = halfW / (Math.tan(fovRad / 2) * aspect);
+  const distance = Math.max(vFit, hFit, halfD * 1.15) * pad;
+  cam.position.set(center.x + distance * 0.12, center.y + distance * 0.08, center.z + distance);
+  cam.lookAt(center);
+  cam.near = Math.max(0.01, distance / 200);
+  cam.far = Math.max(100, distance * 50);
+  cam.updateProjectionMatrix();
+}
+
+function fitObjectToView(object, targetSize, cam){
+  centerAndScaleObject(object, targetSize);
+  if(cam) fitCameraToObject(cam, object);
 }
 
 function loadStlGeometry(url){
@@ -1769,6 +2017,7 @@ function loadStlGeometry(url){
     }
     new THREE.STLLoader().load(url, geometry => {
       geometry.computeVertexNormals();
+      geometry.center();
       stlGeometryCache.set(url, geometry);
       resolve(geometry.clone());
     }, undefined, reject);
@@ -1784,10 +2033,10 @@ function renderCardPreview(container, url){
     cameraLocal.position.set(0, 0.25, 5.5);
     const material = new THREE.MeshStandardMaterial({color:'#F2F1ED', flatShading:true, roughness:0.55, metalness:0.04});
     const mesh = new THREE.Mesh(geometry, material);
-    fitObjectToView(mesh, 2.2);
+    sceneLocal.add(mesh);
     mesh.rotation.x = -0.35;
     mesh.rotation.y = 0.75;
-    sceneLocal.add(mesh);
+    fitObjectToView(mesh, 2.2);
     sceneLocal.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.15));
     const dir = new THREE.DirectionalLight(0xffffff, 0.9);
     dir.position.set(3, 4, 5);
@@ -1800,6 +2049,7 @@ function renderCardPreview(container, url){
     container.appendChild(localRenderer.domElement);
     cameraLocal.aspect = w / h;
     cameraLocal.updateProjectionMatrix();
+    fitCameraToObject(cameraLocal, mesh);
     localRenderer.render(sceneLocal, cameraLocal);
     geometry.dispose();
     material.dispose();
@@ -1827,6 +2077,7 @@ function resizeCustomPreview(){
   heroRenderer.setSize(w, h, false);
   heroCamera.aspect = w / h;
   heroCamera.updateProjectionMatrix();
+  if(heroGroup) fitCameraToObject(heroCamera, heroGroup);
 }
 
 function animateCustomPreview(){
@@ -1855,6 +2106,8 @@ function clearCustomFile(){
   if(input) input.value = '';
   setCustomUiHasFile(false);
   renderCustomFileList();
+  renderCustomMaterialSelect();
+  renderCustomSwatches();
   setCustomStatus('');
   updateCustomPrice();
 }
@@ -1866,7 +2119,7 @@ function initCustomPreviewFromGeometry(geometry){
   heroScene = new THREE.Scene();
   heroCamera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
   heroCamera.position.set(0, 0.25, 5.5);
-  const colorHex = COLORS[customColorIdx]?.hex || '#F2F1ED';
+  const colorHex = FilamentCatalog.previewHex(getSelectedCustomColor());
   heroMaterial = new THREE.MeshStandardMaterial({
     color: colorHex,
     flatShading: true,
@@ -1876,9 +2129,9 @@ function initCustomPreviewFromGeometry(geometry){
   heroGroup = new THREE.Group();
   const mesh = new THREE.Mesh(geometry, heroMaterial);
   heroGroup.add(mesh);
-  fitObjectToView(heroGroup, 2.5);
   heroGroup.rotation.x = -0.3;
   heroGroup.rotation.y = 0.55;
+  fitObjectToView(heroGroup, 2.5);
   heroScene.add(heroGroup);
   heroScene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.2));
   const dir = new THREE.DirectionalLight(0xffffff, 0.95);
@@ -1945,6 +2198,7 @@ function resizeThree(container){
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
+  if(currentGroup) fitCameraToObject(camera, currentGroup);
 }
 
 function attachDragHandlers(container){
@@ -2071,6 +2325,7 @@ function openProductViewer(p, colorHex){
       currentGroup.scale.multiplyScalar(mult);
       scene.add(currentGroup);
       resizeThree(container);
+      fitCameraToObject(camera, currentGroup);
       if(!rafId) animateThree();
     }).catch(() => showProcedural());
     return;
@@ -2130,7 +2385,7 @@ function populateProductView(p){
     `${starsHtml(p.rating)}<span class="rating-count">${p.rating.toFixed(1)} (${p.reviews} recenzii)</span>`;
 
   renderPriceRow(p);
-  document.getElementById('color-name').textContent = COLORS[selectedColorIdx].name;
+  document.getElementById('color-name').textContent = FilamentCatalog.formatColorLabel(catalogColors[selectedColorIdx] || { name: 'Alb' });
   renderSwatches();
   renderSizes();
   document.getElementById('pv-qty').textContent = pvQty;
@@ -2143,7 +2398,7 @@ function populateProductView(p){
   setActiveTab('desc');
   renderTabs(p);
   renderRelated(p);
-  openProductViewer(p, COLORS[selectedColorIdx].hex);
+  openProductViewer(p, FilamentCatalog.previewHex(catalogColors[selectedColorIdx]));
 }
 
 function renderPriceRow(p){
@@ -2155,8 +2410,8 @@ function renderPriceRow(p){
 }
 
 function renderSwatches(){
-  document.getElementById('swatches').innerHTML = COLORS.map((c,i) =>
-    `<button class="swatch ${i===selectedColorIdx?'active':''}" data-idx="${i}" style="background:${c.hex}" aria-label="${c.name}" aria-pressed="${i===selectedColorIdx}"></button>`
+  document.getElementById('swatches').innerHTML = catalogColors.map((c,i) =>
+    `<button class="swatch ${i===selectedColorIdx?'active':''}" data-idx="${i}" style="${swatchStyle(c)}" aria-label="${escapeHtml(FilamentCatalog.formatColorLabel(c))}" title="${escapeHtml(FilamentCatalog.formatColorLabel(c))}" aria-pressed="${i===selectedColorIdx}"></button>`
   ).join('');
 }
 
@@ -2276,6 +2531,7 @@ async function loadPricingSettings(){
   }catch(_){
     pricingSettings = { ...BambuPricing.DEFAULT_SETTINGS };
   }
+  applyFilamentCatalogToUi();
   return pricingSettings;
 }
 
@@ -2284,11 +2540,15 @@ function sliceApiConfigured(){
 }
 
 function roughFallbackPrice(){
-  const matOpt = document.getElementById('custom-material')?.selectedOptions?.[0];
-  const matMult = matOpt ? Number(matOpt.dataset.mult || 1) : 1;
-  if(!customFiles.length) return +(CUSTOM_BASE_PRICE * matMult).toFixed(2);
+  if(!customFiles.length){
+    const filaments = getEnabledFilaments();
+    const mult = filaments[0]?.priceMult || 1;
+    return +(CUSTOM_BASE_PRICE * mult).toFixed(2);
+  }
   let total = 0;
   customFiles.forEach(entry => {
+    const filament = getFileFilament(entry);
+    const matMult = filament?.priceMult || 1;
     const mb = entry.file.size / (1024 * 1024);
     let sizeBoost = 1;
     if(mb > 8) sizeBoost = 1.35;
@@ -2301,7 +2561,7 @@ function roughFallbackPrice(){
 function getExactQuoteTotals(){
   const stlEntries = customFiles.filter(e => getFileExt(e.file.name) === 'stl');
   if(!stlEntries.length) return null;
-  if(stlEntries.some(e => !e.quote || e.quote.error)) return null;
+  if(stlEntries.some(e => !e.quote || e.quote.error || e.quote.pending)) return null;
   let hours = 0;
   let grams = 0;
   let total = 0;
@@ -2313,18 +2573,113 @@ function getExactQuoteTotals(){
   return { hours, grams, total: +total.toFixed(2), count: stlEntries.length };
 }
 
+function setCustomPriceRows(printText, shippingText, codText, totalText, codVisible){
+  const printEl = document.getElementById('custom-print-price');
+  const shipEl = document.getElementById('custom-shipping-price');
+  const codEl = document.getElementById('custom-cod-price');
+  const totalEl = document.getElementById('custom-total-price');
+  const codRow = document.getElementById('custom-cod-row');
+  if(printEl) printEl.textContent = printText;
+  if(shipEl) shipEl.textContent = shippingText;
+  if(codEl) codEl.textContent = codText || '—';
+  if(totalEl) totalEl.textContent = totalText;
+  if(codRow) codRow.hidden = !codVisible;
+}
+
+function formatSliceElapsed(ms){
+  const sec = Math.max(0, Math.floor(ms / 1000));
+  if(sec < 60) return sec + 's';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m + 'm ' + String(s).padStart(2, '0') + 's';
+}
+
+function setCustomSubmitBusy(busy){
+  const btn = document.getElementById('custom-submit');
+  if(!btn) return;
+  btn.disabled = !!busy;
+  if(busy) btn.dataset.prevLabel = btn.dataset.prevLabel || btn.textContent;
+  btn.textContent = busy ? 'Se calculează prețul…' : (btn.dataset.prevLabel || 'Trimite cererea de print');
+  if(!busy) delete btn.dataset.prevLabel;
+}
+
+function stopSliceElapsedTicker(){
+  if(customSliceTimerId){
+    clearInterval(customSliceTimerId);
+    customSliceTimerId = null;
+  }
+}
+
+function updateSliceProgressUi(){
+  const box = document.getElementById('custom-estimate-box');
+  const panel = document.getElementById('custom-slice-progress');
+  const title = document.getElementById('custom-slice-title');
+  const fileEl = document.getElementById('custom-slice-file');
+  const meta = document.getElementById('custom-slice-meta');
+  const bar = document.getElementById('custom-slice-bar');
+  const fill = document.getElementById('custom-slice-bar-fill');
+  const note = document.getElementById('custom-slice-note');
+  if(!panel) return;
+
+  const busy = customQuoteBusy;
+  box?.classList.toggle('is-slicing', busy);
+  panel.hidden = !busy;
+  panel.classList.toggle('visible', busy);
+  setCustomSubmitBusy(busy);
+
+  if(!busy){
+    stopSliceElapsedTicker();
+    return;
+  }
+
+  const { current, total, fileName, startedAt } = customSliceState;
+  const pct = total > 0 ? Math.min(99, Math.round((current / total) * 100)) : 0;
+  if(title) title.textContent = total > 1
+    ? `Se slicează modelul ${Math.min(current + 1, total)} din ${total}…`
+    : 'Se slicează modelul pe Bambu P2S…';
+  if(fileEl) fileEl.textContent = fileName ? `Fișier: ${fileName}` : 'Pregătim slice pe server…';
+  if(meta) meta.textContent = `${pct}% · ${formatSliceElapsed(Date.now() - startedAt)}`;
+  if(bar && fill){
+    const determinate = total > 1;
+    bar.classList.toggle('indeterminate', !determinate);
+    fill.style.width = determinate ? Math.max(8, pct) + '%' : '';
+  }
+  if(note) note.textContent = total > 1
+    ? 'Fiecare STL e analizat pe server. Poate dura 15–90 secunde pe model — site-ul nu e blocat.'
+    : 'Poate dura 15–90 secunde. Nu închide pagina — site-ul nu e blocat.';
+}
+
+function beginSliceProgress(total){
+  customSliceState = { current: 0, total, fileName: '', startedAt: Date.now() };
+  updateSliceProgressUi();
+  stopSliceElapsedTicker();
+  customSliceTimerId = setInterval(updateSliceProgressUi, 500);
+}
+
+function setSliceProgressFile(index, fileName){
+  customSliceState.current = index;
+  customSliceState.fileName = fileName || '';
+  updateSliceProgressUi();
+  renderCustomFileList();
+}
+
+function endSliceProgress(){
+  stopSliceElapsedTicker();
+  customSliceState = { current: 0, total: 0, fileName: '', startedAt: 0 };
+  updateSliceProgressUi();
+  renderCustomFileList();
+}
+
 function updateCustomPrice(){
-  const priceEl = document.getElementById('custom-price');
-  const labelEl = document.getElementById('custom-price-label');
   const hintEl = document.getElementById('custom-price-hint');
   const detailsEl = document.getElementById('custom-price-details');
-  if(!priceEl) return;
+  if(!document.getElementById('custom-print-price')) return;
 
   if(customQuoteBusy){
-    labelEl.textContent = 'Se calculează prețul exact…';
-    priceEl.textContent = '…';
-    hintEl.textContent = 'Slice pe Bambu P2S (PLA · supports on). Poate dura câteva secunde.';
+    setCustomPriceRows('…', '…', '—', '…', false);
+    hintEl.textContent = 'Așteptăm rezultatul slice — prețul exact apare aici când e gata.';
     detailsEl.style.display = 'none';
+    updateSliceProgressUi();
     return;
   }
 
@@ -2332,36 +2687,37 @@ function updateCustomPrice(){
   if(exact){
     const pay = getSelectedPayMethod('custom-pay');
     const f = fulfillmentFor(exact.total, pay);
-    labelEl.textContent = 'Total estimat (print + livrare)';
-    priceEl.textContent = fmt(f.total);
-    hintEl.textContent = 'Print calculat din slice. Livrare 25 lei (gratis peste 250 lei).';
+    const shipLabel = f.shippingFee === 0 ? 'Gratuită' : fmt(f.shippingFee);
+    setCustomPriceRows(fmt(f.subtotal), shipLabel, f.codFee > 0 ? fmt(f.codFee) : '—', fmt(f.total), f.codFee > 0);
+    hintEl.textContent = f.shippingFee === 0
+      ? 'Ai livrare gratuită la acest print.'
+      : `Livrare ${fmt(f.shippingFlat)} — gratuită peste ${fmt(f.freeShippingOver)} la print.`;
     detailsEl.style.display = 'block';
-    detailsEl.innerHTML = `Print ${fmt(f.subtotal)} · Livrare ${fmt(f.shippingFee)}${f.codFee ? ` · Ramburs ${fmt(f.codFee)}` : ''} · ⏱ ${typeof BambuPricing !== 'undefined' ? BambuPricing.formatHours(exact.hours) : exact.hours.toFixed(2) + ' h'} · 🧵 ${exact.grams.toFixed(1)} g` +
+    detailsEl.textContent = `⏱ ${typeof BambuPricing !== 'undefined' ? BambuPricing.formatHours(exact.hours) : exact.hours.toFixed(2) + ' h'} · 🧵 ${exact.grams.toFixed(1)} g` +
       (exact.count > 1 ? ` · ${exact.count} modele` : '');
     return;
   }
 
   if(customFiles.some(e => e.quote && e.quote.error)){
-    labelEl.textContent = 'Estimare orientativă';
-    priceEl.textContent = fmt(roughFallbackPrice());
-    hintEl.textContent = 'Slice API indisponibil sau a eșuat — preț aproximativ. Verifică SLICE_API_URL.';
+    const rough = roughFallbackPrice();
+    setCustomPriceRows(fmt(rough), '—', '—', fmt(rough), false);
+    hintEl.textContent = 'Slice API indisponibil — preț print orientativ. Livrarea se calculează separat.';
     detailsEl.style.display = 'none';
     return;
   }
 
   if(!customFiles.length){
-    labelEl.textContent = 'Preț exact (P2S · PLA · supports)';
-    priceEl.textContent = '—';
+    setCustomPriceRows('—', '—', '—', '—', false);
     hintEl.textContent = sliceApiConfigured()
-      ? 'Încarcă un STL — calculăm timpul și gramele pe serverul de slice.'
+      ? 'Încarcă un STL — calculăm prețul printului pe serverul de slice.'
       : 'Configurează SLICE_API_URL + SLICE_API_KEY în index.html (vezi slice-api/README.md).';
     detailsEl.style.display = 'none';
     return;
   }
 
-  labelEl.textContent = 'Estimare orientativă';
-  priceEl.textContent = fmt(roughFallbackPrice());
-  hintEl.textContent = 'Doar fișierele STL primesc preț exact. OBJ/3MF rămân orientative.';
+  const rough = roughFallbackPrice();
+  setCustomPriceRows(fmt(rough), '25 lei*', '—', '—', false);
+  hintEl.textContent = 'Estimare orientativă print. *Livrare 25 lei, gratuită peste 250 lei (la total print).';
   detailsEl.style.display = 'none';
 }
 
@@ -2383,7 +2739,6 @@ async function requestSliceEstimate(file, material){
 }
 
 async function requoteAllCustomFiles(){
-  const material = document.getElementById('custom-material')?.value || 'PLA';
   const stlEntries = customFiles.filter(e => getFileExt(e.file.name) === 'stl');
   if(!stlEntries.length){
     updateCustomPrice();
@@ -2396,15 +2751,32 @@ async function requoteAllCustomFiles(){
     return;
   }
 
+  const toSlice = stlEntries.filter(entry => {
+    const filament = getFileFilament(entry);
+    const material = filament?.sliceKey || 'PLA';
+    return !(entry.quote && !entry.quote.error && !entry.quote.pending && entry.quote.material === material && entry.quote.total != null);
+  });
+  if(!toSlice.length){
+    updateCustomPrice();
+    const exact = getExactQuoteTotals();
+    if(exact) setCustomStatus(`Preț exact: ${fmt(exact.total)} · ${BambuPricing.formatHours(exact.hours)} · ${exact.grams.toFixed(1)} g`, 'ok');
+    return;
+  }
+
   customQuoteBusy = true;
+  beginSliceProgress(toSlice.length);
   updateCustomPrice();
-  setCustomStatus(`Calculăm prețul exact pentru ${stlEntries.length} STL…`);
+  setCustomStatus(`Se slicează ${toSlice.length} model${toSlice.length === 1 ? '' : 'e'} pe Bambu P2S…`, 'slicing');
   await loadPricingSettings();
 
   try{
-    for(let i = 0; i < stlEntries.length; i++){
-      const entry = stlEntries[i];
-      setCustomStatus(`Slice ${i + 1}/${stlEntries.length}: ${entry.file.name}`);
+    for(let i = 0; i < toSlice.length; i++){
+      const entry = toSlice[i];
+      const filament = getFileFilament(entry);
+      const material = filament?.sliceKey || 'PLA';
+      entry.quote = { pending: true };
+      setSliceProgressFile(i, entry.file.name);
+      setCustomStatus(`Slice ${i + 1}/${toSlice.length}: ${entry.file.name} (${material}) — așteaptă, nu e blocat…`, 'slicing');
       try{
         const est = await requestSliceEstimate(entry.file, material);
         const breakdown = BambuPricing.calculatePrice(
@@ -2419,13 +2791,17 @@ async function requoteAllCustomFiles(){
           total: breakdown.total,
           source: est.source || 'slice-api',
           printer: est.printer,
-          preset: est.preset
+          preset: est.preset,
+          material
         };
       }catch(err){
         console.error(err);
         entry.quote = { error: err.message || 'slice failed' };
       }
+      renderCustomFileList();
     }
+    customSliceState.current = toSlice.length;
+    updateSliceProgressUi();
     const exact = getExactQuoteTotals();
     if(exact){
       setCustomStatus(`Preț exact: ${fmt(exact.total)} · ${BambuPricing.formatHours(exact.hours)} · ${exact.grams.toFixed(1)} g`, 'ok');
@@ -2435,6 +2811,7 @@ async function requoteAllCustomFiles(){
     }
   }finally{
     customQuoteBusy = false;
+    endSliceProgress();
     updateCustomPrice();
   }
 }
@@ -2449,11 +2826,32 @@ function setCustomStatus(msg, kind){
 function renderCustomSwatches(){
   const row = document.getElementById('custom-swatches');
   if(!row) return;
-  row.innerHTML = COLORS.map((c, i) =>
-    `<button type="button" class="upload-swatch ${i===customColorIdx?'active':''}" data-idx="${i}" style="background:${c.hex}" aria-label="${c.name}" title="${c.name}"></button>`
+  const entry = getActiveCustomFile();
+  const colors = getCustomFilamentColors();
+  if(entry) ensureFileFinish(entry);
+  const activeColorId = entry?.colorId || colors[0]?.id;
+  row.innerHTML = colors.map(c =>
+    `<button type="button" class="upload-swatch ${c.id === activeColorId ? 'active' : ''}" data-color-id="${escapeHtml(c.id)}" style="${swatchStyle(c)}" aria-label="${escapeHtml(FilamentCatalog.formatColorLabel(c))}" title="${escapeHtml(FilamentCatalog.formatColorLabel(c))}" ${entry ? '' : 'disabled'}></button>`
   ).join('');
   const nameEl = document.getElementById('custom-color-name');
-  if(nameEl) nameEl.textContent = COLORS[customColorIdx].name;
+  const sel = getSelectedCustomColor();
+  if(nameEl) nameEl.textContent = FilamentCatalog.formatColorLabel(sel);
+}
+
+function applyFilamentCatalogToUi(){
+  customFiles.forEach(ensureFileFinish);
+  renderCustomMaterialSelect();
+  refreshCatalogColors();
+  renderCustomSwatches();
+  renderCustomFileList();
+  if(heroMaterial) applyColorToPreviewMaterial(heroMaterial, getSelectedCustomColor());
+}
+
+function syncActiveFileFinishUi(){
+  renderCustomMaterialSelect();
+  renderCustomSwatches();
+  renderCustomFileList();
+  if(heroMaterial) applyColorToPreviewMaterial(heroMaterial, getSelectedCustomColor());
 }
 
 function setCustomUiHasFile(has){
@@ -2469,23 +2867,45 @@ function renderCustomFileList(){
   if(!customFiles.length){
     list.innerHTML = '';
     if(nameEl) nameEl.textContent = 'model.stl';
+    renderCustomMaterialSelect();
+    renderCustomSwatches();
     return;
   }
   if(customActiveIdx >= customFiles.length) customActiveIdx = customFiles.length - 1;
   const active = customFiles[customActiveIdx];
   if(nameEl) nameEl.textContent = `${active.file.name} (${customActiveIdx + 1}/${customFiles.length})`;
-  list.innerHTML = customFiles.map((entry, i) => `
-    <div class="upload-file-row ${i===customActiveIdx?'active':''}" data-idx="${i}" role="button" tabindex="0">
+  list.innerHTML = customFiles.map((entry, i) => {
+    const isStl = getFileExt(entry.file.name) === 'stl';
+    ensureFileFinish(entry);
+    const color = getFileColor(entry);
+    const finish = fileFinishLabel(entry);
+    let badge = '';
+    let rowClass = i === customActiveIdx ? 'active' : '';
+    if(isStl && customQuoteBusy && entry.quote?.pending){
+      badge = '<span class="quote-badge busy">Slice…</span>';
+      rowClass += ' slicing';
+    } else if(isStl && entry.quote && !entry.quote.error && !entry.quote.pending && entry.quote.total != null){
+      badge = '<span class="quote-badge ok">OK</span>';
+    } else if(isStl && entry.quote?.error){
+      badge = '<span class="quote-badge err">Eroare</span>';
+    } else if(isStl && customQuoteBusy){
+      badge = '<span class="quote-badge busy">În coadă</span>';
+    }
+    return `
+    <div class="upload-file-row ${rowClass.trim()}" data-idx="${i}" role="button" tabindex="0">
       <strong>${escapeHtml(entry.file.name)}</strong>
+      <span class="finish-chip" title="${escapeHtml(finish)}"><span class="finish-dot" style="${swatchStyle(color)}"></span>${escapeHtml(finish)}</span>
       <span class="meta">${formatBytes(entry.file.size)}</span>
+      ${badge}
       <button type="button" class="rm" data-rm="${i}" aria-label="Elimină ${escapeHtml(entry.file.name)}">✕</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 async function setActiveCustomFile(idx){
   if(idx < 0 || idx >= customFiles.length) return;
   customActiveIdx = idx;
-  renderCustomFileList();
+  syncActiveFileFinishUi();
   await loadCustomFilePreview(customFiles[idx].file);
 }
 
@@ -2548,7 +2968,8 @@ async function handleCustomFiles(fileList){
     }
     const dup = customFiles.some(e => e.file.name === file.name && e.file.size === file.size);
     if(dup) continue;
-    customFiles.push({ id: crypto.randomUUID(), file, quote: null });
+    const finish = defaultFinishFromActive();
+    customFiles.push({ id: crypto.randomUUID(), file, quote: null, filamentId: finish.filamentId, colorId: finish.colorId });
   }
   if(!customFiles.length){
     setCustomStatus(errors[0] || 'Niciun fișier valid.', 'error');
@@ -2556,7 +2977,7 @@ async function handleCustomFiles(fileList){
   }
   customActiveIdx = customFiles.length - 1;
   setCustomUiHasFile(true);
-  renderCustomFileList();
+  syncActiveFileFinishUi();
   updateCustomPrice();
   await loadCustomFilePreview(customFiles[customActiveIdx].file);
   if(errors.length) setCustomStatus(errors.join(' · '), 'error');
@@ -2580,7 +3001,10 @@ async function uploadCustomStl(file){
 }
 
 function buildDiscordCustomEmbed(payload, requestId){
-  const fileLines = (payload.files || []).map(f => `• ${f.name}`).join('\n') || payload.file_name || '—';
+  const fileLines = (payload.files || []).map(f => {
+    const finish = [f.material, f.color_name].filter(Boolean).join(' · ');
+    return `• ${f.name}${finish ? ` (${finish})` : ''}`;
+  }).join('\n') || payload.file_name || '—';
   return {
     username: 'artblu Print personalizat',
     embeds: [{
@@ -2591,7 +3015,7 @@ function buildDiscordCustomEmbed(payload, requestId){
         { name: 'Email', value: payload.customer_email, inline: true },
         { name: 'Telefon', value: payload.customer_phone || '—', inline: true },
         { name: 'Adresă', value: payload.customer_address || '—' },
-        { name: 'Fișiere', value: fileLines },
+        { name: 'Fișiere', value: fileLines.slice(0, 1000) },
         { name: 'Material', value: payload.material || '—', inline: true },
         { name: 'Culoare', value: payload.color_name || '—', inline: true },
         { name: 'Dimensiune', value: 'Din STL (fără scalare)', inline: true },
@@ -2621,6 +3045,10 @@ async function submitCustomPrint(e){
   const submitBtn = document.getElementById('custom-submit');
   const address = document.getElementById('custom-address').value.trim();
   const phone = document.getElementById('custom-phone').value.trim();
+  if(customQuoteBusy){
+    setCustomStatus('Așteaptă să termine slice-ul — prețul încă se calculează.', 'slicing');
+    return;
+  }
   if(!customFiles.length){
     setCustomStatus('Încarcă cel puțin un fișier 3D.', 'error');
     openCustomFilePicker();
@@ -2648,9 +3076,25 @@ async function submitCustomPrint(e){
       setCustomStatus(`Încărcăm ${i + 1}/${customFiles.length}: ${entry.file.name}`);
       const path = await uploadCustomStl(entry.file);
       uploadedPaths.push(path);
-      filesMeta.push({ path, name: entry.file.name, size: entry.file.size });
+      const filament = getFileFilament(entry);
+      const color = getFileColor(entry);
+      filesMeta.push({
+        path,
+        name: entry.file.name,
+        size: entry.file.size,
+        filament_id: entry.filamentId || null,
+        material: filament ? (filament.label || filament.name) : 'PLA',
+        material_key: filament?.sliceKey || 'PLA',
+        color_id: entry.colorId || null,
+        color_name: FilamentCatalog.formatColorLabel(color),
+        color_hex: FilamentCatalog.previewHex(color),
+        color_style: FilamentCatalog.colorStylePayload(color),
+        print_hours: entry.quote && !entry.quote.error ? entry.quote.printHours : null,
+        filament_grams: entry.quote && !entry.quote.error ? entry.quote.filamentGrams : null,
+        estimated_price: entry.quote && !entry.quote.error ? entry.quote.total : null
+      });
     }
-    const color = COLORS[customColorIdx];
+    const finishSummary = summarizeOrderFinish();
     const requestId = crypto.randomUUID();
     const exact = getExactQuoteTotals();
     const estimatedPrice = exact ? exact.total : roughFallbackPrice();
@@ -2666,9 +3110,10 @@ async function submitCustomPrint(e){
       stl_path: filesMeta[0].path,
       file_name: filesMeta.map(f => f.name).join(', '),
       files: filesMeta,
-      material: document.getElementById('custom-material').value,
-      color_name: color.name,
-      color_hex: color.hex,
+      material: finishSummary.material,
+      color_name: finishSummary.colorName,
+      color_hex: finishSummary.colorHex,
+      color_style: finishSummary.colorStyle,
       size_key: 'stl',
       notes: document.getElementById('custom-notes').value.trim() || null,
       estimated_price: estimatedPrice,
@@ -2697,8 +3142,7 @@ async function submitCustomPrint(e){
     showToast('Cererea de print personalizat a fost trimisă!');
     e.target.reset();
     clearCustomFile();
-    customColorIdx = 0;
-    renderCustomSwatches();
+    syncActiveFileFinishUi();
     updateCustomPrice();
     if(user?.email) document.getElementById('custom-email').value = user.email;
     if(user?.user_metadata?.full_name) document.getElementById('custom-name').value = user.user_metadata.full_name;
@@ -2768,14 +3212,22 @@ function setupCustomUpload(){
 
   document.getElementById('custom-swatches')?.addEventListener('click', e => {
     const btn = e.target.closest('.upload-swatch');
-    if(!btn) return;
-    customColorIdx = parseInt(btn.dataset.idx, 10);
-    renderCustomSwatches();
-    if(heroMaterial) heroMaterial.color.set(COLORS[customColorIdx].hex);
+    if(!btn || btn.disabled) return;
+    const entry = getActiveCustomFile();
+    if(!entry) return;
+    entry.colorId = btn.dataset.colorId;
+    syncActiveFileFinishUi();
   });
 
-  document.getElementById('custom-material')?.addEventListener('change', () => {
-    customFiles.forEach(e => { e.quote = null; });
+  document.getElementById('custom-material')?.addEventListener('change', e => {
+    const entry = getActiveCustomFile();
+    if(!entry) return;
+    const opt = e.target.selectedOptions[0];
+    if(opt?.dataset.filamentId) entry.filamentId = opt.dataset.filamentId;
+    const colors = getColorsForFilamentId(entry.filamentId);
+    entry.colorId = colors[0]?.id || null;
+    entry.quote = null;
+    syncActiveFileFinishUi();
     updateCustomPrice();
     requoteAllCustomFiles();
   });
@@ -2919,9 +3371,9 @@ document.getElementById('swatches').addEventListener('click', e => {
   const btn = e.target.closest('.swatch');
   if(!btn) return;
   selectedColorIdx = parseInt(btn.dataset.idx, 10);
-  document.getElementById('color-name').textContent = COLORS[selectedColorIdx].name;
+  document.getElementById('color-name').textContent = FilamentCatalog.formatColorLabel(catalogColors[selectedColorIdx] || { name: 'Alb' });
   renderSwatches();
-  if(currentMaterial) currentMaterial.color.set(COLORS[selectedColorIdx].hex);
+  if(currentMaterial) applyColorToPreviewMaterial(currentMaterial, catalogColors[selectedColorIdx]);
 });
 
 document.getElementById('size-options').addEventListener('click', e => {
@@ -2951,11 +3403,12 @@ document.getElementById('pv-add').addEventListener('click', () => {
   const p = findProduct(viewingProductId);
   const sizeObj = SIZES.find(s => s.key === selectedSize);
   const unitPrice = +(p.price * sizeObj.priceMult).toFixed(2);
+  const selColor = catalogColors[selectedColorIdx] || { hex: '#F2F1ED', name: 'Alb' };
   addToCart(p.id, {
     qty: pvQty,
     unitPrice,
-    color: COLORS[selectedColorIdx].hex,
-    colorName: COLORS[selectedColorIdx].name,
+    color: FilamentCatalog.previewHex(selColor),
+    colorName: FilamentCatalog.formatColorLabel(selColor),
     size: sizeObj.label
   });
 });

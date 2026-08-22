@@ -152,6 +152,50 @@
   .price-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;align-items:center;}
   .price-actions .check{margin:0;font-size:13px;}
 
+  .filament-panel{margin-bottom:24px;}
+  .filament-layout{display:grid;grid-template-columns:240px 1fr;gap:18px;align-items:start;}
+  @media(max-width:760px){.filament-layout{grid-template-columns:1fr;}}
+  .filament-list{display:flex;flex-direction:column;gap:8px;}
+  .filament-item{
+    display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);
+    border-radius:10px;background:#F8FAFC;cursor:pointer;transition:border-color .15s,background .15s;
+  }
+  .filament-item.active{border-color:var(--blue-600);background:#EEF2FF;box-shadow:0 0 0 1px var(--blue-600);}
+  .filament-item.disabled{opacity:.55;}
+  .filament-item strong{font-size:14px;display:block;}
+  .filament-item small{font-size:11px;color:var(--text-600);}
+  .filament-editor{border:1px solid var(--border);border-radius:12px;padding:16px;background:#FAFBFC;}
+  .filament-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+  @media(max-width:560px){.filament-fields{grid-template-columns:1fr;}}
+  .color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+  .color-card{
+    border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--white);
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .color-card-head{display:flex;align-items:center;gap:10px;}
+  .color-swatch-preview{
+    width:40px;height:40px;border-radius:50%;flex-shrink:0;border:2px solid var(--white);
+    box-shadow:0 0 0 1px var(--border);
+  }
+  .color-card-head h4{font-size:14px;margin:0;}
+  .color-card-head p{font-size:11px;color:var(--text-600);margin:2px 0 0;}
+  .color-type-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .type-pill{
+    padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--white);
+    font-size:12px;font-weight:600;cursor:pointer;
+  }
+  .type-pill.active{border-color:var(--blue-600);background:#EEF2FF;color:var(--blue-700);}
+  .color-pickers{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .color-pickers input[type="color"]{
+    width:44px;height:36px;padding:2px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:#fff;
+  }
+  .color-card-actions{display:flex;gap:8px;margin-top:4px;}
+  .effect-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+  .effect-row .check{font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:#fff;}
+  .gradient-stops-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px;}
+  .gradient-stops-row label{font-size:11px;margin:0;}
+  .filament-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+
   .order-row{
     display:grid;grid-template-columns:minmax(160px,220px) 1fr;gap:16px;align-items:start;
     padding:18px 22px;border-bottom:1px solid var(--border);
@@ -197,6 +241,16 @@
   .bambu-order-msg{font-size:12.5px;color:var(--text-600);min-height:18px;margin-top:6px;}
   .bambu-order-msg.error{color:var(--red);}
   .bambu-order-msg.ok{color:var(--green);font-weight:600;}
+  .order-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .order-actions .btn{padding:8px 14px;font-size:13px;}
+  .btn-success{background:#E8F8F0;color:#0F7A4B;}
+  .btn-success:hover{background:#D1FAE5;}
+  .order-row.is-completed{opacity:.72;background:#F8FAFC;}
+  .order-row.is-completed .tag.status-completed{background:#E8F8F0;color:#0F7A4B;}
+  .tag.status-new{background:#EEF2FF;color:var(--blue-700);}
+  .tag.status-quoted{background:#FFF4E5;color:#C56A00;}
+  .orders-filter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .orders-filter label{margin:0;font-size:13px;font-weight:500;color:var(--text-600);display:flex;align-items:center;gap:6px;cursor:pointer;}
   @media(max-width:700px){.order-row{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -217,7 +271,7 @@
 <main>
   <div class="container">
     <div class="alert alert-warn" id="policy-hint">
-      Dacă adăugarea sau ștergerea eșuează, rulează <code>supabase/admin-policies.sql</code> și <code>supabase/custom-prints.sql</code> în SQL Editor.
+      Dacă adăugarea sau ștergerea eșuează, rulează <code>supabase/admin-policies.sql</code> și <code>supabase/custom-prints.sql</code> în SQL Editor (include delete pe comenzi).
     </div>
 
     <div class="popup-banner" id="new-order-banner">
@@ -231,7 +285,10 @@
           <h2>Comenzi print personalizat</h2>
           <p>Apar automat când un client trimite o comandă · cu previzualizare 3D</p>
         </div>
-        <span class="count-badge" id="custom-count">0</span>
+        <div class="orders-filter">
+          <label><input type="checkbox" id="show-completed-orders"> Arată finalizate</label>
+          <span class="count-badge" id="custom-count">0</span>
+        </div>
       </div>
       <div id="custom-wrap">
         <div class="list-empty" id="custom-empty">
@@ -298,6 +355,27 @@
           <strong>Formula:</strong>
           <code>preț = (taxă fixă + ore × tarif/oră + grame × tarif/material + uscare*) × (1 + adaos%)</code>.
           * Uscarea se aplică doar pentru PETG, TPU și ABS.
+        </div>
+      </div>
+    </section>
+
+    <section class="panel filament-panel">
+      <div class="panel-head">
+        <div>
+          <h2>Filamente &amp; culori</h2>
+          <p>Materiale + culori per filament. Gradient cu N culori. Efecte combinable: glow, wood, silver, matte.</p>
+        </div>
+        <button type="button" class="btn btn-primary" id="save-filaments-btn">Salvează filamente</button>
+      </div>
+      <div class="panel-body">
+        <div class="filament-toolbar">
+          <button type="button" class="btn btn-ghost" id="add-filament-btn">+ Filament nou</button>
+        </div>
+        <div class="filament-layout">
+          <div class="filament-list" id="filament-list"></div>
+          <div class="filament-editor" id="filament-editor">
+            <p class="hint">Selectează un filament din listă.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -453,6 +531,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="bambu-pricing.js"></script>
+<script src="filament-catalog.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://tilfngrtldwevtiilxpq.supabase.co';
@@ -648,6 +727,7 @@ async function initPricingSettings(){
 }
 
 initPricingSettings();
+initFilamentCatalogAdmin();
 
 document.getElementById('name').addEventListener('input', e => {
   const slugInput = document.getElementById('slug');
@@ -1047,10 +1127,14 @@ function publicStlUrl(path){
 }
 
 function fitAdminObject(object, targetSize){
+  if(object.geometry){
+    object.geometry.computeBoundingBox();
+    object.geometry.center();
+  }
+  object.position.set(0, 0, 0);
+  object.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(object);
   const size = box.getSize(new THREE.Vector3());
-  const center = box.getCenter(new THREE.Vector3());
-  object.position.sub(center);
   const maxDim = Math.max(size.x, size.y, size.z);
   if(maxDim > 0) object.scale.setScalar(targetSize / maxDim);
 }
@@ -1108,13 +1192,15 @@ function renderCustomOrderRow(row, isNew){
     const url = publicStlUrl(f.path);
     const ext = String(f.name || f.path || '').split('.').pop()?.toLowerCase();
     const isStl = ext === 'stl';
+    const finish = [f.material, f.color_name].filter(Boolean).join(' · ');
+    const previewColor = f.color_hex || row.color_hex || '#F2F1ED';
     return `
       <div class="order-preview-card">
-        <div class="order-preview-view" data-preview-url="${isStl && url ? escapeHtml(url) : ''}" data-color="${escapeHtml(row.color_hex || '#F2F1ED')}">
+        <div class="order-preview-view" data-preview-url="${isStl && url ? escapeHtml(url) : ''}" data-color="${escapeHtml(previewColor)}">
           ${isStl ? '' : `<div class="order-preview-fallback">${escapeHtml((ext || 'file').toUpperCase())}</div>`}
         </div>
         <div class="order-preview-meta">
-          <span>${escapeHtml(f.name || f.path || ('Fișier ' + (i + 1)))}</span>
+          <span>${escapeHtml(f.name || f.path || ('Fișier ' + (i + 1)))}${finish ? '<br><small style="color:var(--text-600);font-weight:500;">' + escapeHtml(finish) + '</small>' : ''}</span>
           ${url ? `<a href="${url}" target="_blank" rel="noopener">Descarcă</a>` : ''}
         </div>
       </div>`;
@@ -1127,8 +1213,12 @@ function renderCustomOrderRow(row, isNew){
       ${row.bambu_source ? `<span class="tag">${escapeHtml(row.bambu_source)}</span>` : ''}
     </div>` : '<p style="font-size:12.5px;color:var(--text-600);margin:8px 0 0;">Încă fără date Bambu — slice în Studio, apoi încarcă exportul.</p>';
 
+  const status = String(row.status || 'new').toLowerCase();
+  const isCompleted = status === 'completed' || status === 'done' || status === 'complete';
+  const statusClass = isCompleted ? 'status-completed' : (status === 'quoted' ? 'status-quoted' : 'status-new');
+
   return `
-    <article class="order-row ${isNew ? 'is-new' : ''}" data-id="${row.id}" id="order-${row.id}">
+    <article class="order-row ${isNew ? 'is-new' : ''} ${isCompleted ? 'is-completed' : ''}" data-id="${row.id}" id="order-${row.id}">
       <div class="order-previews">${previews}</div>
       <div class="order-meta">
         <h3>${escapeHtml(files.length > 1 ? files.length + ' modele' : (files[0]?.name || row.file_name || 'Model'))}</h3>
@@ -1137,7 +1227,7 @@ function renderCustomOrderRow(row, isNew){
         <p>${escapeHtml(row.material || '—')} · ${escapeHtml(row.color_name || '—')} · dimensiune din STL · <strong>${price}</strong></p>
         <p style="font-size:12.5px;color:var(--text-600);">Plată: <strong>${escapeHtml(row.payment_method || '—')}</strong> · ${escapeHtml(row.payment_status || '—')} · Total ${row.total != null ? fmtPrice(row.total) : price}${row.shipping_fee != null ? ` (livrare ${fmtPrice(row.shipping_fee)})` : ''}${row.cod_fee ? ` · ramburs ${fmtPrice(row.cod_fee)}` : ''}</p>
         <div class="product-tags">
-          <span class="tag">${escapeHtml(row.status || 'new')}</span>
+          <span class="tag ${statusClass}">${escapeHtml(isCompleted ? 'finalizată' : (row.status || 'new'))}</span>
           <span class="tag">${escapeHtml(row.payment_status || 'pending')}</span>
           <span class="tag">${escapeHtml(date)}</span>
           <span class="tag">${files.length} fișier${files.length === 1 ? '' : 'e'}</span>
@@ -1149,6 +1239,12 @@ function renderCustomOrderRow(row, isNew){
           <input type="file" id="bambu-${row.id}" class="bambu-order-input" data-id="${row.id}" data-material="${escapeHtml(row.material || 'PLA')}" accept=".gcode,.3mf,application/octet-stream">
           <p class="hint" style="margin:6px 0 0;">Deschide STL-ul în Bambu → Slice → Export G-code sau salvează 3MF sliced. Citim automat timpul și gramele.</p>
           <p class="bambu-order-msg" id="bambu-msg-${row.id}"></p>
+        </div>
+        <div class="order-actions">
+          ${isCompleted
+            ? '<button type="button" class="btn btn-ghost btn-reopen-order" data-id="' + row.id + '">Redeschide</button>'
+            : '<button type="button" class="btn btn-success btn-complete-order" data-id="' + row.id + '">Marchează finalizată</button>'}
+          <button type="button" class="btn btn-danger btn-delete-order" data-id="${row.id}">Șterge</button>
         </div>
       </div>
     </article>`;
@@ -1193,7 +1289,7 @@ async function loadCustomPrints(opts){
     .from('custom_prints')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(50);
+    .limit(80);
 
   if(error){
     empty.hidden = false;
@@ -1203,27 +1299,124 @@ async function loadCustomPrints(opts){
     return;
   }
 
-  const rows = data || [];
-  countEl.textContent = rows.length + (rows.length === 1 ? ' cerere' : ' cereri');
+  const showCompleted = !!document.getElementById('show-completed-orders')?.checked;
+  const allRows = data || [];
+  const rows = showCompleted
+    ? allRows
+    : allRows.filter(r => {
+        const s = String(r.status || '').toLowerCase();
+        return s !== 'completed' && s !== 'done' && s !== 'complete';
+      });
+  const hiddenCompleted = allRows.length - rows.length;
+  countEl.textContent = rows.length + (rows.length === 1 ? ' cerere' : ' cereri') +
+    (hiddenCompleted ? ` · ${hiddenCompleted} finalizate ascunse` : '');
   if(!rows.length){
     empty.hidden = false;
     list.hidden = true;
-    empty.innerHTML = '<div class="emo">📭</div><p>Nicio cerere de print personalizat încă.</p>';
-    knownCustomIds = new Set();
+    empty.innerHTML = hiddenCompleted
+      ? '<div class="emo">✅</div><p>Toate comenzile active sunt finalizate. Bifează „Arată finalizate” ca să le vezi.</p>'
+      : '<div class="emo">📭</div><p>Nicio cerere de print personalizat încă.</p>';
+    knownCustomIds = new Set(allRows.map(r => r.id));
     return;
   }
 
   empty.hidden = true;
   list.hidden = false;
   list.innerHTML = rows.map(row => renderCustomOrderRow(row, row.id === highlightId)).join('');
-  knownCustomIds = new Set(rows.map(r => r.id));
+  knownCustomIds = new Set(allRows.map(r => r.id));
   initCustomOrderPreviews(list);
   bindBambuOrderInputs(list);
+  bindCustomOrderActions(list);
   if(highlightId){
     const el = document.getElementById('order-' + highlightId);
     el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 }
+
+async function markCustomOrderStatus(orderId, status){
+  const { error } = await supabaseClient.from('custom_prints').update({ status }).eq('id', orderId);
+  if(error) throw error;
+}
+
+async function deleteCustomOrder(orderId){
+  const { data, error: fetchErr } = await supabaseClient
+    .from('custom_prints')
+    .select('id, stl_path, files, file_name')
+    .eq('id', orderId)
+    .maybeSingle();
+  if(fetchErr) throw fetchErr;
+  if(!data) throw new Error('Comanda nu există.');
+  const paths = getCustomFiles(data).map(f => f.path).filter(Boolean);
+  const { error } = await supabaseClient.from('custom_prints').delete().eq('id', orderId);
+  if(error) throw error;
+  for(const path of paths){
+    try{ await deleteStl(path); }catch(_){}
+  }
+}
+
+function bindCustomOrderActions(root){
+  (root || document).querySelectorAll('.btn-complete-order').forEach(btn => {
+    if(btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      if(!id) return;
+      btn.disabled = true;
+      btn.textContent = 'Se salvează…';
+      try{
+        await markCustomOrderStatus(id, 'completed');
+        showToast('Comandă marcată ca finalizată');
+        await loadCustomPrints({ highlightId: id });
+      }catch(err){
+        console.error(err);
+        showToast(err.message || 'Nu am putut actualiza comanda', true);
+        btn.disabled = false;
+        btn.textContent = 'Marchează finalizată';
+      }
+    });
+  });
+  (root || document).querySelectorAll('.btn-reopen-order').forEach(btn => {
+    if(btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      if(!id) return;
+      btn.disabled = true;
+      try{
+        await markCustomOrderStatus(id, 'new');
+        showToast('Comandă redeschisă');
+        await loadCustomPrints({ highlightId: id });
+      }catch(err){
+        console.error(err);
+        showToast(err.message || 'Nu am putut redeschide comanda', true);
+        btn.disabled = false;
+      }
+    });
+  });
+  (root || document).querySelectorAll('.btn-delete-order').forEach(btn => {
+    if(btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      if(!id) return;
+      if(!confirm('Ștergi definitiv această comandă și fișierele STL asociate?')) return;
+      btn.disabled = true;
+      btn.textContent = 'Se șterge…';
+      try{
+        await deleteCustomOrder(id);
+        showToast('Comandă ștearsă');
+        await loadCustomPrints();
+      }catch(err){
+        console.error(err);
+        showToast(err.message || 'Nu am putut șterge comanda. Rulează supabase/custom-prints.sql pentru politica de delete.', true);
+        btn.disabled = false;
+        btn.textContent = 'Șterge';
+      }
+    });
+  });
+}
+
+document.getElementById('show-completed-orders')?.addEventListener('change', () => loadCustomPrints());
 
 let pricingSettingsCache = null;
 
@@ -1320,6 +1513,298 @@ function setupCustomPrintsRealtime(){
     });
     loadCustomPrints({ highlightId: fresh[fresh.length - 1].id });
   }, 12000);
+}
+
+/* ===== Filament catalog admin ===== */
+let adminFilamentCatalog = FilamentCatalog.normalizeCatalog(null);
+let adminSelectedFilamentId = null;
+
+function getAdminFilament(){
+  return adminFilamentCatalog.filaments.find(f => f.id === adminSelectedFilamentId) || null;
+}
+
+function renderFilamentListAdmin(){
+  const list = document.getElementById('filament-list');
+  if(!list) return;
+  const filaments = adminFilamentCatalog.filaments.slice().sort((a, b) => a.sort - b.sort);
+  if(!filaments.length){
+    list.innerHTML = '<p class="hint">Niciun filament. Adaugă unul nou.</p>';
+    return;
+  }
+  if(!adminSelectedFilamentId || !filaments.some(f => f.id === adminSelectedFilamentId)){
+    adminSelectedFilamentId = filaments[0].id;
+  }
+  list.innerHTML = filaments.map(f => `
+    <div class="filament-item ${f.id === adminSelectedFilamentId ? 'active' : ''} ${f.enabled ? '' : 'disabled'}" data-id="${escapeHtml(f.id)}" role="button" tabindex="0">
+      <label class="check" onclick="event.stopPropagation()"><input type="checkbox" class="filament-enabled-cb" data-id="${escapeHtml(f.id)}" ${f.enabled ? 'checked' : ''}></label>
+      <div>
+        <strong>${escapeHtml(f.label || f.name)}</strong>
+        <small>${f.colors.length} culori · ×${f.priceMult} · ${escapeHtml(f.sliceKey)}</small>
+      </div>
+    </div>`).join('');
+  list.querySelectorAll('.filament-item').forEach(el => {
+    el.addEventListener('click', e => {
+      if(e.target.closest('.filament-enabled-cb')) return;
+      adminSelectedFilamentId = el.dataset.id;
+      renderFilamentListAdmin();
+      renderFilamentEditorAdmin();
+    });
+  });
+  list.querySelectorAll('.filament-enabled-cb').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const f = adminFilamentCatalog.filaments.find(x => x.id === cb.dataset.id);
+      if(f) f.enabled = cb.checked;
+      renderFilamentListAdmin();
+    });
+  });
+}
+
+function renderColorCardAdmin(color, idx){
+  const isGrad = color.type === 'gradient';
+  const stops = isGrad ? FilamentCatalog.getGradientStops(color) : [];
+  const stopCount = stops.length;
+  const effects = FilamentCatalog.EFFECTS;
+  return `
+    <article class="color-card" data-color-idx="${idx}">
+      <div class="color-card-head">
+        <div class="color-swatch-preview" style="${FilamentCatalog.swatchBackground(color)}"></div>
+        <div>
+          <h4>${escapeHtml(color.name)}</h4>
+          <p class="color-sub-label">${escapeHtml(FilamentCatalog.formatColorLabel(color))}</p>
+        </div>
+      </div>
+      <div>
+        <label>Nume culoare</label>
+        <input type="text" class="color-name-input" data-idx="${idx}" value="${escapeHtml(color.name)}">
+      </div>
+      <div class="color-type-row">
+        <button type="button" class="type-pill color-type-btn ${!isGrad ? 'active' : ''}" data-idx="${idx}" data-type="solid">Solid</button>
+        <button type="button" class="type-pill color-type-btn ${isGrad ? 'active' : ''}" data-idx="${idx}" data-type="gradient">Gradient</button>
+      </div>
+      <div class="color-pickers">
+        <label class="check"><span>Bază / previzualizare</span><input type="color" class="color-hex-input" data-idx="${idx}" value="${escapeHtml((color.hex || '#cccccc').slice(0, 7))}"></label>
+      </div>
+      ${isGrad ? `
+        <div>
+          <label>Nr. culori gradient</label>
+          <input type="number" class="gradient-count-input" data-idx="${idx}" min="2" max="8" step="1" value="${stopCount}" style="width:72px;padding:8px;">
+        </div>
+        <div class="gradient-stops-row">
+          ${stops.map((h, si) => `
+            <label>C${si + 1}<input type="color" class="gradient-stop-input" data-idx="${idx}" data-stop="${si}" value="${escapeHtml(h.slice(0, 7))}"></label>
+          `).join('')}
+          <label>Unghi °<input type="number" class="color-angle-input" data-idx="${idx}" min="0" max="360" step="1" value="${color.gradientAngle != null ? color.gradientAngle : 135}" style="width:64px;padding:8px;"></label>
+        </div>
+      ` : ''}
+      <div>
+        <label>Efecte (combinabile)</label>
+        <div class="effect-row">
+          ${effects.map(e => `
+            <label class="check"><input type="checkbox" class="color-effect-cb" data-idx="${idx}" data-effect="${e.id}" ${FilamentCatalog.hasEffect(color, e.id) ? 'checked' : ''}> ${escapeHtml(e.label)}</label>
+          `).join('')}
+        </div>
+      </div>
+      <div class="color-card-actions">
+        <button type="button" class="btn btn-danger btn-delete-color" data-idx="${idx}">Șterge</button>
+      </div>
+    </article>`;
+}
+
+function bindFilamentEditorEvents(){
+  const editor = document.getElementById('filament-editor');
+  const f = getAdminFilament();
+  if(!editor || !f) return;
+
+  editor.querySelector('#filament-label')?.addEventListener('input', e => { f.label = e.target.value; renderFilamentListAdmin(); });
+  editor.querySelector('#filament-name')?.addEventListener('input', e => { f.name = e.target.value; });
+  editor.querySelector('#filament-slice')?.addEventListener('input', e => { f.sliceKey = e.target.value.toUpperCase(); renderFilamentListAdmin(); });
+  editor.querySelector('#filament-mult')?.addEventListener('input', e => { f.priceMult = Number(e.target.value) || 1; renderFilamentListAdmin(); });
+  editor.querySelector('#filament-sort')?.addEventListener('input', e => { f.sort = Number(e.target.value) || 0; });
+
+  editor.querySelector('#delete-filament-btn')?.addEventListener('click', () => {
+    if(adminFilamentCatalog.filaments.length <= 1){
+      showToast('Trebuie să rămână cel puțin un filament.', true);
+      return;
+    }
+    if(!confirm('Ștergi filamentul „' + (f.label || f.name) + '”?')) return;
+    adminFilamentCatalog.filaments = adminFilamentCatalog.filaments.filter(x => x.id !== f.id);
+    adminSelectedFilamentId = adminFilamentCatalog.filaments[0]?.id || null;
+    renderFilamentListAdmin();
+    renderFilamentEditorAdmin();
+  });
+
+  editor.querySelector('#add-color-btn')?.addEventListener('click', () => {
+    f.colors.push(FilamentCatalog.newColor('Culoare nouă'));
+    renderFilamentEditorAdmin();
+  });
+
+  editor.querySelectorAll('.color-name-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const c = f.colors[Number(inp.dataset.idx)];
+      if(c) c.name = inp.value;
+      updateColorPreviewAdmin(Number(inp.dataset.idx));
+    });
+  });
+
+  editor.querySelectorAll('.color-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const c = f.colors[Number(btn.dataset.idx)];
+      if(!c) return;
+      c.type = btn.dataset.type;
+      if(c.type === 'gradient'){
+        if(!Array.isArray(c.gradientStops) || c.gradientStops.length < 2){
+          FilamentCatalog.setGradientStopCount(c, 2);
+        }
+        c.gradientAngle = c.gradientAngle != null ? c.gradientAngle : 135;
+      }
+      renderFilamentEditorAdmin();
+    });
+  });
+
+  editor.querySelectorAll('.color-hex-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const c = f.colors[Number(inp.dataset.idx)];
+      if(c){ c.hex = inp.value; updateColorPreviewAdmin(Number(inp.dataset.idx)); }
+    });
+  });
+
+  editor.querySelectorAll('.gradient-count-input').forEach(inp => {
+    inp.addEventListener('change', () => {
+      const c = f.colors[Number(inp.dataset.idx)];
+      if(!c) return;
+      FilamentCatalog.setGradientStopCount(c, inp.value);
+      renderFilamentEditorAdmin();
+    });
+  });
+
+  editor.querySelectorAll('.gradient-stop-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const c = f.colors[Number(inp.dataset.idx)];
+      const si = Number(inp.dataset.stop);
+      if(!c || !Array.isArray(c.gradientStops)) return;
+      c.gradientStops[si] = inp.value;
+      updateColorPreviewAdmin(Number(inp.dataset.idx));
+    });
+  });
+
+  editor.querySelectorAll('.color-angle-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const c = f.colors[Number(inp.dataset.idx)];
+      if(c) c.gradientAngle = Number(inp.value) || 135;
+      updateColorPreviewAdmin(Number(inp.dataset.idx));
+    });
+  });
+
+  editor.querySelectorAll('.color-effect-cb').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const c = f.colors[Number(cb.dataset.idx)];
+      if(!c) return;
+      if(!Array.isArray(c.effects)) c.effects = [];
+      const eff = cb.dataset.effect;
+      if(cb.checked){
+        if(!c.effects.includes(eff)) c.effects.push(eff);
+      }else{
+        c.effects = c.effects.filter(x => x !== eff);
+      }
+      updateColorPreviewAdmin(Number(cb.dataset.idx));
+      const card = document.querySelector('.color-card[data-color-idx="' + cb.dataset.idx + '"]');
+      const sub = card?.querySelector('.color-sub-label');
+      if(sub) sub.textContent = FilamentCatalog.formatColorLabel(c);
+    });
+  });
+
+  editor.querySelectorAll('.btn-delete-color').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = Number(btn.dataset.idx);
+      if(f.colors.length <= 1){
+        showToast('Filamentul trebuie să aibă cel puțin o culoare.', true);
+        return;
+      }
+      f.colors.splice(idx, 1);
+      renderFilamentEditorAdmin();
+    });
+  });
+}
+
+function updateColorPreviewAdmin(idx){
+  const f = getAdminFilament();
+  if(!f) return;
+  const c = f.colors[idx];
+  const card = document.querySelector('.color-card[data-color-idx="' + idx + '"]');
+  const preview = card?.querySelector('.color-swatch-preview');
+  const sub = card?.querySelector('.color-sub-label');
+  if(preview && c) preview.style.cssText = FilamentCatalog.swatchBackground(c);
+  if(sub && c) sub.textContent = FilamentCatalog.formatColorLabel(c);
+}
+
+function renderFilamentEditorAdmin(){
+  const editor = document.getElementById('filament-editor');
+  const f = getAdminFilament();
+  if(!editor) return;
+  if(!f){
+    editor.innerHTML = '<p class="hint">Selectează un filament din listă.</p>';
+    return;
+  }
+  editor.innerHTML = `
+    <div class="filament-fields">
+      <div><label>Etichetă magazin</label><input type="text" id="filament-label" value="${escapeHtml(f.label)}"></div>
+      <div><label>Nume material (slice)</label><input type="text" id="filament-name" value="${escapeHtml(f.name)}"></div>
+      <div><label>Cheie slice API</label><input type="text" id="filament-slice" value="${escapeHtml(f.sliceKey)}"><p class="hint">PLA, PETG, ABS, TPU…</p></div>
+      <div><label>Multiplicator preț estimativ</label><input type="number" id="filament-mult" min="0.1" step="0.05" value="${f.priceMult}"></div>
+      <div><label>Ordine</label><input type="number" id="filament-sort" step="1" value="${f.sort}"></div>
+    </div>
+    <div class="filament-toolbar">
+      <button type="button" class="btn btn-ghost" id="add-color-btn">+ Culoare</button>
+      <button type="button" class="btn btn-danger" id="delete-filament-btn">Șterge filament</button>
+    </div>
+    <div class="color-grid">${f.colors.map((c, i) => renderColorCardAdmin(c, i)).join('')}</div>`;
+  bindFilamentEditorEvents();
+}
+
+async function loadFilamentCatalogAdmin(){
+  try{
+    const settings = await BambuPricing.loadSettingsFromDb(supabaseClient);
+    adminFilamentCatalog = FilamentCatalog.normalizeCatalog(settings.filamentCatalog);
+  }catch(_){
+    adminFilamentCatalog = FilamentCatalog.normalizeCatalog(null);
+  }
+  adminSelectedFilamentId = adminFilamentCatalog.filaments[0]?.id || null;
+  renderFilamentListAdmin();
+  renderFilamentEditorAdmin();
+}
+
+function initFilamentCatalogAdmin(){
+  loadFilamentCatalogAdmin();
+
+  document.getElementById('add-filament-btn')?.addEventListener('click', () => {
+    const name = prompt('Nume filament (ex: PLA, PETG):', 'PLA');
+    if(!name) return;
+    const f = FilamentCatalog.newFilament(name);
+    f.sort = adminFilamentCatalog.filaments.length;
+    adminFilamentCatalog.filaments.push(f);
+    adminSelectedFilamentId = f.id;
+    renderFilamentListAdmin();
+    renderFilamentEditorAdmin();
+  });
+
+  document.getElementById('save-filaments-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('save-filaments-btn');
+    btn.disabled = true;
+    try{
+      adminFilamentCatalog = FilamentCatalog.normalizeCatalog(adminFilamentCatalog);
+      const { error } = await supabaseClient
+        .from('pricing_settings')
+        .update({ filament_catalog: adminFilamentCatalog, updated_at: new Date().toISOString() })
+        .eq('id', 1);
+      if(error) throw error;
+      pricingSettingsCache = null;
+      showToast('Filamente și culori salvate');
+    }catch(err){
+      showToast(err.message || 'Nu am putut salva filamentele. Rulează supabase/filament-catalog.sql', true);
+    }finally{
+      btn.disabled = false;
+    }
+  });
 }
 
 loadProducts();
