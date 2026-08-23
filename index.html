@@ -564,6 +564,17 @@
     pointer-events:auto;position:relative;z-index:1;
   }
   .pay-options.is-disabled{opacity:.45;pointer-events:none;}
+  .site-wip-banner{
+    display:none;background:#FFF7E6;border-bottom:1px solid #F8E296;
+    color:#5C4A00;font-size:13.5px;line-height:1.5;
+  }
+  .site-wip-banner.visible{display:block;}
+  .site-wip-banner .container{
+    display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+    padding:10px 24px;text-align:center;
+  }
+  .site-wip-banner strong{color:#161B22;}
+  .site-wip-banner a{color:#2553F2;font-weight:700;text-decoration:underline;}
   .checkout-summary{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:8px;}
   .checkout-summary .row{display:flex;justify-content:space-between;gap:10px;margin:4px 0;color:var(--text-600);}
   .checkout-summary .row.total{color:var(--text-900);font-weight:700;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
@@ -743,6 +754,12 @@
   </div>
 </div>
 
+<div class="site-wip-banner" id="site-wip-banner" role="status" aria-live="polite">
+  <div class="container">
+    <span><strong>artblu este încă în lucru.</strong> Plățile și comenzile online nu sunt disponibile momentan — scrie-ne la <a href="mailto:contact@artblu.ro">contact@artblu.ro</a>.</span>
+  </div>
+</div>
+
 <!-- ===== Header ===== -->
 <header class="header">
   <div class="container">
@@ -861,28 +878,6 @@
             <input id="custom-phone" name="phone" type="tel" required autocomplete="tel" placeholder="07xx xxx xxx">
           </div>
           <div class="upload-field full">
-            <label for="custom-address">Adresă livrare *</label>
-            <textarea id="custom-address" name="address" required autocomplete="street-address" placeholder="Stradă, număr, oraș, județ, cod poștal"></textarea>
-          </div>
-          <div class="upload-field full" id="custom-pay-field">
-            <label>Metodă de plată *</label>
-            <div class="payments-wip" id="custom-payments-wip" role="status">
-              <strong>artblu este încă în lucru.</strong> Plățile nu sunt disponibile momentan.
-              Pentru comenzi sau întrebări, scrie-ne la
-              <a href="mailto:contact@artblu.ro">contact@artblu.ro</a>.
-            </div>
-            <div class="pay-options" id="custom-pay-options">
-              <label class="pay-option">
-                <input type="radio" name="custom-pay" value="card" checked>
-                <div><strong>Card (Stripe)</strong><span>Plătești acum securizat — Visa / Mastercard</span></div>
-              </label>
-              <label class="pay-option">
-                <input type="radio" name="custom-pay" value="ramburs">
-                <div><strong>Ramburs</strong><span>Plătești la curier (+ taxă ramburs)</span></div>
-              </label>
-            </div>
-          </div>
-          <div class="upload-field full">
             <label for="custom-notes">Note / detalii</label>
             <textarea id="custom-notes" name="notes" placeholder="Ex: orientare pe pat, toleranțe, text de gravat…"></textarea>
           </div>
@@ -906,25 +901,23 @@
               <span class="estimate-label">Preț print</span>
               <span class="estimate-value" id="custom-print-price">—</span>
             </div>
-            <div class="estimate-row">
-              <span class="estimate-label">Livrare</span>
-              <span class="estimate-value" id="custom-shipping-price">—</span>
-            </div>
-            <div class="estimate-row" id="custom-cod-row" hidden>
-              <span class="estimate-label">Taxă ramburs</span>
-              <span class="estimate-value" id="custom-cod-price">—</span>
-            </div>
             <div class="estimate-row estimate-total">
-              <span class="estimate-label">Total de plată</span>
+              <span class="estimate-label">Print (fără livrare)</span>
               <span class="estimate-value" id="custom-total-price">—</span>
             </div>
           </div>
-          <p class="hint" id="custom-price-hint">Încarcă un STL — calculăm timpul și gramele pe serverul de slice (Bambu P2S).</p>
+          <p class="hint" id="custom-price-hint">Livrarea (acasă / Easybox) și plata se aleg pe pagina de checkout.</p>
           <div class="price-meta" id="custom-price-details" style="display:none;"></div>
         </div>
 
+        <div class="payments-wip" id="custom-payments-wip" role="status">
+          <strong>artblu este încă în lucru.</strong> Plățile nu sunt disponibile momentan.
+          Poți configura printul, dar nu poți finaliza comanda încă.
+          Scrie-ne la <a href="mailto:contact@artblu.ro">contact@artblu.ro</a>.
+        </div>
+
         <div class="upload-actions">
-          <button type="submit" class="btn btn-primary" id="custom-submit">Trimite cererea de print</button>
+          <button type="submit" class="btn btn-primary" id="custom-submit">Continuă la checkout</button>
           <button type="button" class="btn btn-secondary" id="custom-pick-again">Adaugă fișiere</button>
         </div>
         <p class="upload-status" id="custom-status" aria-live="polite"></p>
@@ -975,11 +968,11 @@
   <div class="container">
     <div>
       <h3>Rămâi la curent</h3>
-      <p>Modele noi și oferte — te anunțăm când newsletterul e gata.</p>
+      <p>Modele noi și oferte — lasă emailul și te anunțăm.</p>
     </div>
     <form id="newsletter-form">
-      <input type="email" required placeholder="tu@email.com" aria-label="Adresă de email">
-      <button type="submit">Anunță-mă</button>
+      <input type="email" id="newsletter-email" name="email" required placeholder="tu@email.com" aria-label="Adresă de email" autocomplete="email">
+      <button type="submit" id="newsletter-submit">Abonează-te</button>
     </form>
   </div>
 </section>
@@ -1137,53 +1130,8 @@
 
 <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
 
-<div class="checkout-modal" id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title" hidden>
-  <div class="modal-backdrop" id="checkout-backdrop"></div>
-  <form class="checkout-panel" id="checkout-form">
-    <h3 id="checkout-title">Finalizează comanda</h3>
-    <p class="modal-sub">Completează datele de livrare și alege cum plătești.</p>
-    <div class="checkout-field">
-      <label for="checkout-name">Nume complet</label>
-      <input id="checkout-name" name="name" type="text" required autocomplete="name" placeholder="Ion Popescu">
-    </div>
-    <div class="checkout-field">
-      <label for="checkout-email">Email</label>
-      <input id="checkout-email" name="email" type="email" required autocomplete="email" placeholder="ion@email.ro">
-    </div>
-    <div class="checkout-field">
-      <label for="checkout-phone">Telefon</label>
-      <input id="checkout-phone" name="phone" type="tel" required autocomplete="tel" placeholder="07xx xxx xxx">
-    </div>
-    <div class="checkout-field">
-      <label for="checkout-address">Adresă livrare</label>
-      <textarea id="checkout-address" name="address" required placeholder="Stradă, număr, oraș, județ, cod poștal"></textarea>
-    </div>
-    <div class="checkout-field" id="checkout-pay-field">
-      <label>Metodă de plată</label>
-      <div class="payments-wip" id="checkout-payments-wip" role="status">
-        <strong>artblu este încă în lucru.</strong> Plățile nu sunt disponibile momentan.
-        Pentru comenzi sau întrebări, scrie-ne la
-        <a href="mailto:contact@artblu.ro">contact@artblu.ro</a>.
-      </div>
-      <div class="pay-options" id="checkout-pay-options">
-        <label class="pay-option">
-          <input type="radio" name="checkout-pay" value="card" checked>
-          <div><strong>Card (Stripe)</strong><span>Plată securizată acum</span></div>
-        </label>
-        <label class="pay-option">
-          <input type="radio" name="checkout-pay" value="ramburs">
-          <div><strong>Ramburs</strong><span>Plătești la curier</span></div>
-        </label>
-      </div>
-    </div>
-    <div class="checkout-summary" id="checkout-summary" aria-live="polite"></div>
-    <p class="checkout-error" id="checkout-error" aria-live="polite"></p>
-    <div class="checkout-actions">
-      <button type="button" class="checkout-cancel" id="checkout-cancel">Anulează</button>
-      <button type="submit" class="checkout-submit" id="checkout-submit">Continuă</button>
-    </div>
-  </form>
-</div>
+<!-- Cart checkout uses checkout.html; modal stub kept for legacy selectors -->
+<div class="checkout-modal" id="checkout-modal" hidden aria-hidden="true" style="display:none;"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
@@ -1207,7 +1155,7 @@ const SUPABASE_URL = 'https://tilfngrtldwevtiilxpq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_A3fpQb9LjJb8XySpIJyJeg_gcjPOs3m';
 const STL_BUCKET = 'stl-files';
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1519356166361317468/Ilh0PQe-o14uePV9lorCGHEBM86kpYsM5TVmLuJ3gHSc5pZ1w3lcFKOkMeyeKIy18FV1';
-// Home OMV slice API via Tailscale Funnel — see slice-api/README.md
+// Home OMV slice API via Tailscale Funnel — browser calls NAS directly. See slice-api/README.md
 const SLICE_API_URL = 'https://nas.taileecf41.ts.net';
 const SLICE_API_KEY = 'artblu_slice_7f3k9mQ2pL8wR4nX6vB1cD5hJ0sT'; // must match slice-api/.env on the NAS exactly
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1429,8 +1377,34 @@ function swatchStyle(color){
 let currentCategory = 'all';
 let searchTerm = '';
 let sortKey = 'popularity';
-const cart = {};      // id -> {qty, unitPrice, color, colorName, size}
+const CART_STORAGE_KEY = 'artblu_cart_v1';
+const cart = {};      // id -> {qty, unitPrice, color, colorName, size, name}
 const wishlist = new Set();
+
+function persistCart(){
+  try{ localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); }catch(_){}
+}
+function hydrateCartFromStorage(){
+  try{
+    const raw = localStorage.getItem(CART_STORAGE_KEY);
+    if(!raw) return;
+    const obj = JSON.parse(raw);
+    if(!obj || typeof obj !== 'object') return;
+    Object.keys(obj).forEach(id => {
+      const e = obj[id];
+      if(!e || !(Number(e.qty) > 0)) return;
+      cart[id] = {
+        qty: Number(e.qty) || 1,
+        unitPrice: Number(e.unitPrice) || 0,
+        color: e.color || null,
+        colorName: e.colorName || null,
+        size: e.size || null,
+        name: e.name || id
+      };
+    });
+  }catch(_){}
+}
+hydrateCartFromStorage();
 let viewingProductId = null;
 let selectedColorIdx = 0;
 let selectedSize = 'mediu';
@@ -1521,6 +1495,7 @@ function renderDeals(){}
 
 /* ================= CART ================= */
 function afterCartChange(){
+  persistCart();
   updateCartCount();
   renderCart();
   updateMobileCartBar();
@@ -1547,7 +1522,8 @@ function addToCart(id, opts={}){
       unitPrice: opts.unitPrice !== undefined ? opts.unitPrice : p.price,
       color: opts.color || null,
       colorName: opts.colorName || null,
-      size: opts.size || null
+      size: opts.size || null,
+      name: p.name
     };
   }
   afterCartChange();
@@ -1628,7 +1604,7 @@ function renderCart(){
   const payOk = arePaymentsEnabled();
   foot.innerHTML = `
     <div class="subtotal-row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
-    ${payOk ? '' : `<p class="payments-wip visible" style="margin-bottom:10px;">${paymentsDisabledMessage()} · <a href="mailto:contact@artblu.ro">contact@artblu.ro</a></p>`}
+    ${payOk ? '' : `<div class="payments-wip visible" style="margin-bottom:10px;"><strong>artblu este încă în lucru.</strong> Plățile nu sunt disponibile. <a href="mailto:contact@artblu.ro">contact@artblu.ro</a></div>`}
     <button class="btn-checkout" id="checkout-btn" ${payOk ? '' : 'disabled'}>${payOk ? 'Finalizează comanda' : 'Plăți indisponibile'}</button>`;
 }
 
@@ -1641,14 +1617,16 @@ function getCartSubtotal(){
   return Object.keys(cart).reduce((sum, id) => sum + cart[id].unitPrice * cart[id].qty, 0);
 }
 
-function fulfillmentFor(subtotal, paymentMethod){
+function fulfillmentFor(subtotal, paymentMethod, shippingMethod){
   const shipApi = window.ArtbluShipping;
   if(!shipApi){
-    const shippingFee = subtotal >= 250 ? 0 : 25;
+    const method = shippingMethod === 'easybox' ? 'easybox' : 'home';
+    const flat = method === 'easybox' ? 15 : 25;
+    const shippingFee = subtotal >= 250 ? 0 : flat;
     const codFee = paymentMethod === 'ramburs' ? 8 : 0;
-    return { subtotal, shippingFee, codFee, total: +(subtotal + shippingFee + codFee).toFixed(2), freeShippingOver: 250, shippingFlat: 25 };
+    return { subtotal, shippingFee, codFee, total: +(subtotal + shippingFee + codFee).toFixed(2), freeShippingOver: 250, shippingFlat: 25, shippingEasybox: 15, shippingMethod: method };
   }
-  return shipApi.calculateFulfillment(subtotal, paymentMethod, pricingSettings);
+  return shipApi.calculateFulfillment(subtotal, paymentMethod, pricingSettings, shippingMethod);
 }
 
 function renderFulfillmentSummary(el, subtotal, paymentMethod){
@@ -1730,26 +1708,18 @@ function openCheckoutModal(){
       showToast(paymentsDisabledMessage(), true);
       return;
     }
-    const modal = document.getElementById('checkout-modal');
-    document.getElementById('checkout-error').textContent = '';
-    refreshCheckoutSummary();
-    modal.hidden = false;
-    requestAnimationFrame(() => modal.classList.add('open'));
-    if(typeof getCurrentUser === 'function'){
-      getCurrentUser().then(user => {
-        if(!user) return;
-        const nameEl = document.getElementById('checkout-name');
-        const emailEl = document.getElementById('checkout-email');
-        if(nameEl && !nameEl.value && user.user_metadata?.full_name) nameEl.value = user.user_metadata.full_name;
-        if(emailEl && !emailEl.value && user.email) emailEl.value = user.email;
-      }).catch(() => {});
+    if(!Object.keys(cart).length){
+      showToast('Coșul este gol.', true);
+      return;
     }
-    document.getElementById('checkout-name')?.focus();
+    persistCart();
+    window.location.href = 'checkout.html?kind=cart';
   });
 }
 
 function closeCheckoutModal(){
   const modal = document.getElementById('checkout-modal');
+  if(!modal) return;
   modal.classList.remove('open');
   setTimeout(() => { modal.hidden = true; }, 200);
 }
@@ -2487,11 +2457,11 @@ function formatShippingFooterLabel(settings){
   const shipApi = window.ArtbluShipping;
   const cfg = shipApi
     ? shipApi.shippingFromSettings(settings)
-    : { shippingFlat: 25, freeShippingOver: 250, shippingFree: false };
+    : { shippingFlat: 25, shippingEasybox: 15, freeShippingOver: 250, shippingFree: false };
   if(cfg.shippingFree) return 'Livrare gratuită';
-  const flat = typeof shipApi?.formatLei === 'function' ? shipApi.formatLei(cfg.shippingFlat) : (cfg.shippingFlat + ' lei');
-  const over = typeof shipApi?.formatLei === 'function' ? shipApi.formatLei(cfg.freeShippingOver) : (cfg.freeShippingOver + ' lei');
-  return `Livrare ${flat} (gratis peste ${over})`;
+  const home = typeof shipApi?.formatLei === 'function' ? shipApi.formatLei(cfg.shippingFlat) : (cfg.shippingFlat + ' lei');
+  const easy = typeof shipApi?.formatLei === 'function' ? shipApi.formatLei(cfg.shippingEasybox) : (cfg.shippingEasybox + ' lei');
+  return `Acasă ${home} · Easybox ${easy}`;
 }
 
 function updateFooterCommerceNote(){
@@ -2504,24 +2474,12 @@ function updateFooterCommerceNote(){
 
 function applyStorefrontCommerceUi(){
   const enabled = arePaymentsEnabled();
-  document.querySelectorAll('#custom-payments-wip, #checkout-payments-wip').forEach(el => {
-    el.classList.toggle('visible', !enabled);
-  });
-  document.querySelectorAll('#custom-pay-options, #checkout-pay-options').forEach(el => {
-    el.classList.toggle('is-disabled', !enabled);
-  });
-  document.querySelectorAll('#custom-pay-options input, #checkout-pay-options input').forEach(inp => {
-    inp.disabled = !enabled;
-  });
+  document.getElementById('site-wip-banner')?.classList.toggle('visible', !enabled);
+  document.getElementById('custom-payments-wip')?.classList.toggle('visible', !enabled);
   if(!customQuoteBusy) setCustomSubmitBusy(false);
-  const checkoutSubmit = document.getElementById('checkout-submit');
-  if(checkoutSubmit){
-    checkoutSubmit.disabled = !enabled;
-    checkoutSubmit.textContent = enabled ? 'Continuă' : 'Plăți indisponibile';
-  }
   updateFooterCommerceNote();
   updateCustomPrice();
-  refreshCheckoutSummary();
+  if(typeof refreshCheckoutSummary === 'function') refreshCheckoutSummary();
   renderCart();
 }
 
@@ -2544,6 +2502,13 @@ async function loadPricingSettings(force){
 
 function sliceApiConfigured(){
   return !!(SLICE_API_URL && SLICE_API_KEY && !SLICE_API_URL.includes('YOUR-'));
+}
+
+function friendlySliceError(err){
+  const msg = err?.message || String(err || '');
+  if(/failed to fetch|networkerror|load failed|network request failed/i.test(msg)) return 'Nu s-a putut contacta serverul de slice. Pe PC cu Tailscale, apasă Allow la „rețea locală”. Altfel verifică conexiunea.';
+  if(/wall clock|timeout|504|546/i.test(msg)) return 'Slice-ul a durat prea mult. Încearcă un fișier mai mic sau scrie-ne la contact@artblu.ro.';
+  return msg || 'Eroare la slice';
 }
 
 function roughFallbackPrice(){
@@ -2580,17 +2545,26 @@ function getExactQuoteTotals(){
   return { hours, grams, total: +total.toFixed(2), count: stlEntries.length };
 }
 
-function setCustomPriceRows(printText, shippingText, codText, totalText, codVisible){
+function setCustomPriceRows(printText, totalText){
   const printEl = document.getElementById('custom-print-price');
-  const shipEl = document.getElementById('custom-shipping-price');
-  const codEl = document.getElementById('custom-cod-price');
   const totalEl = document.getElementById('custom-total-price');
-  const codRow = document.getElementById('custom-cod-row');
+  const totalLabel = document.querySelector('#custom-estimate-box .estimate-row.estimate-total .estimate-label');
   if(printEl) printEl.textContent = printText;
-  if(shipEl) shipEl.textContent = shippingText;
-  if(codEl) codEl.textContent = codText || '—';
   if(totalEl) totalEl.textContent = totalText;
-  if(codRow) codRow.hidden = !codVisible;
+  if(totalLabel) totalLabel.textContent = isStoreShippingFree() ? 'Print (livrare gratuită)' : 'Print (fără livrare)';
+}
+
+function isStoreShippingFree(){
+  const shipApi = window.ArtbluShipping;
+  if(shipApi) return !!shipApi.shippingFromSettings(pricingSettings).shippingFree;
+  return pricingSettings?.shipping_free === true || pricingSettings?.shippingFree === true;
+}
+
+function customShippingCheckoutHint(){
+  if(isStoreShippingFree()){
+    return 'Livrare gratuită (acasă sau Easybox). Metoda de livrare și plata se aleg pe pagina de checkout.';
+  }
+  return 'Livrarea (acasă / Easybox) și plata se aleg pe pagina de checkout.';
 }
 
 function formatSliceElapsed(ms){
@@ -2613,7 +2587,7 @@ function setCustomSubmitBusy(busy){
   const payOk = arePaymentsEnabled();
   btn.disabled = !payOk;
   btn.textContent = payOk
-    ? (btn.dataset.prevLabel || 'Trimite cererea de print')
+    ? (btn.dataset.prevLabel || 'Continuă la checkout')
     : 'Plăți indisponibile momentan';
   delete btn.dataset.prevLabel;
 }
@@ -2691,70 +2665,69 @@ function updateCustomPrice(){
   if(!document.getElementById('custom-print-price')) return;
 
   if(customQuoteBusy){
-    setCustomPriceRows('…', '…', '—', '…', false);
-    hintEl.textContent = 'Așteptăm rezultatul slice — prețul exact apare aici când e gata.';
-    detailsEl.style.display = 'none';
+    setCustomPriceRows('…', '…');
+    if(hintEl) hintEl.textContent = 'Așteptăm rezultatul slice — prețul exact apare aici când e gata.';
+    if(detailsEl) detailsEl.style.display = 'none';
     updateSliceProgressUi();
     return;
   }
 
   const exact = getExactQuoteTotals();
   if(exact){
-    const pay = getSelectedPayMethod('custom-pay');
-    const f = fulfillmentFor(exact.total, pay);
-    const shipLabel = f.shippingFee === 0 ? 'Gratuită' : fmt(f.shippingFee);
-    setCustomPriceRows(fmt(f.subtotal), shipLabel, f.codFee > 0 ? fmt(f.codFee) : '—', fmt(f.total), f.codFee > 0);
-    hintEl.textContent = f.shippingFee === 0
-      ? 'Ai livrare gratuită la acest print.'
-      : `Livrare ${fmt(f.shippingFlat)} — gratuită peste ${fmt(f.freeShippingOver)} la print.`;
-    detailsEl.style.display = 'block';
-    detailsEl.textContent = `⏱ ${typeof BambuPricing !== 'undefined' ? BambuPricing.formatHours(exact.hours) : exact.hours.toFixed(2) + ' h'} · 🧵 ${exact.grams.toFixed(1)} g` +
-      (exact.count > 1 ? ` · ${exact.count} modele` : '');
+    setCustomPriceRows(fmt(exact.total), fmt(exact.total));
+    if(hintEl) hintEl.textContent = customShippingCheckoutHint();
+    if(detailsEl){
+      detailsEl.style.display = 'block';
+      detailsEl.textContent = `⏱ ${typeof BambuPricing !== 'undefined' ? BambuPricing.formatHours(exact.hours) : exact.hours.toFixed(2) + ' h'} · 🧵 ${exact.grams.toFixed(1)} g` +
+        (exact.count > 1 ? ` · ${exact.count} modele` : '');
+    }
     return;
   }
 
   if(customFiles.some(e => e.quote && e.quote.error)){
     const rough = roughFallbackPrice();
-    setCustomPriceRows(fmt(rough), '—', '—', fmt(rough), false);
-    hintEl.textContent = 'Slice API indisponibil — preț print orientativ. Livrarea se calculează separat.';
-    detailsEl.style.display = 'none';
+    setCustomPriceRows(fmt(rough), fmt(rough));
+    if(hintEl) hintEl.textContent = isStoreShippingFree()
+      ? 'Slice API indisponibil — preț print orientativ. Livrare gratuită; metoda se alege la checkout.'
+      : 'Slice API indisponibil — preț print orientativ. Livrarea se alege la checkout.';
+    if(detailsEl) detailsEl.style.display = 'none';
     return;
   }
 
   if(!customFiles.length){
-    setCustomPriceRows('—', '—', '—', '—', false);
-    hintEl.textContent = sliceApiConfigured()
+    setCustomPriceRows('—', '—');
+    if(hintEl) hintEl.textContent = sliceApiConfigured()
       ? 'Încarcă un STL — calculăm prețul printului pe serverul de slice.'
       : 'Configurează SLICE_API_URL + SLICE_API_KEY în index.html (vezi slice-api/README.md).';
-    detailsEl.style.display = 'none';
+    if(detailsEl) detailsEl.style.display = 'none';
     return;
   }
 
   const rough = roughFallbackPrice();
-  const shipCfg = window.ArtbluShipping ? window.ArtbluShipping.shippingFromSettings(pricingSettings) : { shippingFlat: 25, freeShippingOver: 250, shippingFree: false };
-  const roughShip = shipCfg.shippingFree ? 'Gratuită*' : (fmt(shipCfg.shippingFlat) + '*');
-  setCustomPriceRows(fmt(rough), roughShip, '—', '—', false);
-  hintEl.textContent = shipCfg.shippingFree
-    ? 'Estimare orientativă print. *Livrare gratuită (setată în magazin).'
-    : `Estimare orientativă print. *Livrare ${fmt(shipCfg.shippingFlat)}, gratuită peste ${fmt(shipCfg.freeShippingOver)} (la total print).`;
-  detailsEl.style.display = 'none';
+  setCustomPriceRows(fmt(rough), fmt(rough));
+  if(hintEl) hintEl.textContent = isStoreShippingFree()
+    ? 'Estimare orientativă print. Livrare gratuită — metoda se alege la checkout.'
+    : 'Estimare orientativă print. Livrarea se alege la checkout.';
+  if(detailsEl) detailsEl.style.display = 'none';
 }
 
 async function requestSliceEstimate(file, material){
-  if(!sliceApiConfigured()){
-    throw new Error('Slice API neconfigurat (SLICE_API_URL / SLICE_API_KEY)');
-  }
+  if(!sliceApiConfigured()) throw new Error('Slice API neconfigurat (SLICE_API_URL / SLICE_API_KEY)');
   const body = new FormData();
   body.append('file', file, file.name);
   body.append('material', material || 'PLA');
-  const res = await fetch(`${SLICE_API_URL.replace(/\/$/, '')}/estimate`, {
-    method: 'POST',
-    headers: { 'X-API-Key': SLICE_API_KEY },
-    body
-  });
-  const data = await res.json().catch(() => ({}));
-  if(!res.ok) throw new Error(data.detail || data.message || `Slice API error ${res.status}`);
-  return data;
+  try{
+    const res = await fetch(`${SLICE_API_URL.replace(/\/$/, '')}/estimate`, {
+      method: 'POST',
+      headers: { 'X-API-Key': SLICE_API_KEY },
+      body
+    });
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok) throw new Error(data.detail || data.message || `Slice API error ${res.status}`);
+    return data;
+  }catch(err){
+    throw new Error(friendlySliceError(err));
+  }
 }
 
 async function requoteAllCustomFiles(){
@@ -2815,7 +2788,7 @@ async function requoteAllCustomFiles(){
         };
       }catch(err){
         console.error(err);
-        entry.quote = { error: err.message || 'slice failed' };
+        entry.quote = { error: friendlySliceError(err) };
       }
       renderCustomFileList();
     }
@@ -3062,7 +3035,6 @@ function sendDiscordCustomNotification(payload, requestId){
 async function submitCustomPrint(e){
   e.preventDefault();
   const submitBtn = document.getElementById('custom-submit');
-  const address = document.getElementById('custom-address').value.trim();
   const phone = document.getElementById('custom-phone').value.trim();
   await loadPricingSettings(true);
   if(!arePaymentsEnabled()){
@@ -3082,11 +3054,6 @@ async function submitCustomPrint(e){
   if(!phone){
     setCustomStatus('Telefonul este obligatoriu.', 'error');
     document.getElementById('custom-phone')?.focus();
-    return;
-  }
-  if(!address){
-    setCustomStatus('Adresa de livrare este obligatorie.', 'error');
-    document.getElementById('custom-address')?.focus();
     return;
   }
   submitBtn.disabled = true;
@@ -3123,15 +3090,13 @@ async function submitCustomPrint(e){
     const requestId = crypto.randomUUID();
     const exact = getExactQuoteTotals();
     const estimatedPrice = exact ? exact.total : roughFallbackPrice();
-    const paymentMethod = getSelectedPayMethod('custom-pay');
-    const f = fulfillmentFor(estimatedPrice, paymentMethod);
     const payload = {
       id: requestId,
       user_id: user?.id || null,
       customer_name: document.getElementById('custom-name').value.trim(),
       customer_email: document.getElementById('custom-email').value.trim(),
       customer_phone: phone,
-      customer_address: address,
+      customer_address: '—',
       stl_path: filesMeta[0].path,
       file_name: filesMeta.map(f => f.name).join(', '),
       files: filesMeta,
@@ -3142,44 +3107,30 @@ async function submitCustomPrint(e){
       size_key: 'stl',
       notes: document.getElementById('custom-notes').value.trim() || null,
       estimated_price: estimatedPrice,
-      shipping_fee: f.shippingFee,
-      cod_fee: f.codFee,
-      total: f.total,
-      payment_method: paymentMethod,
-      payment_status: paymentMethod === 'ramburs' ? 'unpaid_cod' : 'pending',
+      shipping_fee: 0,
+      cod_fee: 0,
+      total: estimatedPrice,
+      payment_method: 'card',
+      payment_status: 'pending',
       print_hours: exact ? exact.hours : null,
       filament_grams: exact ? exact.grams : null,
       bambu_source: exact ? 'slice-api-p2s' : null,
-      status: paymentMethod === 'card' ? 'pending_payment' : (exact ? 'quoted' : 'new')
+      shipping_method: 'home',
+      status: 'pending_checkout'
     };
     const { error } = await supabaseClient.from('custom_prints').insert(payload);
     if(error) throw error;
 
-    if(paymentMethod === 'card'){
-      sendDiscordCustomNotification(payload, requestId);
-      setCustomStatus('Redirecționăm către plata Stripe…', 'ok');
-      await startStripeCheckout('custom', requestId);
-      return;
-    }
-
-    sendDiscordCustomNotification(payload, requestId);
-    setCustomStatus(`Cererea a fost trimisă (ramburs)! Total ${fmt(f.total)} · ID: ${requestId.slice(0, 8)}…`, 'ok');
-    showToast('Cererea de print personalizat a fost trimisă!');
-    e.target.reset();
-    clearCustomFile();
-    syncActiveFileFinishUi();
-    updateCustomPrice();
-    if(user?.email) document.getElementById('custom-email').value = user.email;
-    if(user?.user_metadata?.full_name) document.getElementById('custom-name').value = user.user_metadata.full_name;
+    setCustomStatus('Te ducem la checkout…', 'ok');
+    window.location.href = 'checkout.html?kind=custom&id=' + encodeURIComponent(requestId);
   }catch(err){
-    console.error('Custom print failed:', err);
+    console.error(err);
     for(const path of uploadedPaths){
       try{ await supabaseClient.storage.from(STL_BUCKET).remove([path]); }catch(_){}
     }
-    setCustomStatus(err.message || 'Nu am putut trimite cererea. Verifică conexiunea și încearcă din nou.', 'error');
-  }finally{
+    setCustomStatus(err.message || 'Nu am putut crea draft-ul. Încearcă din nou.', 'error');
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Trimite cererea de print';
+    submitBtn.textContent = 'Continuă la checkout';
   }
 }
 
@@ -3314,46 +3265,42 @@ document.getElementById('drawer-foot').addEventListener('click', e => {
   if(e.target.closest('#checkout-btn')) openCheckoutModal();
 });
 
-document.getElementById('checkout-cancel').addEventListener('click', closeCheckoutModal);
-document.getElementById('checkout-backdrop').addEventListener('click', closeCheckoutModal);
-document.getElementById('checkout-pay-options')?.addEventListener('change', refreshCheckoutSummary);
-document.getElementById('custom-pay-options')?.addEventListener('change', updateCustomPrice);
+document.getElementById('checkout-cancel')?.addEventListener('click', closeCheckoutModal);
+document.getElementById('checkout-backdrop')?.addEventListener('click', closeCheckoutModal);
 
-document.getElementById('checkout-form').addEventListener('submit', async e => {
+document.getElementById('newsletter-form').addEventListener('submit', async e => {
   e.preventDefault();
-  const submitBtn = document.getElementById('checkout-submit');
-  const errorEl = document.getElementById('checkout-error');
-  errorEl.textContent = '';
-  submitBtn.disabled = true;
-  const paymentMethod = getSelectedPayMethod('checkout-pay');
-  submitBtn.textContent = paymentMethod === 'card' ? 'Mergem la plată…' : 'Se trimite…';
-  try{
-    const orderId = await placeOrder({
-      name: document.getElementById('checkout-name').value.trim(),
-      email: document.getElementById('checkout-email').value.trim(),
-      phone: document.getElementById('checkout-phone').value.trim(),
-      address: document.getElementById('checkout-address').value.trim(),
-      paymentMethod
-    });
-    if(paymentMethod === 'ramburs'){
-      closeCheckoutModal();
-      closeDrawer();
-      e.target.reset();
-      showToast(`Comandă ramburs trimisă! ID: ${orderId.slice(0, 8)}…`);
-    }
-  }catch(err){
-    console.error('Order failed:', err);
-    errorEl.textContent = err.message || 'Nu am putut trimite comanda. Încearcă din nou.';
-  }finally{
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Continuă';
+  const form = e.target;
+  const input = document.getElementById('newsletter-email');
+  const btn = document.getElementById('newsletter-submit');
+  const email = String(input?.value || '').trim().toLowerCase();
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    showToast('Introdu o adresă de email validă.', true);
+    return;
   }
-});
-
-document.getElementById('newsletter-form').addEventListener('submit', e => {
-  e.preventDefault();
-  e.target.reset();
-  showToast('Mulțumim! Te anunțăm când newsletterul este activ.');
+  if(btn){ btn.disabled = true; btn.textContent = 'Se salvează…'; }
+  try{
+    const { error } = await supabaseClient.from('newsletter_subscribers').insert({
+      email,
+      source: 'storefront',
+      user_agent: navigator.userAgent ? navigator.userAgent.slice(0, 240) : null
+    });
+    if(error){
+      if(error.code === '23505' || /duplicate|unique/i.test(error.message || '')){
+        showToast('Ești deja pe listă. Mulțumim!');
+        form.reset();
+        return;
+      }
+      throw error;
+    }
+    form.reset();
+    showToast('Mulțumim! Te-ai abonat la newsletter.');
+  }catch(err){
+    console.error('Newsletter signup failed:', err);
+    showToast(err.message || 'Nu am putut salva emailul. Rulează supabase/newsletter.sql în Supabase.', true);
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = 'Abonează-te'; }
+  }
 });
 
 document.getElementById('logo-link').addEventListener('click', e => {

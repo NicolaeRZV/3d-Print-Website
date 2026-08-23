@@ -39,12 +39,12 @@ sudo tailscale funnel status
 
 Copy the HTTPS URL (example: `https://omv.tailXXXX.ts.net`).
 
-Your Funnel URL (verified): `https://nas.taileecf41.ts.net/` — already set in `index.html` as `SLICE_API_URL`.
+Your Funnel URL (verified): `https://nas.taileecf41.ts.net/` — set as `SLICE_API_URL` **Supabase secret** (not in the website).
 
 Test from phone cellular:
 
 ```bash
-curl -s https://YOUR-FUNNEL-HOST/health
+curl -s https://nas.taileecf41.ts.net/health
 ```
 
 ## C. Website (`index.html`)
@@ -52,11 +52,11 @@ curl -s https://YOUR-FUNNEL-HOST/health
 Set these two constants near the top of the script:
 
 ```js
-const SLICE_API_URL = 'https://YOUR-FUNNEL-HOST';
+const SLICE_API_URL = 'https://nas.taileecf41.ts.net';
 const SLICE_API_KEY = 'same-secret-as-.env';
 ```
 
-Commit / deploy the static site.
+Commit / deploy the static site. On your PC with Tailscale, Chrome may ask to allow local network once — click **Allow**.
 
 ## D. Verify end-to-end
 

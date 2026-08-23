@@ -10,6 +10,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function num(v: unknown, fallback: number) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function bool(v: unknown, fallback: boolean) {
+  if (v === true || v === false) return v;
+  return fallback;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -34,9 +44,10 @@ Deno.serve(async (req) => {
     if (!siteUrl) throw new Error('SITE_URL not configured');
 
     const { data: settings } = await supabase.from('pricing_settings').select('*').eq('id', 1).maybeSingle();
-    const shippingFlat = Number(settings?.shipping_flat ?? 25);
-    const freeOver = Number(settings?.free_shipping_over ?? 250);
-    const codFeeSetting = Number(settings?.cod_fee ?? 8);
+    const shippingFlat = num(settings?.shipping_flat, 25);
+    const shippingEasybox = num(settings?.shipping_easybox, 15);
+    const freeOver = num(settings?.free_shipping_over, 250);
+    const shippingFree = bool(settings?.shipping_free, false);
 
     let table = kind === 'custom' ? 'custom_prints' : 'orders';
     const { data: row, error } = await supabase.from(table).select('*').eq('id', recordId).single();
@@ -50,7 +61,9 @@ Deno.serve(async (req) => {
     }
 
     const goods = Number(kind === 'custom' ? (row.estimated_price ?? row.total ?? 0) : (row.subtotal ?? 0));
-    const shippingFee = goods >= freeOver ? 0 : shippingFlat;
+    const method = row.shipping_method === 'easybox' ? 'easybox' : 'home';
+    const flat = method === 'easybox' ? shippingEasybox : shippingFlat;
+    const shippingFee = shippingFree || goods >= freeOver ? 0 : flat;
     const codFee = 0;
     const total = Math.round((goods + shippingFee + codFee) * 100) / 100;
     if (total < 1) throw new Error('Total too small');
@@ -66,6 +79,7 @@ Deno.serve(async (req) => {
       ? `Print personalizat artblu (${recordId.slice(0, 8)})`
       : `Comandă artblu (${recordId.slice(0, 8)})`;
 
+    const shipDesc = method === 'easybox' ? 'Easybox' : 'livrare acasă';
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       customer_email: row.customer_email || undefined,
@@ -78,7 +92,7 @@ Deno.serve(async (req) => {
             product_data: {
               name: label,
               description: shippingFee > 0
-                ? `Produse ${goods.toFixed(2)} lei + livrare ${shippingFee.toFixed(2)} lei`
+                ? `Produse ${goods.toFixed(2)} lei + ${shipDesc} ${shippingFee.toFixed(2)} lei`
                 : `Produse ${goods.toFixed(2)} lei · livrare gratuită`,
             },
           },
@@ -87,9 +101,10 @@ Deno.serve(async (req) => {
       metadata: {
         kind,
         record_id: recordId,
+        shipping_method: method,
       },
-      success_url: `${siteUrl}/index.html?checkout=success&kind=${kind}&id=${recordId}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/index.html?checkout=cancel&kind=${kind}&id=${recordId}`,
+      success_url: `${siteUrl}/checkout.html?checkout=success&kind=${kind}&id=${recordId}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/checkout.html?checkout=cancel&kind=${kind}&id=${recordId}`,
     });
 
     await supabase.from(table).update({

@@ -294,15 +294,28 @@ async function boot() {
   await new Promise(r => setTimeout(r, 500));
   const session = await getSession();
 
+  if (params.get('forgot') === '1') {
+    setMode('forgot');
+    successEl.textContent = 'Introdu emailul și îți trimitem un link nou de resetare.';
+    successEl.classList.add('show');
+    successEl.dataset.keep = '1';
+    window.history.replaceState({}, '', 'login.html');
+    return;
+  }
+
   if (authType === 'recovery' || params.get('reset') === '1') {
     if (session) {
       setMode('recover');
       successEl.textContent = 'Alege o parolă nouă pentru contul tău.';
       successEl.classList.add('show');
       successEl.dataset.keep = '1';
-      window.history.replaceState({}, '', window.location.pathname + window.location.search);
+      window.history.replaceState({}, '', 'login.html?reset=1');
       return;
     }
+    setMode('forgot');
+    errorEl.textContent = 'Linkul de resetare a expirat. Cere unul nou mai jos.';
+    window.history.replaceState({}, '', 'login.html');
+    return;
   }
 
   if (authType === 'signup' || authType === 'email' || params.get('confirmed') === '1') {

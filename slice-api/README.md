@@ -79,7 +79,11 @@ const SLICE_API_URL = 'https://YOUR-FUNNEL-HOST';
 const SLICE_API_KEY = 'YOUR_SECRET';
 ```
 
-Redeploy / push the static site.
+Redeploy / push the static site. The browser calls the NAS directly via Tailscale Funnel (no Supabase proxy).
+
+**PC with Tailscale installed:** Chrome may ask once to allow “local network” — click **Allow**.
+
+Optional Supabase proxy (if Funnel TLS fails from cloud): `supabase/SLICE-PROXY-SETUP.md`
 
 ## 5. Optional: lock CORS
 In compose:
@@ -114,7 +118,8 @@ Restart: `docker compose up -d`
 | Symptom | Fix |
 |--------|-----|
 | `Invalid or missing X-API-Key` | Key mismatch between compose and `index.html` |
-| CORS errors in browser | Set `CORS_ORIGINS` to your site origin, rebuild/recreate |
+| CORS errors in browser | Set `CORS_ORIGINS` to your site origin; rebuild/recreate |
+| Browser asks for “local network” on artblu.ro | Use Supabase slice proxy (`supabase/SLICE-PROXY-SETUP.md`), not direct browser → NAS |
 | Funnel works on LAN only | Test on cellular; confirm `tailscale funnel status` |
 | Slice timeout | Raise `SLICE_TIMEOUT_SEC`; large STLs take longer |
 | Profiles missing | Check logs; Orca version may not ship P2S yet → uses P1S fallback |

@@ -90,13 +90,21 @@ Body (keep the link variable):
 Resetează parola artblu
 ```
 
-Body:
+Body (TokenHash = works on any phone/browser, not only the one that requested the email):
 ```html
 <h2>Resetare parolă artblu</h2>
-<p><a href="{{ .ConfirmationURL }}">Alege o parolă nouă</a></p>
+<p>Apasă linkul de mai jos pentru a alege o parolă nouă:</p>
+<p><a href="{{ .SiteURL }}/auth-callback.html?token_hash={{ .TokenHash }}&type=recovery">Alege o parolă nouă</a></p>
+<p>Dacă nu ai cerut resetarea, ignoră acest email.</p>
 ```
 
-### Project name (sender label in some clients)
+**Confirm signup** — prefer the same TokenHash pattern if confirmation fails across devices:
+```html
+<h2>Bine ai venit la artblu!</h2>
+<p><a href="{{ .SiteURL }}/auth-callback.html?token_hash={{ .TokenHash }}&type=signup">Confirmă contul</a></p>
+```
+
+> Do **not** rely only on `{{ .ConfirmationURL }}` for reset if users open mail on their phone after requesting from desktop — that PKCE `?code=` link needs the same browser.
 
 **Project Settings** → **General** → **Project name** → `artblu`
 
@@ -122,5 +130,6 @@ Dashboard → **Authentication** → **Users** → your email → either:
 - [ ] Site URL = `https://nicolaerzv.github.io/3d-Print-Website` (NOT localhost)  
 - [ ] Redirect URLs include `auth-callback.html`  
 - [ ] Latest code deployed to GitHub Pages  
-- [ ] Requested **new** confirmation email (old links are useless)  
+- [ ] **Reset password** email template uses `token_hash` + `type=recovery` (see Step 5)  
+- [ ] Requested **new** reset/confirmation email (old links are useless)  
 - [ ] Email templates updated to artblu wording  

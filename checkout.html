@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Checkout — artblu</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='20' width='14' height='5' rx='2' fill='%234DA3FF'/%3E%3Crect x='4' y='12' width='22' height='5' rx='2' fill='%232553F2'/%3E%3Crect x='4' y='4' width='28' height='5' rx='2' fill='%230F1B2D'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="page.css">
+<link rel="stylesheet" href="checkout.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a href="index.html" class="logo" aria-label="artblu">
+      <svg class="logo-mark" width="30" height="22" viewBox="0 0 30 22" aria-hidden="true">
+        <rect x="0" y="16" width="14" height="4" rx="2"/>
+        <rect x="0" y="9" width="22" height="4" rx="2"/>
+        <rect x="0" y="2" width="30" height="4" rx="2"/>
+      </svg>
+      <span class="logo-word">art<span>blu</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Magazin</a>
+      <a href="account.html">Cont</a>
+    </nav>
+  </div>
+</header>
+
+<main class="checkout-main">
+  <h1>Finalizează comanda</h1>
+  <p class="checkout-lead" id="checkout-lead">Completează datele, alege livrarea și plata.</p>
+
+  <form id="checkout-page-form" class="checkout-layout" novalidate>
+    <div class="checkout-form-col">
+      <section class="checkout-card">
+        <h2>Date contact</h2>
+        <div class="checkout-row">
+          <div class="checkout-field">
+            <label for="co-name">Nume complet *</label>
+            <input id="co-name" name="name" type="text" required autocomplete="name" placeholder="Ion Popescu">
+          </div>
+          <div class="checkout-field">
+            <label for="co-phone">Telefon *</label>
+            <input id="co-phone" name="phone" type="tel" required autocomplete="tel" placeholder="07xx xxx xxx">
+          </div>
+        </div>
+        <div class="checkout-field">
+          <label for="co-email">Email *</label>
+          <input id="co-email" name="email" type="email" required autocomplete="email" placeholder="ion@email.ro">
+        </div>
+      </section>
+
+      <section class="checkout-card">
+        <h2>Livrare</h2>
+        <div class="ship-options" role="radiogroup" aria-label="Metodă de livrare">
+          <label class="ship-option">
+            <input type="radio" name="ship-method" value="home" checked>
+            <div>
+              <strong>La adresă</strong>
+              <span id="ship-home-hint">Curier la ușa ta</span>
+            </div>
+          </label>
+          <label class="ship-option">
+            <input type="radio" name="ship-method" value="easybox">
+            <div>
+              <strong>Easybox Sameday</strong>
+              <span id="ship-easybox-hint">Ridicare din locker 24/7</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="ship-home-fields" id="ship-home-fields">
+          <div class="checkout-field" style="margin-top:14px;">
+            <label for="co-address">Adresă completă *</label>
+            <textarea id="co-address" name="address" autocomplete="street-address" placeholder="Stradă, număr, bloc, scara, ap."></textarea>
+          </div>
+          <div class="checkout-row">
+            <div class="checkout-field">
+              <label for="co-city">Oraș *</label>
+              <input id="co-city" name="city" type="text" autocomplete="address-level2" placeholder="București">
+            </div>
+            <div class="checkout-field">
+              <label for="co-county">Județ *</label>
+              <input id="co-county" name="county" type="text" autocomplete="address-level1" placeholder="Ilfov">
+            </div>
+          </div>
+        </div>
+
+        <div class="ship-easybox-fields" id="ship-easybox-fields" hidden>
+          <button type="button" class="btn-locker" id="open-locker-btn">Alege easybox pe hartă</button>
+          <div class="locker-picked" id="locker-picked" hidden>
+            <strong id="locker-name">—</strong>
+            <div class="muted" id="locker-address">—</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="checkout-card">
+        <h2>Plată</h2>
+        <div class="payments-wip" id="co-payments-wip" role="status">
+          <strong>artblu este încă în lucru.</strong> Plățile și comenzile online nu sunt disponibile momentan.
+          Scrie-ne la <a href="mailto:contact@artblu.ro">contact@artblu.ro</a>.
+        </div>
+        <div class="pay-options" id="co-pay-options">
+          <label class="pay-option">
+            <input type="radio" name="co-pay" value="card" checked>
+            <div><strong>Card (Stripe)</strong><span>Plătești acum securizat</span></div>
+          </label>
+          <label class="pay-option">
+            <input type="radio" name="co-pay" value="ramburs">
+            <div><strong>Ramburs</strong><span>Plătești la curier (+ taxă ramburs)</span></div>
+          </label>
+        </div>
+      </section>
+
+      <p class="checkout-error" id="co-error" aria-live="polite"></p>
+      <div class="checkout-actions">
+        <a class="btn-checkout-back" href="index.html" id="co-back">← Înapoi</a>
+        <button type="submit" class="btn-checkout-submit" id="co-submit">Plasează comanda</button>
+      </div>
+    </div>
+
+    <aside class="checkout-summary-card checkout-card">
+      <h2>Sumar</h2>
+      <ul class="summary-items" id="summary-items"></ul>
+      <div class="summary-lines" id="summary-lines" aria-live="polite"></div>
+    </aside>
+  </form>
+</main>
+
+<footer class="site-footer">© 2026 artblu · <a href="index.html">Magazin</a></footer>
+<div class="checkout-toast-stack" id="toast-stack" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.sameday.ro/locker-plugin/lockerpluginsdk.js"></script>
+<script src="shipping.js"></script>
+<script src="auth.js"></script>
+<script src="bambu-pricing.js"></script>
+<script src="checkout.js"></script>
+</body>
+</html>

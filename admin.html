@@ -271,7 +271,7 @@
 <main>
   <div class="container">
     <div class="alert alert-warn" id="policy-hint">
-      Dacă adăugarea sau ștergerea eșuează, rulează <code>supabase/admin-policies.sql</code>, <code>supabase/custom-prints.sql</code>, <code>supabase/custom-prints-delete.sql</code> și <code>supabase/store-toggles.sql</code> în SQL Editor.
+      Dacă adăugarea sau ștergerea eșuează, rulează <code>supabase/admin-policies.sql</code>, <code>supabase/custom-prints.sql</code>, <code>supabase/custom-prints-delete.sql</code>, <code>supabase/store-toggles.sql</code>, <code>supabase/newsletter.sql</code> și <code>supabase/checkout-shipping.sql</code> în SQL Editor.
     </div>
 
     <div class="popup-banner" id="new-order-banner">
@@ -296,6 +296,26 @@
           <p>Se încarcă cererile...</p>
         </div>
         <div class="product-list" id="custom-list" hidden></div>
+      </div>
+    </section>
+
+    <section class="panel" id="newsletter-panel" style="margin-bottom:24px;">
+      <div class="panel-head">
+        <div>
+          <h2>Newsletter</h2>
+          <p>Emailuri abonate din formularul de pe magazin</p>
+        </div>
+        <div class="orders-filter">
+          <button type="button" class="btn btn-ghost" id="copy-newsletter-btn">Copiază lista</button>
+          <span class="count-badge" id="newsletter-count">0</span>
+        </div>
+      </div>
+      <div id="newsletter-wrap">
+        <div class="list-empty" id="newsletter-empty">
+          <div class="emo">✉️</div>
+          <p>Nicio abonare încă.</p>
+        </div>
+        <div class="product-list" id="newsletter-list" hidden></div>
       </div>
     </section>
 
@@ -360,8 +380,12 @@
           <h3 style="font-size:15px;margin:0;">Livrare &amp; plăți pe magazin</h3>
           <div class="pricing-grid">
             <div>
-              <label for="shipping_flat">Taxă livrare (lei)</label>
+              <label for="shipping_flat">Taxă livrare acasă (lei)</label>
               <input type="number" id="shipping_flat" min="0" step="0.01" value="25">
+            </div>
+            <div>
+              <label for="shipping_easybox">Taxă Easybox (lei)</label>
+              <input type="number" id="shipping_easybox" min="0" step="0.01" value="15">
             </div>
             <div>
               <label for="free_shipping_over">Livrare gratuită peste (lei)</label>
@@ -595,6 +619,7 @@ function readPricingSettingsFromForm(){
     minPrice: Number(document.getElementById('min_price').value),
     roundUpTo: Number(document.getElementById('round_up_to').value),
     shipping_flat: Number(document.getElementById('shipping_flat')?.value ?? 25),
+    shipping_easybox: Number(document.getElementById('shipping_easybox')?.value ?? 15),
     free_shipping_over: Number(document.getElementById('free_shipping_over')?.value ?? 250),
     cod_fee: Number(document.getElementById('cod_fee')?.value ?? 8),
     shipping_free: !!document.getElementById('shipping_free')?.checked,
@@ -615,9 +640,11 @@ function fillPricingSettingsForm(settings){
   document.getElementById('min_price').value = cfg.minPrice;
   document.getElementById('round_up_to').value = cfg.roundUpTo;
   const shipFlat = document.getElementById('shipping_flat');
+  const shipEasy = document.getElementById('shipping_easybox');
   const freeOver = document.getElementById('free_shipping_over');
   const codFee = document.getElementById('cod_fee');
   if(shipFlat) shipFlat.value = cfg.shipping_flat != null ? cfg.shipping_flat : 25;
+  if(shipEasy) shipEasy.value = cfg.shipping_easybox != null ? cfg.shipping_easybox : 15;
   if(freeOver) freeOver.value = cfg.free_shipping_over != null ? cfg.free_shipping_over : 250;
   if(codFee) codFee.value = cfg.cod_fee != null ? cfg.cod_fee : 8;
   const shipFree = document.getElementById('shipping_free');
@@ -1147,6 +1174,7 @@ document.getElementById('product-list').addEventListener('click', async e => {
 document.getElementById('refresh-btn').addEventListener('click', () => {
   loadProducts();
   loadCustomPrints();
+  loadNewsletterSubscribers();
   showToast('Listă reîncărcată');
 });
 
@@ -1264,8 +1292,9 @@ function renderCustomOrderRow(row, isNew){
         <p>📍 ${escapeHtml(row.customer_address || '—')}</p>
         <p>${escapeHtml(row.material || '—')} · ${escapeHtml(row.color_name || '—')} · dimensiune din STL · <strong>${price}</strong></p>
         <p style="font-size:12.5px;color:var(--text-600);">Plată: <strong>${escapeHtml(row.payment_method || '—')}</strong> · ${escapeHtml(row.payment_status || '—')} · Total ${row.total != null ? fmtPrice(row.total) : price}${row.shipping_fee != null ? ` (livrare ${fmtPrice(row.shipping_fee)})` : ''}${row.cod_fee ? ` · ramburs ${fmtPrice(row.cod_fee)}` : ''}</p>
+        <p style="font-size:12.5px;color:var(--text-600);">Livrare: <strong>${escapeHtml(row.shipping_method === 'easybox' ? 'Easybox' : 'La adresă')}</strong>${row.shipping_method === 'easybox' && row.locker_name ? ` · ${escapeHtml(row.locker_name)}${row.locker_id ? ' (#' + escapeHtml(row.locker_id) + ')' : ''}` : ''} · ${escapeHtml(row.customer_address || '—')}</p>
         <div class="product-tags">
-          <span class="tag ${statusClass}">${escapeHtml(isCompleted ? 'finalizată' : (row.status || 'new'))}</span>
+          <span class="tag ${statusClass}">${escapeHtml(isCompleted ? 'finalizată' : (row.status === 'pending_checkout' ? 'checkout' : (row.status || 'new')))}</span>
           <span class="tag">${escapeHtml(row.payment_status || 'pending')}</span>
           <span class="tag">${escapeHtml(date)}</span>
           <span class="tag">${files.length} fișier${files.length === 1 ? '' : 'e'}</span>
@@ -1462,6 +1491,87 @@ function bindCustomOrderActions(root){
 }
 
 document.getElementById('show-completed-orders')?.addEventListener('change', () => loadCustomPrints());
+
+let newsletterRowsCache = [];
+
+async function loadNewsletterSubscribers(){
+  const list = document.getElementById('newsletter-list');
+  const empty = document.getElementById('newsletter-empty');
+  const countEl = document.getElementById('newsletter-count');
+  if(!list || !empty || !countEl) return;
+
+  const { data, error } = await supabaseClient
+    .from('newsletter_subscribers')
+    .select('id, email, created_at, source')
+    .order('created_at', { ascending: false })
+    .limit(500);
+
+  if(error){
+    newsletterRowsCache = [];
+    empty.hidden = false;
+    list.hidden = true;
+    empty.innerHTML = `<div class="emo">⚠️</div><p>Rulează <code>supabase/newsletter.sql</code><br>${escapeHtml(error.message)}</p>`;
+    countEl.textContent = 'Eroare';
+    return;
+  }
+
+  newsletterRowsCache = data || [];
+  countEl.textContent = newsletterRowsCache.length + (newsletterRowsCache.length === 1 ? ' email' : ' emailuri');
+  if(!newsletterRowsCache.length){
+    empty.hidden = false;
+    list.hidden = true;
+    empty.innerHTML = '<div class="emo">✉️</div><p>Nicio abonare încă.</p>';
+    return;
+  }
+
+  empty.hidden = true;
+  list.hidden = false;
+  list.innerHTML = newsletterRowsCache.map(row => {
+    const date = row.created_at ? new Date(row.created_at).toLocaleString('ro-RO') : '—';
+    return `<article class="order-row" style="grid-template-columns:1fr auto;">
+      <div class="order-meta" style="padding:14px 0;">
+        <h3 style="font-size:15px;">${escapeHtml(row.email)}</h3>
+        <p style="font-size:12.5px;color:var(--text-600);margin-top:4px;">${escapeHtml(date)} · ${escapeHtml(row.source || 'storefront')}</p>
+      </div>
+      <div class="order-actions" style="margin:0;align-self:center;">
+        <button type="button" class="btn btn-danger btn-delete-newsletter" data-id="${row.id}">Șterge</button>
+      </div>
+    </article>`;
+  }).join('');
+
+  list.querySelectorAll('.btn-delete-newsletter').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      if(!id || !confirm('Ștergi acest email din listă?')) return;
+      btn.disabled = true;
+      try{
+        const { data: deleted, error: delErr } = await supabaseClient.from('newsletter_subscribers').delete().eq('id', id).select('id');
+        if(delErr) throw delErr;
+        if(!deleted || !deleted.length) throw new Error('Ștergerea a eșuat. Rulează supabase/newsletter.sql');
+        showToast('Email șters din newsletter');
+        await loadNewsletterSubscribers();
+      }catch(err){
+        console.error(err);
+        showToast(err.message || 'Nu am putut șterge emailul', true);
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+document.getElementById('copy-newsletter-btn')?.addEventListener('click', async () => {
+  const emails = newsletterRowsCache.map(r => r.email).filter(Boolean);
+  if(!emails.length){
+    showToast('Lista e goală', true);
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(emails.join('\n'));
+    showToast(`Copiat ${emails.length} email${emails.length === 1 ? '' : 'uri'}`);
+  }catch(_){
+    showToast('Nu am putut copia în clipboard', true);
+  }
+});
 
 let pricingSettingsCache = null;
 
@@ -1854,6 +1964,7 @@ function initFilamentCatalogAdmin(){
 
 loadProducts();
 loadCustomPrints().then(() => setupCustomPrintsRealtime());
+loadNewsletterSubscribers();
 </script>
 </body>
 </html>

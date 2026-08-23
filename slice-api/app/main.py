@@ -41,6 +41,15 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def private_network_access(request, call_next):
+    """Chrome Private Network Access: public sites (artblu.ro) → Tailscale funnel hostname."""
+    response = await call_next(request)
+    if request.headers.get("access-control-request-private-network") == "true":
+        response.headers["Access-Control-Allow-Private-Network"] = "true"
+    return response
+
+
 def require_api_key(x_api_key: Optional[str] = Header(default=None)):
     if not API_KEY or API_KEY == "change-me":
         # still require a key match so misconfig is obvious in logs

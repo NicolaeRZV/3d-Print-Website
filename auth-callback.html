@@ -18,7 +18,7 @@
 <div class="box">
   <h1 id="title">Se finalizează autentificarea…</h1>
   <p id="msg">Un moment, te redirecționăm.</p>
-  <p id="actions" hidden><a href="login.html">Înapoi la autentificare</a></p>
+  <p id="actions" hidden><a id="back-link" href="login.html?forgot=1">Cere un link nou de resetare</a></p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
 <script src="auth.js"></script>
@@ -27,27 +27,33 @@
   const title = document.getElementById('title');
   const msg = document.getElementById('msg');
   const actions = document.getElementById('actions');
+  const backLink = document.getElementById('back-link');
 
-  function fail(text) {
+  function fail(text, href) {
     title.textContent = 'Link invalid sau expirat';
     msg.className = 'err';
     msg.textContent = text;
     actions.hidden = false;
+    if (href) backLink.href = href;
   }
 
   function mapErr(err) {
     const raw = String(err?.message || err || '');
     const m = raw.toLowerCase();
     if (m.includes('artbluauth is not defined') || m.includes('supabase is not defined')) {
-      return 'Nu s-au încărcat scripturile de autentificare. Reîncarcă pagina sau verifică conexiunea. Dacă ești pe GitHub Pages, asigură-te că auth.js e publicat.';
+      return 'Nu s-au încărcat scripturile de autentificare. Reîncarcă pagina.';
     }
     if (m.includes('both auth code and code verifier') || m.includes('code verifier')) {
-      return 'Linkul trebuie deschis în același browser în care te-ai înregistrat (sau de unde ai cerut emailul). Cere un email nou din login și confirmă tot pe același dispozitiv.';
+      return 'Acest tip de link PKCE necesită același browser. Pentru resetare parolă, folosește șablonul TokenHash din AUTH-SETUP.md (funcționează pe orice dispozitiv), apoi cere un email nou.';
     }
     if (m.includes('expired') || m.includes('invalid') || m.includes('otp')) {
-      return 'Link expirat sau deja folosit. Din pagina de autentificare: Retrimite email de confirmare.';
+      return 'Link expirat sau deja folosit. Cere un email nou din autentificare.';
     }
     return raw || 'Nu am putut finaliza autentificarea.';
+  }
+
+  async function safeSignOut(client) {
+    try { await client.auth.signOut(); } catch (_) {}
   }
 
   try {
@@ -74,21 +80,28 @@
     const params = new URLSearchParams(window.location.search);
     const hashRaw = window.location.hash.replace(/^#/, '');
     const hash = hashRaw.includes('=') ? new URLSearchParams(hashRaw) : new URLSearchParams();
-    const authType = hash.get('type') || params.get('type') || '';
+    const authType = (hash.get('type') || params.get('type') || '').toLowerCase();
     const code = params.get('code');
-    const tokenHash = params.get('token_hash') || params.get('token');
+    const tokenHash = params.get('token_hash') || params.get('token') || hash.get('token_hash') || hash.get('token');
+    const isRecovery = authType === 'recovery' || params.get('reset') === '1';
 
-    if (code) {
-      const { error } = await client.auth.exchangeCodeForSession(code);
-      if (error) throw error;
-    } else if (tokenHash && authType) {
+    // Token-hash links work on any device (no PKCE verifier). Prefer this for email.
+    if (tokenHash) {
+      const otpType = authType || 'recovery';
       const { error } = await client.auth.verifyOtp({
         token_hash: tokenHash,
-        type: authType
+        type: otpType
       });
       if (error) throw error;
+    } else if (code) {
+      const { error } = await client.auth.exchangeCodeForSession(code);
+      if (error) {
+        // detectSessionInUrl may already have created a session from the same URL
+        const { data: { session: existing } } = await client.auth.getSession();
+        if (!existing) throw error;
+      }
     } else if (hash.get('access_token')) {
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise(r => setTimeout(r, 500));
     } else {
       await new Promise(r => setTimeout(r, 600));
     }
@@ -96,12 +109,12 @@
     const { data: { session }, error: sessionErr } = await client.auth.getSession();
     if (sessionErr) throw sessionErr;
     if (!session) {
-      throw new Error('Sesiune invalidă. Link expirat sau deja folosit — cere un email nou din autentificare.');
+      throw new Error('Sesiune invalidă. Link expirat sau deja folosit — cere un email nou.');
     }
 
     window.history.replaceState({}, '', 'auth-callback.html');
 
-    if (authType === 'recovery') {
+    if (isRecovery || authType === 'recovery') {
       window.location.href = 'login.html?reset=1';
       return;
     }
@@ -109,7 +122,32 @@
     window.location.href = 'account.html';
   } catch (err) {
     console.error(err);
-    fail(mapErr(err) + ' Verifică și Site URL în Supabase (AUTH-SETUP.md).');
+    let client = window.artbluAuth;
+    try {
+      if (client) {
+        const { data: { session } } = await client.auth.getSession();
+        const params = new URLSearchParams(window.location.search);
+        const hashRaw = window.location.hash.replace(/^#/, '');
+        const hash = hashRaw.includes('=') ? new URLSearchParams(hashRaw) : new URLSearchParams();
+        const authType = (hash.get('type') || params.get('type') || '').toLowerCase();
+        if (session && authType === 'recovery') {
+          window.location.href = 'login.html?reset=1';
+          return;
+        }
+        // Avoid dumping the user into account.html via an old leftover session
+        await safeSignOut(client);
+      }
+    } catch (_) {}
+
+    const hint = mapErr(err);
+    const isPkce = /code verifier|pkce/i.test(String(err?.message || err || ''));
+    fail(
+      hint + ' Verifică Site URL / Redirect URLs în Supabase (AUTH-SETUP.md).',
+      isPkce || /recovery|reset|parol/i.test(hint) ? 'login.html?forgot=1' : 'login.html'
+    );
+    backLink.textContent = isPkce || /recovery|reset|parol/i.test(hint)
+      ? 'Cere un link nou de resetare'
+      : 'Înapoi la autentificare';
   }
 })();
 </script>
