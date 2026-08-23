@@ -11,7 +11,7 @@
   const SAMEDAY_DEFAULT_CITY = 'Bucuresti';
   const SAMEDAY_DEFAULT_COUNTY = 'Bucuresti';
 
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabaseClient = window.artbluAuth;
 
   let pricingSettings = null;
   let selectedLocker = null;

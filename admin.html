@@ -252,9 +252,30 @@
   .orders-filter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
   .orders-filter label{margin:0;font-size:13px;font-weight:500;color:var(--text-600);display:flex;align-items:center;gap:6px;cursor:pointer;}
   @media(max-width:700px){.order-row{grid-template-columns:1fr;}}
+  body:not(.admin-ready) .header,
+  body:not(.admin-ready) main{display:none;}
+  .admin-gate{
+    min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:var(--bg);text-align:center;
+  }
+  body.admin-ready .admin-gate{display:none;}
+  .admin-gate-box{
+    max-width:420px;width:100%;background:var(--white);border:1px solid var(--border);
+    border-radius:var(--radius);padding:28px;box-shadow:var(--shadow-md);
+  }
+  .admin-gate-box h2{font-size:20px;margin-bottom:8px;}
+  .admin-gate-box p{font-size:14px;color:var(--text-600);line-height:1.55;margin:0 0 16px;}
+  .admin-user-email{font-size:12px;color:rgba(255,255,255,.75);align-self:center;}
 </style>
 </head>
 <body>
+
+<div class="admin-gate" id="admin-gate">
+  <div class="admin-gate-box">
+    <h2>Se verifică accesul…</h2>
+    <p>Un moment — confirmăm autentificarea pentru panoul admin.</p>
+  </div>
+</div>
 
 <header class="header">
   <div class="container">
@@ -262,6 +283,8 @@
       <h1>artblu <span>Admin</span></h1>
     </div>
     <div class="header-actions">
+      <span class="admin-user-email" id="admin-user-email"></span>
+      <button type="button" class="btn btn-secondary" id="admin-signout-btn">Deconectare</button>
       <a href="index.html" class="btn btn-secondary">← Magazin</a>
       <button type="button" class="btn btn-ghost" id="refresh-btn" style="background:#fff;color:var(--text-900);">Reîncarcă lista</button>
     </div>
@@ -579,11 +602,11 @@
 <script src="bambu-pricing.js"></script>
 <script src="filament-catalog.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="auth.js"></script>
 <script>
+const supabaseClient = window.artbluAuth;
 const SUPABASE_URL = 'https://tilfngrtldwevtiilxpq.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_A3fpQb9LjJb8XySpIJyJeg_gcjPOs3m';
 const STL_BUCKET = 'stl-files';
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const CATEGORIES = [
   'Casă & Decor',
@@ -790,9 +813,6 @@ async function initPricingSettings(){
     showToast('Nu am putut încărca formula din baza de date — rulează supabase/pricing-settings.sql', true);
   }
 }
-
-initPricingSettings();
-initFilamentCatalogAdmin();
 
 document.getElementById('name').addEventListener('input', e => {
   const slugInput = document.getElementById('slug');
@@ -1962,9 +1982,34 @@ function initFilamentCatalogAdmin(){
   });
 }
 
-loadProducts();
-loadCustomPrints().then(() => setupCustomPrintsRealtime());
-loadNewsletterSubscribers();
+async function bootAdmin(){
+  const gate = document.getElementById('admin-gate');
+  const user = await getCurrentUser();
+  if(!user){
+    window.location.replace(authPageUrl('redirect=admin.html'));
+    return;
+  }
+  if(!isAdminUser(user)){
+    if(gate){
+      gate.innerHTML = '<div class="admin-gate-box"><h2>Acces refuzat</h2><p>Contul <strong>' + escapeHtml(user.email || '') + '</strong> nu are drepturi de admin.</p><p class="hint">Adaugă emailul în <code>ADMIN_EMAILS</code> din auth.js sau setează <code>role: admin</code> în Supabase.</p><a href="index.html" class="btn btn-primary" style="display:inline-flex;margin-top:8px;">← Magazin</a></div>';
+    }
+    return;
+  }
+  document.body.classList.add('admin-ready');
+  const emailEl = document.getElementById('admin-user-email');
+  if(emailEl) emailEl.textContent = user.email || '';
+  document.getElementById('admin-signout-btn')?.addEventListener('click', async () => {
+    await signOut();
+    window.location.href = authPageUrl('redirect=admin.html');
+  });
+  initPricingSettings();
+  initFilamentCatalogAdmin();
+  loadProducts();
+  loadCustomPrints().then(() => setupCustomPrintsRealtime());
+  loadNewsletterSubscribers();
+}
+
+bootAdmin();
 </script>
 </body>
 </html>

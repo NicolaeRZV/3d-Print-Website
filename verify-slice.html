@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>artblu slice verify</title>
+  <style>
+    body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 16px;}
+    .ok{color:#15803d;} .err{color:#b91c1c;} pre{background:#f4f4f5;padding:12px;border-radius:8px;overflow:auto;font-size:13px;}
+  </style>
+</head>
+<body>
+  <h1>Slice API verify (local)</h1>
+  <p>Serves this folder over <code>http://localhost</code> — same fetch as artblu.ro, different origin.</p>
+  <input type="file" id="file" accept=".stl">
+  <button type="button" id="go">Test slice</button>
+  <p id="status"></p>
+  <pre id="out"></pre>
+  <script>
+    const SLICE_API_URL = 'https://nas.taileecf41.ts.net';
+    const SLICE_API_KEY = 'artblu_slice_7f3k9mQ2pL8wR4nX6vB1cD5hJ0sT';
+    const statusEl = document.getElementById('status');
+    const outEl = document.getElementById('out');
+    document.getElementById('go').onclick = async () => {
+      const file = document.getElementById('file').files[0];
+      if(!file){ statusEl.textContent = 'Pick an STL first.'; statusEl.className = 'err'; return; }
+      statusEl.textContent = 'Slicing… (can take 1–3 min)'; statusEl.className = '';
+      outEl.textContent = '';
+      const body = new FormData();
+      body.append('file', file, file.name);
+      body.append('material', 'PLA');
+      const t0 = Date.now();
+      try{
+        const res = await fetch(`${SLICE_API_URL.replace(/\/$/, '')}/estimate`, {
+          method: 'POST',
+          headers: { 'X-API-Key': SLICE_API_KEY },
+          body
+        });
+        const data = await res.json().catch(() => ({}));
+        const sec = ((Date.now() - t0) / 1000).toFixed(1);
+        if(!res.ok) throw new Error(data.detail || data.message || `HTTP ${res.status}`);
+        statusEl.textContent = `OK in ${sec}s — browser → Funnel works from this network.`; statusEl.className = 'ok';
+        outEl.textContent = JSON.stringify(data, null, 2);
+      }catch(e){
+        statusEl.textContent = 'Failed: ' + (e.message || e); statusEl.className = 'err';
+        outEl.textContent = String(e.stack || e);
+      }
+    };
+  </script>
+</body>
+</html>

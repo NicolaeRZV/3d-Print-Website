@@ -70,7 +70,9 @@
             persistSession: true,
             autoRefreshToken: true,
             detectSessionInUrl: true,
-            flowType: 'pkce'
+            flowType: 'pkce',
+            storageKey: 'artblu-auth',
+            storage: window.localStorage
           }
         }
       );

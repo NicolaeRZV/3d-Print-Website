@@ -125,11 +125,37 @@ Dashboard → **Authentication** → **Users** → your email → either:
 
 ---
 
+## Admin panel (`admin.html`)
+
+Requires login. Only emails listed in `ADMIN_EMAILS` inside `auth.js` (or users with `app_metadata.role = "admin"` in Supabase) can open the panel.
+
+Add your admin email(s) in lowercase:
+
+```js
+const ADMIN_EMAILS = [
+  'contact@artblu.ro',
+  'you@example.com'
+];
+```
+
+Unauthenticated visitors are sent to `login.html?redirect=admin.html` and return after sign-in.
+
+---
+
+## Session persistence (stay logged in)
+
+`auth.js` uses one shared Supabase client (`window.artbluAuth`) with `persistSession: true` and `localStorage`. All pages (`index.html`, `checkout.js`, `admin.html`, `account.html`) must use `window.artbluAuth` — not a second `createClient()`.
+
+Users stay signed in across visits until they sign out or the refresh token expires (weeks/months, per Supabase project settings).
+
+---
+
 ## Checklist
 
-- [ ] Site URL = `https://nicolaerzv.github.io/3d-Print-Website` (NOT localhost)  
-- [ ] Redirect URLs include `auth-callback.html`  
-- [ ] Latest code deployed to GitHub Pages  
+- [ ] Site URL = `https://artblu.ro` (NOT localhost)  
+- [ ] Redirect URLs include `https://artblu.ro/auth-callback.html`  
+- [ ] Latest code deployed  
 - [ ] **Reset password** email template uses `token_hash` + `type=recovery` (see Step 5)  
 - [ ] Requested **new** reset/confirmation email (old links are useless)  
 - [ ] Email templates updated to artblu wording  
+- [ ] Your email added to `ADMIN_EMAILS` in `auth.js`

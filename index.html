@@ -756,7 +756,7 @@
 
 <div class="site-wip-banner" id="site-wip-banner" role="status" aria-live="polite">
   <div class="container">
-    <span><strong>artblu este încă în lucru.</strong> Plățile și comenzile online nu sunt disponibile momentan — scrie-ne la <a href="mailto:contact@artblu.ro">contact@artblu.ro</a>.</span>
+    <span><strong>artblu este încă în lucru.</strong> Plățile și comenzile online nu sunt disponibile momentan — scrie-ne la <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contact%40artblu.ro" target="_blank" rel="noopener noreferrer">contact@artblu.ro</a>.</span>
   </div>
 </div>
 
@@ -913,7 +913,7 @@
         <div class="payments-wip" id="custom-payments-wip" role="status">
           <strong>artblu este încă în lucru.</strong> Plățile nu sunt disponibile momentan.
           Poți configura printul, dar nu poți finaliza comanda încă.
-          Scrie-ne la <a href="mailto:contact@artblu.ro">contact@artblu.ro</a>.
+          Scrie-ne la <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contact%40artblu.ro" target="_blank" rel="noopener noreferrer">contact@artblu.ro</a>.
         </div>
 
         <div class="upload-actions">
@@ -1148,6 +1148,7 @@
 <script src="bambu-pricing.js"></script>
 <script src="filament-catalog.js"></script>
 <script src="shipping.js"></script>
+<script src="site.js"></script>
 <script src="auth.js"></script>
 <script>
 /* ================= SUPABASE ================= */
@@ -1158,7 +1159,7 @@ const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/151935616636131746
 // Home OMV slice API via Tailscale Funnel — browser calls NAS directly. See slice-api/README.md
 const SLICE_API_URL = 'https://nas.taileecf41.ts.net';
 const SLICE_API_KEY = 'artblu_slice_7f3k9mQ2pL8wR4nX6vB1cD5hJ0sT'; // must match slice-api/.env on the NAS exactly
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.artbluAuth;
 
 function getStlPublicUrl(path){
   if(!path) return null;
@@ -1604,7 +1605,7 @@ function renderCart(){
   const payOk = arePaymentsEnabled();
   foot.innerHTML = `
     <div class="subtotal-row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
-    ${payOk ? '' : `<div class="payments-wip visible" style="margin-bottom:10px;"><strong>artblu este încă în lucru.</strong> Plățile nu sunt disponibile. <a href="mailto:contact@artblu.ro">contact@artblu.ro</a></div>`}
+    ${payOk ? '' : `<div class="payments-wip visible" style="margin-bottom:10px;"><strong>artblu este încă în lucru.</strong> Plățile nu sunt disponibile. <a href="${artbluContactGmailUrl}" target="_blank" rel="noopener noreferrer">contact@artblu.ro</a></div>`}
     <button class="btn-checkout" id="checkout-btn" ${payOk ? '' : 'disabled'}>${payOk ? 'Finalizează comanda' : 'Plăți indisponibile'}</button>`;
 }
 

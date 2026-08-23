@@ -334,7 +334,7 @@ async function boot() {
   if (params.get('register') === '1' || window.location.hash === '#register') setMode('register');
 
   const user = await getCurrentUser();
-  if (user && mode !== 'recover') window.location.href = 'account.html';
+  if (user && mode !== 'recover') window.location.href = postLoginUrl();
 }
 boot();
 
@@ -353,7 +353,7 @@ form.addEventListener('submit', async e => {
     if (mode === 'login') {
       try {
         await signIn(email, password);
-        window.location.href = 'account.html';
+        window.location.href = postLoginUrl();
         return;
       } catch (loginErr) {
         const raw = String(loginErr.cause?.message || loginErr.message || '').toLowerCase();
@@ -400,7 +400,7 @@ form.addEventListener('submit', async e => {
 
     const result = await signUp(email, password, fullName);
     if (result.session) {
-      window.location.href = 'account.html';
+      window.location.href = postLoginUrl();
       return;
     }
 

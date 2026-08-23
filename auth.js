@@ -3,8 +3,15 @@
   const SUPABASE_ANON_KEY = 'sb_publishable_A3fpQb9LjJb8XySpIJyJeg_gcjPOs3m';
 
   // Live shop URL — email links always use this (not localhost).
-  // Change if you use a custom domain later.
-  const SITE_URL = 'https://nicolaerzv.github.io/3d-Print-Website';
+  const SITE_URL = 'https://artblu.ro';
+
+  // Admin panel: add every admin email here (lowercase). Or set app_metadata.role = "admin" in Supabase.
+  const ADMIN_EMAILS = [
+    'contact@artblu.ro',
+    `costachehoria888@gmail.com`
+  ];
+
+  const AUTH_STORAGE_KEY = 'artblu-auth';
 
   if (!window.supabase || typeof window.supabase.createClient !== 'function') {
     console.error('[artblu] Supabase SDK missing — load @supabase/supabase-js before auth.js');
@@ -18,7 +25,9 @@
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      flowType: 'pkce'
+      flowType: 'pkce',
+      storageKey: AUTH_STORAGE_KEY,
+      storage: window.localStorage
     }
   });
 
@@ -40,6 +49,31 @@
   function authPageUrl(query) {
     const base = siteOrigin();
     return query ? `${base}/login.html?${query}` : `${base}/login.html`;
+  }
+
+  function safeRedirectPath(raw) {
+    if (!raw || typeof raw !== 'string') return null;
+    const path = raw.trim();
+    if (!path || path.includes('://') || path.startsWith('//') || path.includes('..')) return null;
+    if (!/^[a-z0-9._-]+\.html$/i.test(path)) return null;
+    return path;
+  }
+
+  function getLoginRedirect() {
+    return safeRedirectPath(new URLSearchParams(window.location.search).get('redirect'));
+  }
+
+  function postLoginUrl() {
+    return getLoginRedirect() || 'account.html';
+  }
+
+  function isAdminUser(user) {
+    if (!user) return false;
+    if (user.app_metadata?.role === 'admin') return true;
+    if (user.user_metadata?.is_admin === true) return true;
+    const email = String(user.email || '').trim().toLowerCase();
+    if (!email) return false;
+    return ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email);
   }
 
   function getDisplayName(user) {
@@ -194,9 +228,13 @@
   }
 
   window.artbluSiteUrl = SITE_URL;
+  window.artbluAdminEmails = ADMIN_EMAILS;
   window.getDisplayName = getDisplayName;
   window.getCurrentUser = getCurrentUser;
   window.getSession = getSession;
+  window.isAdminUser = isAdminUser;
+  window.getLoginRedirect = getLoginRedirect;
+  window.postLoginUrl = postLoginUrl;
   window.signIn = signIn;
   window.signUp = signUp;
   window.signOut = signOut;
