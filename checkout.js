@@ -183,7 +183,25 @@
   }
 
   function samedayConfigured() {
-    return !!(SAMEDAY_CLIENT_ID && SAMEDAY_API_USERNAME && window.LockerPlugin);
+    return !!(SAMEDAY_CLIENT_ID && SAMEDAY_API_USERNAME);
+  }
+
+  function tryInitLockerPlugin(){
+    if(!samedayConfigured()) return;
+    const cc = window.artbluCookieConsent;
+    if(cc && !cc.hasOptionalConsent()){
+      window.addEventListener('artblu-cookie-consent', () => tryInitLockerPlugin(), { once: true });
+      return;
+    }
+    if(!window.LockerPlugin){
+      if(cc){
+        cc.loadSamedayScript().catch(() => {});
+        window.addEventListener('artblu-sameday-ready', () => initLockerPlugin(), { once: true });
+        return;
+      }
+      return;
+    }
+    initLockerPlugin();
   }
 
   function initLockerPlugin() {
@@ -233,7 +251,12 @@
       showToast('Easybox: configurează SAMEDAY_CLIENT_ID + SAMEDAY_API_USERNAME în checkout.js (vezi SAMEDAY-SETUP.md).', true);
       return;
     }
-    if (!lockerPluginReady) initLockerPlugin();
+    const cc = window.artbluCookieConsent;
+    if(cc && !cc.hasOptionalConsent()){
+      showToast('Acceptă cookie-urile opționale (Sameday) pentru harta Easybox.', true);
+      return;
+    }
+    if (!lockerPluginReady) tryInitLockerPlugin();
     try {
       const plugin = window.LockerPlugin.getInstance();
       const city = ($('co-city')?.value || '').trim() || SAMEDAY_DEFAULT_CITY;
@@ -604,7 +627,7 @@
 
     updateShipPanels();
     renderSummary();
-    if (samedayConfigured()) initLockerPlugin();
+    if (samedayConfigured()) tryInitLockerPlugin();
   }
 
   boot();

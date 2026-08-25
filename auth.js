@@ -13,6 +13,25 @@
 
   const AUTH_STORAGE_KEY = 'artblu-auth';
 
+  function getLoginRedirect() {
+    try {
+      const raw = new URLSearchParams(window.location.search).get('redirect') || '';
+      const path = String(raw).trim();
+      if (!path || path.includes('://') || path.startsWith('//') || path.includes('..')) return null;
+      if (!/^[a-z0-9._-]+\.html$/i.test(path)) return null;
+      return path;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function postLoginUrl() {
+    return getLoginRedirect() || 'account.html';
+  }
+
+  window.getLoginRedirect = getLoginRedirect;
+  window.postLoginUrl = postLoginUrl;
+
   if (!window.supabase || typeof window.supabase.createClient !== 'function') {
     console.error('[artblu] Supabase SDK missing — load @supabase/supabase-js before auth.js');
     window.artbluAuth = null;
@@ -49,22 +68,6 @@
   function authPageUrl(query) {
     const base = siteOrigin();
     return query ? `${base}/login.html?${query}` : `${base}/login.html`;
-  }
-
-  function safeRedirectPath(raw) {
-    if (!raw || typeof raw !== 'string') return null;
-    const path = raw.trim();
-    if (!path || path.includes('://') || path.startsWith('//') || path.includes('..')) return null;
-    if (!/^[a-z0-9._-]+\.html$/i.test(path)) return null;
-    return path;
-  }
-
-  function getLoginRedirect() {
-    return safeRedirectPath(new URLSearchParams(window.location.search).get('redirect'));
-  }
-
-  function postLoginUrl() {
-    return getLoginRedirect() || 'account.html';
   }
 
   function isAdminUser(user) {
@@ -233,8 +236,6 @@
   window.getCurrentUser = getCurrentUser;
   window.getSession = getSession;
   window.isAdminUser = isAdminUser;
-  window.getLoginRedirect = getLoginRedirect;
-  window.postLoginUrl = postLoginUrl;
   window.signIn = signIn;
   window.signUp = signUp;
   window.signOut = signOut;
@@ -245,6 +246,7 @@
   window.mapAuthError = mapAuthError;
   window.escapeHtml = escapeHtml;
   window.artbluSiteOrigin = siteOrigin;
+  window.authPageUrl = authPageUrl;
   window.artbluAuthPageUrl = authPageUrl;
   window.artbluAuthCallbackUrl = authCallbackUrl;
 })();

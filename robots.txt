@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /auth-callback.html
+Disallow: /verify-slice.html
+
+Sitemap: https://artblu.ro/sitemap.xml

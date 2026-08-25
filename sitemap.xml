@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://artblu.ro/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://artblu.ro/index.html</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://artblu.ro/checkout.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://artblu.ro/login.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://artblu.ro/contact.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://artblu.ro/ajutor.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://artblu.ro/despre.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://artblu.ro/social.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://artblu.ro/termeni.html</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://artblu.ro/retur.html</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://artblu.ro/confidentialitate.html</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+</urlset>

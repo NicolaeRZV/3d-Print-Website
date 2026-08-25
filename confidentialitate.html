@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Politica de confidențialitate — artblu</title>
+<meta name="description" content="Politica de confidențialitate artblu — ce date colectăm, cum le folosim, cookie-uri, drepturile tale GDPR.">
+<link rel="canonical" href="https://artblu.ro/confidentialitate.html">
+<meta property="og:title" content="Politica de confidențialitate — artblu">
+<meta property="og:description" content="Cum prelucrăm datele personale și cookie-urile pe artblu.ro.">
+<meta property="og:url" content="https://artblu.ro/confidentialitate.html">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ro_RO">
+<meta property="og:site_name" content="artblu">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="cookie-consent.css">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='20' width='14' height='5' rx='2' fill='%234DA3FF'/%3E%3Crect x='4' y='12' width='22' height='5' rx='2' fill='%232553F2'/%3E%3Crect x='4' y='4' width='28' height='5' rx='2' fill='%230F1B2D'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,6 +48,7 @@
       <li>Cont (opțional): email, nume, parolă (stocată criptat de Supabase Auth).</li>
       <li>Fișiere 3D încărcate pentru print personalizat.</li>
       <li>Date de plată: procesate de Stripe; noi nu stocăm numărul cardului.</li>
+      <li>Newsletter (opțional): email, dacă te abonezi cu acord explicit.</li>
     </ul>
   </section>
 
@@ -47,6 +58,7 @@
       <li>Executarea comenzii și livrarea.</li>
       <li>Comunicări despre statusul comenzii sau probleme de print.</li>
       <li>Cont și istoric comenzi, dacă te înregistrezi.</li>
+      <li>Newsletter, dacă te abonezi — trimitem modele noi și oferte.</li>
       <li>Obligații legale (facturare, contabilitate).</li>
     </ul>
   </section>
@@ -65,7 +77,19 @@
     <h2>Păstrare</h2>
     <p>Păstrăm datele cât e necesar pentru comenzi, remedieri de print și obligații legale. Conturile inactive pot fi șterse la cerere.</p>
   </section>
+
+  <section class="card" id="cookie-uri">
+    <h2>Cookie-uri și stocare locală</h2>
+    <ul>
+      <li><strong>Necesare:</strong> coș (<code>localStorage</code>), sesiune cont și comenzi (<strong>Supabase</strong>).</li>
+      <li><strong>Plată:</strong> la checkout card, ești redirecționat către <strong>Stripe</strong> (cookie-uri Stripe pe domeniul lor).</li>
+      <li><strong>Opționale:</strong> harta Easybox <strong>Sameday</strong> — încărcată doar dacă accepți cookie-urile opționale.</li>
+      <li><strong>Preferință cookie:</strong> salvăm alegerea ta în <code>localStorage</code> (<code>artblu_cookie_consent_v1</code>).</li>
+    </ul>
+    <p>Poți alege „Doar necesare” sau „Accept toate” din bannerul de pe site. Poți șterge datele din browser (cookie-uri / stocare locală) oricând.</p>
+  </section>
 </main>
 <footer class="site-footer">© 2026 artblu · <a href="index.html">Înapoi în magazin</a></footer>
+<script src="cookie-consent.js"></script>
 </body>
 </html>
