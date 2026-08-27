@@ -10,6 +10,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     CORS_ORIGINS=* \
     MAX_UPLOAD_MB=50 \
     SLICE_TIMEOUT_SEC=300 \
+    JOBS_DIR=/jobs \
     PYTHONUNBUFFERED=1 \
     LIBGL_ALWAYS_SOFTWARE=1 \
     GALLIUM_DRIVER=llvmpipe \
@@ -60,7 +61,10 @@ RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 COPY app ./app
 COPY prepare_profiles.py /app/prepare_profiles.py
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh && mkdir -p /profiles /tmp/artblu-slice
+RUN chmod +x /entrypoint.sh \
+    && mkdir -p /profiles /tmp/artblu-slice /jobs \
+    && printf '%s\n' '#!/bin/sh' 'export JOBS_DIR="${JOBS_DIR:-/jobs}"' 'cd /app' 'exec python3 -m app.jobs "$@"' > /usr/local/bin/slice-jobs \
+    && chmod +x /usr/local/bin/slice-jobs
 
 EXPOSE 8787
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \

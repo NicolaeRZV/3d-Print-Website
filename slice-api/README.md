@@ -45,6 +45,28 @@ curl -s http://127.0.0.1:8787/health | jq
 
 You want `"ok": true` and all three profiles `true`.
 
+## Job log (SSH)
+
+Every upload is kept on the NAS (original file + timestamp). After rebuild:
+
+```bash
+cd /srv/artblu/slice-api   # or wherever compose lives
+chmod +x slice-jobs
+./slice-jobs
+```
+
+Useful flags:
+
+```bash
+./slice-jobs -n 50      # more rows
+./slice-jobs --files    # full saved paths
+./slice-jobs --json
+```
+
+Same command inside Docker: `docker exec artblu-slice-api slice-jobs`
+
+Files live in `./jobs/` next to `docker-compose.yml` (bind-mounted to `/jobs` in the container). Live lines also show in `docker compose logs -f`.
+
 First start may take a while (AppImage extract + profile pick).
 If P2S profile is missing in that Orca version, entrypoint falls back to **P1S** (very close bed/settings) and logs which file it used.
 

@@ -468,6 +468,15 @@
   }
   .ready-models-track .card .card-thumb{aspect-ratio:1/1;}
   .ready-models-empty{display:none;padding:18px 0;font-size:13.5px;color:var(--text-600);}
+
+  /* Temporarily hide ready-made models shop. Remove hide-ready-models from <body> to show it again. */
+  body.hide-ready-models .ready-models,
+  body.hide-ready-models #product-view,
+  body.hide-ready-models .searchbar,
+  body.hide-ready-models .topstrip-links a[href="#ready-models"],
+  body.hide-ready-models footer li:has(a[href="#ready-models"]){
+    display:none !important;
+  }
   .searchbar select{display:none;}
 
   /* ===== Trust strip ===== */
@@ -755,7 +764,7 @@
   }
 </style>
 </head>
-<body>
+<body class="hide-ready-models">
 
 <a href="#continut" class="skip-link">Sari la conținutul principal</a>
 
@@ -834,7 +843,7 @@
     </div>
 
     <div class="hero-stage" id="hero-stage">
-      <input type="file" id="custom-file-input" accept=".stl,.obj,.3mf,model/stl,model/obj,application/sla" multiple aria-label="Încarcă fișiere 3D">
+      <input type="file" id="custom-file-input" accept=".stl,.obj,.3mf,model/stl,model/obj,model/3mf,application/vnd.ms-package.3dmanufacturing-3dmodel+xml,application/sla" multiple aria-label="Încarcă fișiere 3D">
       <div class="hero-drop" id="hero-drop" role="button" tabindex="0" aria-label="Zonă de încărcare modele 3D">
         <div class="hero-drop-icon" aria-hidden="true">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
@@ -876,7 +885,7 @@
           </div>
           <div class="upload-field">
             <label>Dimensiune</label>
-            <p style="margin:0;font-size:13px;color:var(--text-600);line-height:1.45;padding-top:8px;">Printăm la mărimea din STL (fără scalare).</p>
+            <p style="margin:0;font-size:13px;color:var(--text-600);line-height:1.45;padding-top:8px;">Printăm la mărimea din fișier (fără scalare).</p>
           </div>
           <div class="upload-field full">
             <label>Culoare filament: <span id="custom-color-name">Alb</span></label>
@@ -951,12 +960,12 @@
           <div class="step">
             <div class="step-num">1</div>
             <h3>Încarcă modelele</h3>
-            <p>Adaugi unul sau mai multe STL, OBJ sau 3MF. Pentru STL vezi imediat previzualizarea 3D.</p>
+            <p>Adaugi unul sau mai multe STL, OBJ sau 3MF. STL și 3MF primesc preț exact după slice; previzualizarea 3D e pentru STL.</p>
           </div>
           <div class="step">
             <div class="step-num">2</div>
             <h3>Alege finisajul</h3>
-            <p>Material și culoare. Prețul exact apare imediat după slice (P2S, supports on).</p>
+            <p>Material și culoare. Prețul exact apare imediat după slice (P2S, 0.20mm, tree supports).</p>
           </div>
           <div class="step">
             <div class="step-num">3</div>
@@ -2293,6 +2302,7 @@ function stopThreeLoop(){
 
 /* ================= PRODUCT PAGE ================= */
 function openProduct(id){
+  if(document.body.classList.contains('hide-ready-models')) return;
   const p = findProduct(id);
   if(!p) return;
   viewingProductId = id;
@@ -2460,6 +2470,14 @@ function getFileExt(name){
   return parts.length > 1 ? parts.pop() : '';
 }
 
+function isSliceableExt(ext){
+  return ext === 'stl' || ext === '3mf';
+}
+
+function sliceableCustomFiles(){
+  return customFiles.filter(e => isSliceableExt(getFileExt(e.file.name)));
+}
+
 function formatBytes(n){
   if(n < 1024) return n + ' B';
   if(n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
@@ -2556,18 +2574,18 @@ function roughFallbackPrice(){
 }
 
 function getExactQuoteTotals(){
-  const stlEntries = customFiles.filter(e => getFileExt(e.file.name) === 'stl');
-  if(!stlEntries.length) return null;
-  if(stlEntries.some(e => !e.quote || e.quote.error || e.quote.pending)) return null;
+  const sliceEntries = sliceableCustomFiles();
+  if(!sliceEntries.length) return null;
+  if(sliceEntries.some(e => !e.quote || e.quote.error || e.quote.pending)) return null;
   let hours = 0;
   let grams = 0;
   let total = 0;
-  stlEntries.forEach(e => {
+  sliceEntries.forEach(e => {
     hours += Number(e.quote.printHours) || 0;
     grams += Number(e.quote.filamentGrams) || 0;
     total += Number(e.quote.total) || 0;
   });
-  return { hours, grams, total: +total.toFixed(2), count: stlEntries.length };
+  return { hours, grams, total: +total.toFixed(2), count: sliceEntries.length };
 }
 
 function setCustomPriceRows(printText, totalText){
@@ -2659,7 +2677,7 @@ function updateSliceProgressUi(){
     fill.style.width = determinate ? Math.max(8, pct) + '%' : '';
   }
   if(note) note.textContent = total > 1
-    ? 'Fiecare STL e analizat pe server. Poate dura 15–90 secunde pe model — site-ul nu e blocat.'
+    ? 'Fiecare STL/3MF e analizat pe server. Poate dura 15–90 secunde pe model — site-ul nu e blocat.'
     : 'Poate dura 15–90 secunde. Nu închide pagina — site-ul nu e blocat.';
 }
 
@@ -2722,7 +2740,7 @@ function updateCustomPrice(){
   if(!customFiles.length){
     setCustomPriceRows('—', '—');
     if(hintEl) hintEl.textContent = sliceApiConfigured()
-      ? 'Încarcă un STL — calculăm prețul printului pe serverul de slice.'
+      ? 'Încarcă un STL sau 3MF — calculăm prețul printului pe serverul de slice.'
       : 'Configurează SLICE_API_URL + SLICE_API_KEY în index.html (vezi slice-api/README.md).';
     if(detailsEl) detailsEl.style.display = 'none';
     return;
@@ -2756,19 +2774,19 @@ async function requestSliceEstimate(file, material){
 }
 
 async function requoteAllCustomFiles(){
-  const stlEntries = customFiles.filter(e => getFileExt(e.file.name) === 'stl');
-  if(!stlEntries.length){
+  const sliceEntries = sliceableCustomFiles();
+  if(!sliceEntries.length){
     updateCustomPrice();
     return;
   }
   if(!sliceApiConfigured()){
-    stlEntries.forEach(e => { e.quote = { error: 'not-configured' }; });
+    sliceEntries.forEach(e => { e.quote = { error: 'not-configured' }; });
     updateCustomPrice();
     setCustomStatus('Preț exact necesită slice-api pe OMV. Vezi slice-api/README.md.', 'error');
     return;
   }
 
-  const toSlice = stlEntries.filter(entry => {
+  const toSlice = sliceEntries.filter(entry => {
     const filament = getFileFilament(entry);
     const material = filament?.sliceKey || 'PLA';
     return !(entry.quote && !entry.quote.error && !entry.quote.pending && entry.quote.material === material && entry.quote.total != null);
@@ -2823,7 +2841,7 @@ async function requoteAllCustomFiles(){
     if(exact){
       setCustomStatus(`Preț exact: ${fmt(exact.total)} · ${BambuPricing.formatHours(exact.hours)} · ${exact.grams.toFixed(1)} g`, 'ok');
     } else {
-      const firstErr = stlEntries.find(e => e.quote?.error)?.quote?.error;
+      const firstErr = sliceEntries.find(e => e.quote?.error)?.quote?.error;
       setCustomStatus(firstErr || 'Nu am putut calcula prețul exact.', 'error');
     }
   }finally{
@@ -2892,20 +2910,20 @@ function renderCustomFileList(){
   const active = customFiles[customActiveIdx];
   if(nameEl) nameEl.textContent = `${active.file.name} (${customActiveIdx + 1}/${customFiles.length})`;
   list.innerHTML = customFiles.map((entry, i) => {
-    const isStl = getFileExt(entry.file.name) === 'stl';
+    const canSlice = isSliceableExt(getFileExt(entry.file.name));
     ensureFileFinish(entry);
     const color = getFileColor(entry);
     const finish = fileFinishLabel(entry);
     let badge = '';
     let rowClass = i === customActiveIdx ? 'active' : '';
-    if(isStl && customQuoteBusy && entry.quote?.pending){
+    if(canSlice && customQuoteBusy && entry.quote?.pending){
       badge = '<span class="quote-badge busy">Slice…</span>';
       rowClass += ' slicing';
-    } else if(isStl && entry.quote && !entry.quote.error && !entry.quote.pending && entry.quote.total != null){
+    } else if(canSlice && entry.quote && !entry.quote.error && !entry.quote.pending && entry.quote.total != null){
       badge = '<span class="quote-badge ok">OK</span>';
-    } else if(isStl && entry.quote?.error){
+    } else if(canSlice && entry.quote?.error){
       badge = '<span class="quote-badge err">Eroare</span>';
-    } else if(isStl && customQuoteBusy){
+    } else if(canSlice && customQuoteBusy){
       badge = '<span class="quote-badge busy">În coadă</span>';
     }
     return `
@@ -2928,10 +2946,16 @@ async function setActiveCustomFile(idx){
 
 async function loadCustomFilePreview(file){
   const ext = getFileExt(file.name);
+  if(ext === '3mf'){
+    if(customObjectUrl){ URL.revokeObjectURL(customObjectUrl); customObjectUrl = null; }
+    disposeCustomPreview();
+    setCustomStatus(`Prețul pentru „${file.name}” se calculează prin slice, ca la STL. Previzualizarea 3D e disponibilă pentru STL.`, 'ok');
+    return;
+  }
   if(ext !== 'stl'){
     if(customObjectUrl){ URL.revokeObjectURL(customObjectUrl); customObjectUrl = null; }
     disposeCustomPreview();
-    setCustomStatus(`Previzualizare 3D doar pentru STL. „${file.name}” va fi totuși inclus în comandă.`, '');
+    setCustomStatus(`Previzualizare 3D și preț exact doar pentru STL/3MF. „${file.name}” va fi totuși inclus în comandă.`, '');
     return;
   }
   if(typeof THREE === 'undefined' || typeof THREE.STLLoader === 'undefined'){
@@ -3009,7 +3033,7 @@ function openCustomFilePicker(){
 async function uploadCustomStl(file){
   const ext = getFileExt(file.name) || 'stl';
   const path = `custom/${crypto.randomUUID()}.${ext}`;
-  const contentType = ext === 'stl' ? 'model/stl' : 'application/octet-stream';
+  const contentType = ext === 'stl' ? 'model/stl' : (ext === '3mf' ? 'model/3mf' : 'application/octet-stream');
   const { error } = await supabaseClient.storage
     .from(STL_BUCKET)
     .upload(path, file, { upsert: false, contentType });

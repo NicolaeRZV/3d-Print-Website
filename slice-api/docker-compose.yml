@@ -10,11 +10,13 @@ services:
     environment:
       ORCA_BIN: /opt/orca/squashfs-root/AppRun
       PROFILES_DIR: /profiles
+      JOBS_DIR: /jobs
       REFRESH_PROFILES: "1"
       MAX_UPLOAD_MB: "50"
       SLICE_TIMEOUT_SEC: "300"
     volumes:
       - artblu_profiles:/profiles
+      - ./jobs:/jobs
 
 volumes:
   artblu_profiles:

@@ -20,6 +20,9 @@ from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadF
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from .threemf import convert_3mf_to_stl
+from .jobs import archive_upload, finish_job, job_count, log_rejected
+
 API_KEY = os.environ.get("SLICE_API_KEY", "change-me")
 ORCA_BIN = os.environ.get("ORCA_BIN", "/opt/orca/AppRun")
 PROFILES_DIR = Path(os.environ.get("PROFILES_DIR", "/profiles"))
@@ -331,49 +334,6 @@ def _vec_norm(a):
     return (a[0] / length, a[1] / length, a[2] / length)
 
 
-def _mat_vec(r, v):
-    return (
-        r[0][0] * v[0] + r[0][1] * v[1] + r[0][2] * v[2],
-        r[1][0] * v[0] + r[1][1] * v[1] + r[1][2] * v[2],
-        r[2][0] * v[0] + r[2][1] * v[1] + r[2][2] * v[2],
-    )
-
-
-def _rotation_align(src, dst):
-    """Rotation matrix that maps unit vector src -> dst."""
-    a = _vec_norm(src)
-    b = _vec_norm(dst)
-    if _vec_len(a) < 1e-9 or _vec_len(b) < 1e-9:
-        return [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
-    dot = max(-1.0, min(1.0, _vec_dot(a, b)))
-    if dot > 0.999999:
-        return [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
-    if dot < -0.999999:
-        # 180° around any axis orthogonal to a
-        axis = _vec_norm(_vec_cross(a, (1.0, 0.0, 0.0)))
-        if _vec_len(axis) < 1e-6:
-            axis = _vec_norm(_vec_cross(a, (0.0, 1.0, 0.0)))
-        x, y, z = axis
-        return [
-            [2 * x * x - 1, 2 * x * y, 2 * x * z],
-            [2 * y * x, 2 * y * y - 1, 2 * y * z],
-            [2 * z * x, 2 * z * y, 2 * z * z - 1],
-        ]
-    v = _vec_cross(a, b)
-    s = _vec_len(v)
-    vx, vy, vz = v
-    kmat = [[0.0, -vz, vy], [vz, 0.0, -vx], [-vy, vx, 0.0]]
-    # R = I + K + K^2 * ((1-dot)/s^2)
-    factor = (1.0 - dot) / (s * s)
-    r = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
-    for i in range(3):
-        for j in range(3):
-            k2 = kmat[i][0] * kmat[0][j] + kmat[i][1] * kmat[1][j] + kmat[i][2] * kmat[2][j]
-            eye = 1.0 if i == j else 0.0
-            r[i][j] = eye + kmat[i][j] + k2 * factor
-    return r
-
-
 def load_stl_triangles(path: Path) -> list:
     data = path.read_bytes()
     if len(data) < 84:
@@ -407,7 +367,7 @@ def load_stl_triangles(path: Path) -> list:
 
 
 def write_binary_stl(path: Path, triangles: list) -> None:
-    header = b"artblu-auto-orient".ljust(80, b"\0")
+    header = b"artblu-slice".ljust(80, b"\0")
     out = bytearray(header)
     out += struct.pack("<I", len(triangles))
     for n, v0, v1, v2 in triangles:
@@ -419,102 +379,38 @@ def write_binary_stl(path: Path, triangles: list) -> None:
     path.write_bytes(out)
 
 
-def auto_orient_stl(path: Path) -> dict:
-    """Orient model with largest flat face on the bed (Orca --orient is unreliable in CLI)."""
+def place_stl_on_bed(path: Path) -> dict:
+    """Keep file orientation (same as dropping the model into Orca) and sit it on Z=0."""
     triangles = load_stl_triangles(path)
     if not triangles:
-        return {"oriented": False, "reason": "empty"}
+        return {"oriented": False, "reason": "empty", "rotated": False}
 
-    # Accumulate triangle area into 6 axis bins (face normal direction).
-    bins = {
-        (1, 0, 0): 0.0, (-1, 0, 0): 0.0,
-        (0, 1, 0): 0.0, (0, -1, 0): 0.0,
-        (0, 0, 1): 0.0, (0, 0, -1): 0.0,
-    }
-    for _n, v0, v1, v2 in triangles:
-        cross = _vec_cross(_vec_sub(v1, v0), _vec_sub(v2, v0))
-        area = 0.5 * _vec_len(cross)
-        if area <= 0:
-            continue
-        n = _vec_norm(cross)
-        ax, ay, az = abs(n[0]), abs(n[1]), abs(n[2])
-        if ax >= ay and ax >= az:
-            key = (1, 0, 0) if n[0] >= 0 else (-1, 0, 0)
-        elif ay >= ax and ay >= az:
-            key = (0, 1, 0) if n[1] >= 0 else (0, -1, 0)
-        else:
-            key = (0, 0, 1) if n[2] >= 0 else (0, 0, -1)
-        bins[key] += area
-
-    # Largest-area face should sit on the bed → that outward normal → -Z.
-    best_normal = max(bins.items(), key=lambda kv: kv[1])[0]
-    down = (0.0, 0.0, -1.0)
-    rot = _rotation_align((float(best_normal[0]), float(best_normal[1]), float(best_normal[2])), down)
-
-    # Also score a few AABB flips; keep whichever yields the lowest height.
-    candidates = [rot]
-    for axis_from, axis_to_down in (
-        ((0.0, 0.0, 1.0), down),
-        ((0.0, 0.0, -1.0), down),
-        ((0.0, 1.0, 0.0), down),
-        ((0.0, -1.0, 0.0), down),
-        ((1.0, 0.0, 0.0), down),
-        ((-1.0, 0.0, 0.0), down),
-    ):
-        candidates.append(_rotation_align(axis_from, axis_to_down))
-
-    def score(r):
-        mins = [float("inf")] * 3
-        maxs = [float("-inf")] * 3
-        for _n, v0, v1, v2 in triangles:
-            for v in (v0, v1, v2):
-                p = _mat_vec(r, v)
-                for i in range(3):
-                    mins[i] = min(mins[i], p[i])
-                    maxs[i] = max(maxs[i], p[i])
-        height = maxs[2] - mins[2]
-        footprint = max(0.0, maxs[0] - mins[0]) * max(0.0, maxs[1] - mins[1])
-        return (height, -footprint)
-
-    best_rot = min(candidates, key=score)
-    height0, _ = score([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
-    height1, _ = score(best_rot)
-
-    # Translate so model sits on Z=0
     mins = [float("inf")] * 3
     maxs = [float("-inf")] * 3
-    oriented = []
     for _n, v0, v1, v2 in triangles:
-        p0 = _mat_vec(best_rot, v0)
-        p1 = _mat_vec(best_rot, v1)
-        p2 = _mat_vec(best_rot, v2)
-        for p in (p0, p1, p2):
+        for v in (v0, v1, v2):
             for i in range(3):
-                mins[i] = min(mins[i], p[i])
-                maxs[i] = max(maxs[i], p[i])
-        oriented.append((_n, p0, p1, p2))
+                mins[i] = min(mins[i], v[i])
+                maxs[i] = max(maxs[i], v[i])
 
     dz = -mins[2]
     dx = -(mins[0] + maxs[0]) / 2.0
     dy = -(mins[1] + maxs[1]) / 2.0
-    final = []
-    for _n, v0, v1, v2 in oriented:
-        final.append((
-            _n,
+    placed = []
+    for n, v0, v1, v2 in triangles:
+        placed.append((
+            n,
             (v0[0] + dx, v0[1] + dy, v0[2] + dz),
             (v1[0] + dx, v1[1] + dy, v1[2] + dz),
             (v2[0] + dx, v2[1] + dy, v2[2] + dz),
         ))
-
-    write_binary_stl(path, final)
+    write_binary_stl(path, placed)
     size = [maxs[i] - mins[i] for i in range(3)]
     return {
-        "oriented": True,
-        "method": "largest-face + AABB",
-        "heightBefore": round(height0, 3),
-        "heightAfter": round(height1, 3),
+        "oriented": False,
+        "rotated": False,
+        "method": "translate-to-bed",
         "sizeMm": size,
-        "bottomNormal": list(best_normal),
     }
 
 
@@ -638,7 +534,7 @@ async def run_orca_slice(stl_path: Path, out_dir: Path) -> Path:
     filament = str(FILAMENT_PROFILE)
 
     # Keep CLI flags to the official set. Do NOT use --scale / --orient (CLI crashes or -50).
-    # Unit fix + auto-orient are applied to the STL in Python before this.
+    # Unit fix is applied to the STL in Python; orientation is left as in the uploaded file.
     # Supports come from flattened process.json.
     attempts = [
         [
@@ -735,7 +631,8 @@ async def health():
             "compatible_printers": process_compat,
         },
         "printer": "Bambu Lab P2S",
-        "preset": "0.20mm Standard PLA + supports",
+        "preset": "0.20mm Standard PLA + tree supports",
+        "jobs": job_count(),
     }
 
 
@@ -745,18 +642,36 @@ async def estimate(
     material: str = Form("PLA"),
     _: None = Depends(require_api_key),
 ):
-    name = (file.filename or "model.stl").lower()
-    if not name.endswith(".stl"):
-        raise HTTPException(status_code=400, detail="Only .stl files are supported for exact estimates")
+    original_name = file.filename or "model.stl"
+    name = original_name.lower()
+    if not (name.endswith(".stl") or name.endswith(".3mf")):
+        log_rejected(original_name, "Only .stl and .3mf files are supported for exact estimates")
+        raise HTTPException(status_code=400, detail="Only .stl and .3mf files are supported for exact estimates")
 
     data = await file.read()
     if len(data) > MAX_UPLOAD_MB * 1024 * 1024:
+        log_rejected(original_name, f"File exceeds {MAX_UPLOAD_MB} MB")
         raise HTTPException(status_code=400, detail=f"File exceeds {MAX_UPLOAD_MB} MB")
+
+    job = None
+    try:
+        job = archive_upload(original_name, data, material)
+    except Exception as exc:
+        print("[slice-job] failed to archive upload: " + str(exc), flush=True)
 
     work = Path(tempfile.mkdtemp(prefix="artblu-slice-"))
     try:
         stl_path = work / "model.stl"
-        stl_path.write_bytes(data)
+        converted_3mf = None
+        if name.endswith(".3mf"):
+            src_3mf = work / "upload.3mf"
+            src_3mf.write_bytes(data)
+            try:
+                converted_3mf = convert_3mf_to_stl(src_3mf, stl_path)
+            except Exception as exc:
+                raise HTTPException(status_code=400, detail=f"Could not read 3MF mesh: {exc}") from exc
+        else:
+            stl_path.write_bytes(data)
 
         bounds = stl_bounds(stl_path)
         scale, unit_fix = detect_unit_scale(bounds)
@@ -781,14 +696,14 @@ async def estimate(
             if bounds:
                 scaled_size = bounds["size"]
 
-        orient_info = auto_orient_stl(stl_path)
+        orient_info = place_stl_on_bed(stl_path)
         bounds = stl_bounds(stl_path)
         if bounds:
             scaled_size = bounds["size"]
             if bounds["maxDim"] > 256:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"Model is too large for P2S bed ({bounds['maxDim']:.1f} mm) after orient. Export at print size in millimeters.",
+                    detail=f"Model is too large for P2S bed ({bounds['maxDim']:.1f} mm) after placing on the bed. Export at print size in millimeters.",
                 )
 
         artifact = await run_orca_slice(stl_path, work)
@@ -811,27 +726,33 @@ async def estimate(
         if meta["filamentGrams"] is None or meta["filamentGrams"] <= 0:
             raise HTTPException(
                 status_code=500,
-                detail="Slice finished but filament weight was 0/missing. Try another export of the STL.",
+                detail="Slice finished but filament weight was 0/missing. Try another export of the model.",
             )
 
-        return JSONResponse({
+        payload = {
             "ok": True,
             "printHours": round(float(meta["printHours"]), 4),
             "filamentGrams": round(float(meta["filamentGrams"]), 2),
             "material": (material or "PLA").upper(),
             "printer": "Bambu Lab P2S",
-            "preset": "0.20mm Standard PLA + supports (Orca/Bambu profile)",
+            "preset": "0.20mm Standard PLA + tree supports (Orca/Bambu profile)",
             "source": source,
             "supportUsed": meta.get("supportUsed"),
-            "fileName": file.filename,
+            "fileName": original_name,
+            "inputFormat": "3mf" if name.endswith(".3mf") else "stl",
+            "converted3mf": converted_3mf,
             "modelSizeMm": scaled_size if scaled_size is not None else (bounds["size"] if bounds else None),
             "unitFix": unit_fix,
             "scaleApplied": scale,
             "orient": orient_info,
-        })
-    except HTTPException:
+        }
+        finish_job(job, True, result=payload)
+        return JSONResponse(payload)
+    except HTTPException as exc:
+        finish_job(job, False, error=exc.detail)
         raise
     except Exception as exc:
+        finish_job(job, False, error=str(exc))
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     finally:
         shutil.rmtree(work, ignore_errors=True)

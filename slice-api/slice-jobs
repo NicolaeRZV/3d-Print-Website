@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+JOBS_DIR="${SLICE_JOBS_DIR:-$ROOT/jobs}"
+export JOBS_DIR
+if command -v python3 >/dev/null 2>&1 && [[ -f "$ROOT/app/jobs.py" ]]; then
+  exec python3 "$ROOT/app/jobs.py" "$@"
+fi
+exec docker exec artblu-slice-api slice-jobs "$@"

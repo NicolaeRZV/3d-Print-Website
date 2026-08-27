@@ -1,0 +1,3 @@
+*.sh text eol=lf
+slice-jobs text eol=lf
+entrypoint.sh text eol=lf

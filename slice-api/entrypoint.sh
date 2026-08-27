@@ -2,10 +2,11 @@
 set -euo pipefail
 
 PROFILES_DIR="${PROFILES_DIR:-/profiles}"
+JOBS_DIR="${JOBS_DIR:-/jobs}"
 ORCA_ROOT="${ORCA_ROOT:-/opt/orca}"
 REFRESH_PROFILES="${REFRESH_PROFILES:-1}"
 
-mkdir -p "$PROFILES_DIR"
+mkdir -p "$PROFILES_DIR" "$JOBS_DIR"
 
 find_bbl_dir() {
   local candidates=(

@@ -76,6 +76,27 @@ def pick_path(bbl_dir: Path, rel_candidates: list[str]) -> Path:
     raise RuntimeError("none of the candidate profiles exist:\n  " + "\n  ".join(rel_candidates))
 
 
+def pick_standard_extruder_variant(data: dict) -> dict:
+    """CLI has no GUI hotend picker — keep Direct Drive Standard, drop High Flow duplicates."""
+    variants = data.get("print_extruder_variant")
+    if not isinstance(variants, list) or len(variants) < 2:
+        return data
+    idx = 0
+    for i, name in enumerate(variants):
+        if "high flow" in str(name).lower():
+            continue
+        idx = i
+        break
+    out = dict(data)
+    skip = {"compatible_printers"}
+    for key, value in list(out.items()):
+        if key in skip:
+            continue
+        if isinstance(value, list) and len(value) == len(variants):
+            out[key] = [value[idx]]
+    return out
+
+
 def finalize(data: dict, typ: str, supports: bool = False) -> dict:
     out = dict(data)
     out["type"] = typ
@@ -86,11 +107,9 @@ def finalize(data: dict, typ: str, supports: bool = False) -> dict:
     if isinstance(name, str) and name:
         out["inherits"] = name
     if supports and typ == "process":
-        # Force supports on for storefront estimates (string "1" is what BBL presets use).
+        # Enable supports; keep the preset's type (Orca 2.4 BBL default is tree(auto)).
         out["enable_support"] = "1"
-        out["support_type"] = "normal(auto)"
-        out["support_on_build_plate_only"] = "0"
-        out["support_critical_regions_only"] = "0"
+        out = pick_standard_extruder_variant(out)
     if typ == "filament":
         dens = out.get("filament_density")
         diam = out.get("filament_diameter")
@@ -155,7 +174,7 @@ def main() -> int:
     write_profile(out_dir / "filament.json", filament)
 
     print(f"[artblu] machine : {machine_src.name} -> printable_area={machine.get('printable_area')}")
-    print(f"[artblu] process : {process_src.name} (supports on)")
+    print(f"[artblu] process : {process_src.name} (supports on, type={process.get('support_type')})")
     print(f"[artblu] filament: {filament_src.name}")
     print(f"[artblu] Profiles ready in {out_dir}")
     return 0
